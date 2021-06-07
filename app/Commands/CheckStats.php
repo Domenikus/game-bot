@@ -5,21 +5,21 @@ namespace App\Commands;
 use Illuminate\Console\Scheduling\Schedule;
 use LaravelZero\Framework\Commands\Command;
 
-class InspiringCommand extends Command
+class CheckStats extends Command
 {
     /**
      * The signature of the command.
      *
      * @var string
      */
-    protected $signature = 'inspiring {name=Artisan}';
+    protected $signature = 'check-stats';
 
     /**
      * The description of the command.
      *
      * @var string
      */
-    protected $description = 'Display an inspiring quote';
+    protected $description = 'Check stats of all registered users';
 
     /**
      * Execute the console command.
@@ -34,11 +34,11 @@ class InspiringCommand extends Command
     /**
      * Define the command's schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule $schedule
+     * @param Schedule $schedule
      * @return void
      */
-    public function schedule(Schedule $schedule)
+    public function schedule(Schedule $schedule): void
     {
-        // $schedule->command(static::class)->everyMinute();
+         $schedule->command(static::class)->everyFiveMinutes();
     }
 }

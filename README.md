@@ -31,6 +31,5 @@ For full documentation, visit [laravel-zero.com](https://laravel-zero.com/).
 - PayPal: [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=66BYDWAT92N6L)
 - Patreon: [Donate](https://www.patreon.com/nunomaduro)
 
-## License
-
-Laravel Zero is an open-source software licensed under the MIT license.
+serveradmin
+fNGhVR0z
