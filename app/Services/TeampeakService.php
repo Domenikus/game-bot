@@ -42,7 +42,7 @@ class TeampeakService
                 $params = explode(' ', $data['msg']->toString(), 3);
                 $identityId = $data['invokeruid']->toString();
 
-                if ($this->registerUser($identityId, $params[1], $params[2])) {
+                if (isset($params[1], $params[2]) && $this->registerUser($identityId, $params[1], $params[2])) {
                     call_user_func($callback, "Register completed successfully");
                 } else {
                     call_user_func($callback, "Registration failed");
