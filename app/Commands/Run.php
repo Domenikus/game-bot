@@ -10,14 +10,14 @@ use LaravelZero\Framework\Commands\Command;
 use TeamSpeak3_Transport_Exception;
 
 
-class RegisterUser extends Command
+class Run extends Command
 {
     /**
      * The signature of the command.
      *
      * @var string
      */
-    protected $signature = 'register-user';
+    protected $signature = 'run';
 
     /**
      * The description of the command.
@@ -39,12 +39,10 @@ class RegisterUser extends Command
 
     private function handleRegistrations(TeampeakService $service)
     {
-        $server = null;
-
-        $result = $this->task("Connect to teamspeak server", function () use ($service, &$server) {
+        $result = $this->task("Connect to teamspeak server", function () use (&$service) {
             $this->newLine();
             try {
-                $server = $service->connect();
+                $service->connect();
             } catch (Exception $e) {
                 $this->error($e->getMessage());
                 return false;
@@ -57,26 +55,16 @@ class RegisterUser extends Command
             die();
         }
 
-        $this->task("Subscribe for registrations", function () use ($service, $server) {
+        $this->task("Initialize event listeners", function () use (&$service) {
             $this->newLine();
-
-            $service->subscribeForRegistrations($server, function ($msg) {
+            $service->initializeEventListeners(function ($msg) {
                 $this->info($msg);
             });
         });
 
-        $this->task("Running bot", function () use (&$server, $service) {
+        $this->task("Listen for events", function () use (&$service) {
             $this->newLine();
-
-            try {
-                while (true) {
-                    $server->getAdapter()->wait();
-                }
-            } catch (TeamSpeak3_Transport_Exception $e) {
-                $this->warn(now() . ' Connection error, try to reconnect...');
-                sleep(1);
-                $this->handleRegistrations($service);
-            }
+            $service->listen();
         });
     }
 

@@ -23,7 +23,8 @@
         "laminas/laminas-text": "^2.8",
         "laravel-zero/framework": "^8.8",
         "planetteamspeak/ts3-php-framework": "dev-master",
-        "ext-pthreads": "*"
+        "ext-pthreads": "*",
+      "ext-json": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
