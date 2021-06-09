@@ -106,7 +106,7 @@ class TeampeakService
 
             if ($response->status() == 200) {
                 $user->stats = $response->body();
-                $user->save();
+                $user->saveOrFail();
             } else {
                 call_user_func($callback, "Wrong user configuration");
             }
@@ -160,7 +160,7 @@ class TeampeakService
 
         $user->name = $name;
         $user->plattform = $plattform;
-        $user->save();
+        $user->saveOrFail();
 
         return $user;
     }
