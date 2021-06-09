@@ -52,15 +52,22 @@ class TeampeakService
     {
         TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", function (TeamSpeak3_Adapter_ServerQuery_Event $event) use ($callback) {
             $data = $event->getData();
+            $identityId = $data['invokeruid']->toString();
             if ($data['msg']->startsWith("!register")) {
                 $params = explode(' ', $data['msg']->toString(), 3);
-                $identityId = $data['invokeruid']->toString();
 
                 if (isset($params[1], $params[2]) && $user = $this->registerUser($identityId, $params[1], $params[2])) {
                     $this->assignServerGroups($this->getPlayerStats($user, $callback));
                     call_user_func($callback, "Registration completed successfully");
                 } else {
                     call_user_func($callback, "Registration failed");
+                }
+            } else if ($data['msg']->startsWith("!update")) {
+                $user = User::find($identityId);
+
+                if ($user) {
+                    $this->assignServerGroups($this->getPlayerStats($user, $callback));
+                    call_user_func($callback, "Player stats updated");
                 }
             }
         });
