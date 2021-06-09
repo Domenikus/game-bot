@@ -10,30 +10,30 @@ return [
 
     "server_groups_ranked" => [
         "Bronze 1" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 9),
-        "Bronze 2" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 10),
-        "Bronze 3" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 11),
-        "Bronze 4" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 12),
+        "Bronze 2" => env('TEAMSPEAK_GROUP_RANKED_BRONZE2', 10),
+        "Bronze 3" => env('TEAMSPEAK_GROUP_RANKED_BRONZE3', 11),
+        "Bronze 4" => env('TEAMSPEAK_GROUP_RANKED_BRONZE4', 12),
 
-        "Silver 1" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 13),
-        "Silver 2" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 14),
-        "Silver 3" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 15),
-        "Silver 4" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 16),
+        "Silver 1" => env('TEAMSPEAK_GROUP_RANKED_SILVER1', 13),
+        "Silver 2" => env('TEAMSPEAK_GROUP_RANKED_SILVER2', 14),
+        "Silver 3" => env('TEAMSPEAK_GROUP_RANKED_SILVER3', 15),
+        "Silver 4" => env('TEAMSPEAK_GROUP_RANKED_SILVER4', 16),
 
-        "Gold 1" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 17),
-        "Gold 2" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 18),
-        "Gold 3" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 19),
-        "Gold 4" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 20),
+        "Gold 1" => env('TEAMSPEAK_GROUP_RANKED_GOLD1', 17),
+        "Gold 2" => env('TEAMSPEAK_GROUP_RANKED_GOLD2', 18),
+        "Gold 3" => env('TEAMSPEAK_GROUP_RANKED_GOLD3', 19),
+        "Gold 4" => env('TEAMSPEAK_GROUP_RANKED_GOLD4', 20),
 
-        "Platinum 1" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 21),
-        "Platinum 2" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 22),
-        "Platinum 3" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 23),
-        "Platinum 4" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 24),
+        "Platinum 1" => env('TEAMSPEAK_GROUP_RANKED_PLATINUM1', 21),
+        "Platinum 2" => env('TEAMSPEAK_GROUP_RANKED_PLATINUM2', 22),
+        "Platinum 3" => env('TEAMSPEAK_GROUP_RANKED_PLATINUM3', 23),
+        "Platinum 4" => env('TEAMSPEAK_GROUP_RANKED_PLATINUM4', 24),
 
-        "Diamond 1" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 26),
-        "Diamond 2" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 27),
-        "Diamond 3" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 28),
-        "Diamond 4" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 29),
+        "Diamond 1" => env('TEAMSPEAK_GROUP_RANKED_DIAMOND1', 26),
+        "Diamond 2" => env('TEAMSPEAK_GROUP_RANKED_DIAMOND2', 27),
+        "Diamond 3" => env('TEAMSPEAK_GROUP_RANKED_DIAMOND3', 28),
+        "Diamond 4" => env('TEAMSPEAK_GROUP_RANKED_DIAMOND4', 29),
 
-        "Apex Predator" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 25)
+        "Apex Predator" => env('TEAMSPEAK_GROUP_RANKED_PREDATOR', 25)
     ]
 ];
