@@ -56,7 +56,8 @@ class TeampeakService
                 $params = explode(' ', $data['msg']->toString(), 3);
                 $identityId = $data['invokeruid']->toString();
 
-                if (isset($params[1], $params[2]) && $this->registerUser($identityId, $params[1], $params[2])) {
+                if (isset($params[1], $params[2]) && $user = $this->registerUser($identityId, $params[1], $params[2])) {
+                    $this->assignServerGroups($this->getPlayerStats($user, $callback));
                     call_user_func($callback, "Registration completed successfully");
                 } else {
                     call_user_func($callback, "Registration failed");
@@ -71,19 +72,7 @@ class TeampeakService
             $data = $event->getData();
             $identityId = $data['client_unique_identifier']->toString();
             $user = User::find($identityId);
-
-            if ($user) {
-                $response = Http::withHeaders(['TRN-Api-Key' => 'a5979db2-d166-42f3-a17b-5e33444c243d'])
-                    ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $user->plattform . '/' . $user->name);
-
-                if ($response->status() == 200) {
-                    $user->stats = $response->body();
-                    $user->save();
-                    $this->assignServerGroups($user);
-                } else {
-                    call_user_func($callback, "Wrong user configuration");
-                }
-            }
+            $this->assignServerGroups($this->getPlayerStats($user, $callback));
         });
     }
 
@@ -100,6 +89,23 @@ class TeampeakService
     private function assignServerGroups(User $user)
     {
         $this->assignRankStatus($user);
+    }
+
+    private function getPlayerStats(User $user, callable $callback): User
+    {
+        if ($user) {
+            $response = Http::withHeaders(['TRN-Api-Key' => 'a5979db2-d166-42f3-a17b-5e33444c243d'])
+                ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $user->plattform . '/' . $user->name);
+
+            if ($response->status() == 200) {
+                $user->stats = $response->body();
+                $user->save();
+            } else {
+                call_user_func($callback, "Wrong user configuration");
+            }
+        }
+
+        return $user;
     }
 
     private function assignRankStatus(User $user)
@@ -147,7 +153,8 @@ class TeampeakService
 
         $user->name = $name;
         $user->plattform = $plattform;
+        $user->save();
 
-        return $user->save();
+        return $user;
     }
 }
