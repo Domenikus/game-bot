@@ -122,8 +122,8 @@ class TeampeakService
         $newRankName = $stats['data']["segments"][0]["stats"]["rankScore"]['metadata']['rankName'];
 
         foreach ($client->memberOf() as $group) {
-            if (isset($group['sgid']) && in_array($group['name']->toString(), array_keys(config('teamspeak.server_groups_ranked')))) {
-                if ($group['sgid'] !== config('teamspeak.server_groups_ranked.' . $newRankName)) {
+            if (isset($group['sgid']) && in_array($group['sgid'], config('teamspeak.server_groups_ranked'))) {
+                if ($group['sgid'] != config('teamspeak.server_groups_ranked.' . $newRankName)) {
                     $client->remServerGroup($group['sgid']);
                     $client->addServerGroup(config('teamspeak.server_groups_ranked.' . $newRankName));
                 }
