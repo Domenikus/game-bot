@@ -127,7 +127,7 @@ class TeampeakService
         $response = Http::withHeaders(['TRN-Api-Key' => 'a5979db2-d166-42f3-a17b-5e33444c243d'])
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $plattform . '/' . $name);
 
-        if ($response->status() == 200) {
+        if ($response->successful() == 200) {
             $stats = $response->body();
         } else {
             call_user_func($this->callback, "Combination of name and plattform not found");
