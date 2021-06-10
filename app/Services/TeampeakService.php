@@ -24,6 +24,11 @@ class TeampeakService
     private $server;
 
     /**
+     * @var callable
+     */
+    private $callback;
+
+    /**
      * @throws \Exception
      */
     public function connect(): void
@@ -39,6 +44,8 @@ class TeampeakService
 
     public function initializeEventListeners(callable $callback)
     {
+        $this->callback = $callback;
+
         $this->server->notifyRegister("server");
         $this->server->notifyRegister("textserver");
 
@@ -48,46 +55,46 @@ class TeampeakService
         $this->initTimeoutListener($callback);
     }
 
-    private function initGlobalChatListener(callable $callback)
+    private function initGlobalChatListener()
     {
-        TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", function (TeamSpeak3_Adapter_ServerQuery_Event $event) use ($callback) {
+        TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", function (TeamSpeak3_Adapter_ServerQuery_Event $event) {
             $data = $event->getData();
             $identityId = $data['invokeruid']->toString();
             if ($data['msg']->startsWith("!register")) {
                 $params = explode(' ', $data['msg']->toString(), 3);
 
                 if (isset($params[1], $params[2]) && $user = $this->registerUser($identityId, $params[1], $params[2])) {
-                    $this->assignServerGroups($this->getPlayerStats($user, $callback));
-                    call_user_func($callback, "Registration completed successfully");
+                    $this->assignServerGroups($this->getPlayerStats($user));
+                    call_user_func($this->callback, "Registration completed successfully");
                 } else {
-                    call_user_func($callback, "Registration failed");
+                    call_user_func($this->callback, "Registration failed");
                 }
             } else if ($data['msg']->startsWith("!update")) {
                 $user = User::find($identityId);
 
                 if ($user) {
-                    $this->assignServerGroups($this->getPlayerStats($user, $callback));
-                    call_user_func($callback, "Player stats updated");
+                    $this->assignServerGroups($this->getPlayerStats($user));
+                    call_user_func($this->callback, "Player stats updated");
                 }
             }
         });
     }
 
-    private function initClientEnterViewListener(callable $callback)
+    private function initClientEnterViewListener()
     {
-        TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", function (TeamSpeak3_Adapter_ServerQuery_Event $event) use ($callback) {
+        TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", function (TeamSpeak3_Adapter_ServerQuery_Event $event) {
             $data = $event->getData();
             $identityId = $data['client_unique_identifier']->toString();
             $user = User::find($identityId);
-            $this->assignServerGroups($this->getPlayerStats($user, $callback));
+            $this->assignServerGroups($this->getPlayerStats($user, $this->callback));
         });
     }
 
-    private function initTimeoutListener(callable $callback)
+    private function initTimeoutListener()
     {
-        TeamSpeak3_Helper_Signal::getInstance()->subscribe("serverqueryWaitTimeout", function ($seconds, TeamSpeak3_Adapter_ServerQuery $adapter) use ($callback) {
+        TeamSpeak3_Helper_Signal::getInstance()->subscribe("serverqueryWaitTimeout", function ($seconds, TeamSpeak3_Adapter_ServerQuery $adapter) {
             if ($adapter->getQueryLastTimestamp() < time() - 260) {
-                call_user_func($callback, "No reply from the server for " . $seconds . " seconds. Sending keep alive command.");
+                call_user_func($this->callback, "No reply from the server for " . $seconds . " seconds. Sending keep alive command.");
                 $adapter->request("clientupdate");
             }
         });
@@ -98,7 +105,7 @@ class TeampeakService
         $this->assignRankStatus($user);
     }
 
-    private function getPlayerStats(User $user, callable $callback): User
+    private function getPlayerStats(User $user): User
     {
         if ($user) {
             $response = Http::withHeaders(['TRN-Api-Key' => 'a5979db2-d166-42f3-a17b-5e33444c243d'])
@@ -108,7 +115,7 @@ class TeampeakService
                 $user->stats = $response->body();
                 $user->saveOrFail();
             } else {
-                call_user_func($callback, "Wrong user configuration");
+                call_user_func($this->callback, "Wrong user configuration");
             }
         }
 

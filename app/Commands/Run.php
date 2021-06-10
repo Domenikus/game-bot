@@ -3,11 +3,8 @@
 namespace App\Commands;
 
 use App\Services\TeampeakService;
-use App\threads\AsyncRegisterListener;
 use Exception;
-use Illuminate\Console\Scheduling\Schedule;
 use LaravelZero\Framework\Commands\Command;
-use TeamSpeak3_Transport_Exception;
 
 
 class Run extends Command
@@ -66,15 +63,5 @@ class Run extends Command
             $this->newLine();
             $service->listen();
         });
-    }
-
-    /**
-     * Define the command's schedule.
-     *
-     * @param Schedule $schedule
-     * @return void
-     */
-    public function schedule(Schedule $schedule): void
-    {
     }
 }
