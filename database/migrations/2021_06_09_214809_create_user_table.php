@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('identity_id')->primary();
             $table->string('name');
             $table->string('plattform');
-            $table->json('stats')->nullable();
+            $table->json('stats');
             $table->timestamps();
         });
     }

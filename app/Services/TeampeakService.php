@@ -64,8 +64,8 @@ class TeampeakService
                 $params = explode(' ', $data['msg']->toString(), 3);
 
                 if (isset($params[1], $params[2]) && $user = $this->registerUser($identityId, $params[1], $params[2])) {
-                    $this->assignServerGroups($this->getPlayerStats($user));
-                    call_user_func($this->callback, "Registration completed successfully");
+                    $this->assignServerGroups($user);
+                    call_user_func($this->callback, "Registration successful");
                 } else {
                     call_user_func($this->callback, "Registration failed");
                 }
@@ -73,8 +73,14 @@ class TeampeakService
                 $user = User::find($identityId);
 
                 if ($user) {
-                    $this->assignServerGroups($this->getPlayerStats($user));
-                    call_user_func($this->callback, "Player stats updated");
+                    $stats = $this->getPlayerStats($user->name, $user->plattform);
+                    if ($stats) {
+                        $user->stats = $stats;
+                        $user->save();
+
+                        $this->assignServerGroups($user);
+                        call_user_func($this->callback, "Player stats updated");
+                    }
                 }
             }
         });
@@ -86,7 +92,17 @@ class TeampeakService
             $data = $event->getData();
             $identityId = $data['client_unique_identifier']->toString();
             $user = User::find($identityId);
-            $this->assignServerGroups($this->getPlayerStats($user, $this->callback));
+
+            if ($user) {
+                $stats = $this->getPlayerStats($user->name, $user->plattform);
+                if ($stats) {
+                    $user->stats = $stats;
+                    $user->save();
+
+                    $this->assignServerGroups($user);
+                    call_user_func($this->callback, "Player stats updated");
+                }
+            }
         });
     }
 
@@ -105,21 +121,19 @@ class TeampeakService
         $this->assignRankStatus($user);
     }
 
-    private function getPlayerStats(User $user): User
+    private function getPlayerStats(string $name, string $plattform): ?string
     {
-        if ($user) {
-            $response = Http::withHeaders(['TRN-Api-Key' => 'a5979db2-d166-42f3-a17b-5e33444c243d'])
-                ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $user->plattform . '/' . $user->name);
+        $stats = null;
+        $response = Http::withHeaders(['TRN-Api-Key' => 'a5979db2-d166-42f3-a17b-5e33444c243d'])
+            ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $plattform . '/' . $name);
 
-            if ($response->status() == 200) {
-                $user->stats = $response->body();
-                $user->saveOrFail();
-            } else {
-                call_user_func($this->callback, "Wrong user configuration");
-            }
+        if ($response->status() == 200) {
+            $stats = $response->body();
+        } else {
+            call_user_func($this->callback, "Combination of name and plattform not found");
         }
 
-        return $user;
+        return $stats;
     }
 
     private function assignRankStatus(User $user)
@@ -149,14 +163,15 @@ class TeampeakService
         }
     }
 
-    private function registerUser(string $identityId, string $name, string $plattform)
+    private function registerUser(string $identityId, string $name, string $plattform): ?User
     {
-        if (empty($identityId) || empty($name) || empty($plattform)) {
-            return false;
+        if ((empty($identityId) || empty($name) || empty($plattform)) && !in_array($plattform, self::PLATFORMS)) {
+            return null;
         }
 
-        if (!in_array($plattform, self::PLATFORMS)) {
-            return false;
+        $stats = $this->getPlayerStats($name, $plattform);
+        if (!$stats) {
+            return null;
         }
 
         $user = User::find($identityId);
@@ -167,6 +182,8 @@ class TeampeakService
 
         $user->name = $name;
         $user->plattform = $plattform;
+        $user->stats = $stats;
+
         $user->saveOrFail();
 
         return $user;
