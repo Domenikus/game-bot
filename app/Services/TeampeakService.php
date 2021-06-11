@@ -67,7 +67,8 @@ class TeampeakService
                     $this->assignServerGroups($user);
                     call_user_func($this->callback, "Registration successful");
                 } else {
-                    call_user_func($this->callback, "Registration failed");
+                    $this->server->clientGetByUid($identityId)->message("Registration failed");
+                    call_user_func($this->callback, "Registration failed. Please enter correct username and plattform.");
                 }
             } else if ($data['msg']->startsWith("!update")) {
                 $user = User::find($identityId);
