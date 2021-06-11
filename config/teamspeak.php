@@ -6,7 +6,7 @@ return [
     "query_user" => env('TEAMSPEAK_QUERY_USER', ""),
     "query_password" => env('TEAMSPEAK_QUERY_PASSWORD', ""),
     "query_port" => env('TEAMSPEAK_QUERY_PORT', 10011),
-    "bot_name" => env('TEAMSPEAK_BOT_NAME', "apex-bot"),
+    "bot_name" => env('TEAMSPEAK_BOT_NAME', "ranked-bot"),
 
     "server_groups_ranked" => [
         "Bronze 1" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 9),

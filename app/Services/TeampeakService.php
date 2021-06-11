@@ -110,9 +110,10 @@ class TeampeakService
     private function initTimeoutListener()
     {
         TeamSpeak3_Helper_Signal::getInstance()->subscribe("serverqueryWaitTimeout", function ($seconds, TeamSpeak3_Adapter_ServerQuery $adapter) {
-            if ($adapter->getQueryLastTimestamp() < time() - 260) {
+            if ($adapter->getQueryLastTimestamp() < time() - 180) {
                 call_user_func($this->callback, "No reply from the server for " . $seconds . " seconds. Sending keep alive command.");
                 $adapter->request("clientupdate");
+                $this->server = $adapter->getHost()->serverGetSelected();
             }
         });
     }
@@ -126,7 +127,7 @@ class TeampeakService
     private function getPlayerStats(string $name, string $plattform): ?string
     {
         $stats = null;
-        $response = Http::withHeaders(['TRN-Api-Key' => 'a5979db2-d166-42f3-a17b-5e33444c243d'])
+        $response = Http::withHeaders(['TRN-Api-Key' => config('app.apex-api-key')])
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $plattform . '/' . $name);
 
         if ($response->successful()) {
