@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\User;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use TeamSpeak3;
 use TeamSpeak3_Adapter_ServerQuery;
@@ -29,7 +30,7 @@ class TeampeakService
     private $callback;
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function connect(): void
     {
@@ -49,10 +50,10 @@ class TeampeakService
         $this->server->notifyRegister("server");
         $this->server->notifyRegister("textserver");
 
-        $this->initGlobalChatListener($callback);
-        $this->initClientEnterViewListener($callback);
-        $this->initTimeoutListener($callback);
-        $this->initTimeoutListener($callback);
+        $this->initGlobalChatListener();
+        $this->initClientEnterViewListener();
+        $this->initTimeoutListener();
+        $this->initTimeoutListener();
     }
 
     private function initGlobalChatListener()
