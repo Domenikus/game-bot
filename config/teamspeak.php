@@ -35,5 +35,25 @@ return [
         "Diamond 4" => env('TEAMSPEAK_GROUP_RANKED_DIAMOND4', 29),
 
         "Apex Predator" => env('TEAMSPEAK_GROUP_RANKED_PREDATOR', 25)
+    ],
+
+    "server_groups_legends" => [
+        "Wraith" => env('TEAMSPEAK_GROUP_LEGENDS_WRAITH', 30),
+        "Gibraltar" => env('TEAMSPEAK_GROUP_LEGENDS_GIBRALTAR', 31),
+        "Bloodhound" => env('TEAMSPEAK_GROUP_LEGENDS_BLOODHOUND', 32),
+        "Wattson" => env('TEAMSPEAK_GROUP_LEGENDS_WATTSON', 33),
+        "Loba" => env('TEAMSPEAK_GROUP_LEGENDS_LOBA', 34),
+        "Horizon" => env('TEAMSPEAK_GROUP_LEGENDS_HORIZON', 35),
+        "Pathfinder" => env('TEAMSPEAK_GROUP_LEGENDS_PATHFINDER', 36),
+        "Mirage" => env('TEAMSPEAK_GROUP_LEGENDS_MIRAGE', 37),
+        "Octane" => env('TEAMSPEAK_GROUP_LEGENDS_OCTANE', 38),
+        "Bangalore" => env('TEAMSPEAK_GROUP_LEGENDS_BANGALORE', 39),
+        "Lifeline" => env('TEAMSPEAK_GROUP_LEGENDS_LIFELINE', 40),
+        "Rampart" => env('TEAMSPEAK_GROUP_LEGENDS_RAMPART', 41),
+        "Valkyrie" => env('TEAMSPEAK_GROUP_LEGENDS_VALKYRIE', 42),
+        "Fuse" => env('TEAMSPEAK_GROUP_LEGENDS_FUSE', 43),
+        "Caustic" => env('TEAMSPEAK_GROUP_LEGENDS_CAUSTIC', 44),
+        "Revenant" => env('TEAMSPEAK_GROUP_LEGENDS_REVENANT', 45),
+        "Crypto" => env('TEAMSPEAK_GROUP_LEGENDS_CRYPTO', 46)
     ]
 ];

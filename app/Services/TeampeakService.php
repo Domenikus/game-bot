@@ -119,6 +119,7 @@ class TeampeakService
     private function assignServerGroups(User $user)
     {
         $this->assignRankStatus($user);
+        $this->assignLegend($user);
     }
 
     private function getPlayerStats(string $name, string $plattform): ?string
@@ -154,6 +155,26 @@ class TeampeakService
         }
 
         $client->addServerGroup(config('teamspeak.server_groups_ranked.' . $newRankName));
+    }
+
+    private function assignLegend($user)
+    {
+        $client = $this->server->clientGetByUid($user->getKey());
+        $stats = json_decode($user->stats, true);
+        $newLegendName = $stats['data']["metadata"]['activeLegendName'];
+
+        foreach ($client->memberOf() as $group) {
+            if (isset($group['sgid']) && in_array($group['sgid'], config('teamspeak.server_groups_legends'))) {
+                if ($group['sgid'] != config('teamspeak.server_groups_legends.' . $newLegendName)) {
+                    $client->remServerGroup($group['sgid']);
+                    $client->addServerGroup(config('teamspeak.server_groups_legends.' . $newLegendName));
+                }
+
+                return;
+            }
+        }
+
+        $client->addServerGroup(config('teamspeak.server_groups_legends.' . $newLegendName));
     }
 
     public function listen()
