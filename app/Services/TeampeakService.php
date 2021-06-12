@@ -9,6 +9,7 @@ use TeamSpeak3;
 use TeamSpeak3_Adapter_ServerQuery;
 use TeamSpeak3_Adapter_ServerQuery_Event;
 use TeamSpeak3_Helper_Signal;
+use TeamSpeak3_Node_Host;
 use TeamSpeak3_Node_Server;
 
 class TeampeakService
@@ -58,7 +59,9 @@ class TeampeakService
 
     private function initGlobalChatListener()
     {
-        TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", function (TeamSpeak3_Adapter_ServerQuery_Event $event) {
+        TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyTextmessage", function (TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3_Node_Host $host) {
+            $this->server = $host->serverGetSelected();
+
             $data = $event->getData();
             $identityId = $data['invokeruid']->toString();
             if ($data['msg']->startsWith("!register")) {
@@ -90,7 +93,9 @@ class TeampeakService
 
     private function initClientEnterViewListener()
     {
-        TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", function (TeamSpeak3_Adapter_ServerQuery_Event $event) {
+        TeamSpeak3_Helper_Signal::getInstance()->subscribe("notifyCliententerview", function (TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3_Node_Host $host) {
+            $this->server = $host->serverGetSelected();
+
             $data = $event->getData();
             $identityId = $data['client_unique_identifier']->toString();
             $user = User::find($identityId);
