@@ -87,6 +87,14 @@ class TeampeakService
                         call_user_func($this->callback, "Player stats updated");
                     }
                 }
+            } else if ($data['msg']->startsWith("!unregister")) {
+                /** @var User $user */
+                $user = User::find($identityId);
+
+                if ($user) {
+                    $user->delete();
+                    $this->removeServerGroups($user);
+                }
             }
         });
     }
@@ -130,6 +138,12 @@ class TeampeakService
         $this->assignLegend($user);
     }
 
+    private function removeServerGroups(User $user)
+    {
+        $this->removeRankStatus($user);
+        $this->removeLegend($user);
+    }
+
     private function getPlayerStats(string $name, string $plattform): ?string
     {
         $stats = null;
@@ -165,7 +179,18 @@ class TeampeakService
         $client->addServerGroup(config('teamspeak.server_groups_ranked.' . $newRankName));
     }
 
-    private function assignLegend($user)
+
+    private function removeRankStatus(User $user)
+    {
+        $client = $this->server->clientGetByUid($user->getKey());
+        foreach ($client->memberOf() as $group) {
+            if (isset($group['sgid']) && in_array($group['sgid'], config('teamspeak.server_groups_ranked'))) {
+                $client->remServerGroup($group['sgid']);
+            }
+        }
+    }
+
+    private function assignLegend(User $user)
     {
         $client = $this->server->clientGetByUid($user->getKey());
         $stats = json_decode($user->stats, true);
@@ -184,6 +209,18 @@ class TeampeakService
 
         $client->addServerGroup(config('teamspeak.server_groups_legends.' . $newLegendName));
     }
+
+
+    private function removeLegend(User $user)
+    {
+        $client = $this->server->clientGetByUid($user->getKey());
+        foreach ($client->memberOf() as $group) {
+            if (isset($group['sgid']) && in_array($group['sgid'], config('teamspeak.server_groups_legends'))) {
+                $client->remServerGroup($group['sgid']);
+            }
+        }
+    }
+
 
     public function listen()
     {
