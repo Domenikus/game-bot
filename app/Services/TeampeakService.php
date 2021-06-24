@@ -210,7 +210,6 @@ class TeampeakService
         $client->addServerGroup(config('teamspeak.server_groups_legends.' . $newLegendName));
     }
 
-
     private function removeLegend(User $user)
     {
         $client = $this->server->clientGetByUid($user->getKey());
@@ -220,7 +219,6 @@ class TeampeakService
             }
         }
     }
-
 
     public function listen()
     {
