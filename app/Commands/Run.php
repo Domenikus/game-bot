@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Services\TeampeakService;
-use Exception;
 use LaravelZero\Framework\Commands\Command;
 
 
@@ -21,7 +20,10 @@ class Run extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Run the bot';
+
+    const LOG_TYPE_ERROR = 'error';
+    const LOG_TYPE_INFO = 'info';
 
     /**
      * Execute the console command.
@@ -31,31 +33,19 @@ class Run extends Command
      */
     public function handle(TeampeakService $service)
     {
-        $this->handleRegistrations($service);
-    }
-
-    private function handleRegistrations(TeampeakService $service)
-    {
-        $result = $this->task("Connect to teamspeak server", function () use (&$service) {
+        $this->task("Connect to teamspeak server", function () use (&$service) {
             $this->newLine();
-            try {
-                $service->connect();
-            } catch (Exception $e) {
-                $this->error($e->getMessage());
-                return false;
-            }
-
-            return true;
+            $service->connect();
         });
-
-        if (!$result) {
-            die();
-        }
 
         $this->task("Initialize event listeners", function () use (&$service) {
             $this->newLine();
-            $service->initializeEventListeners(function ($msg) {
-                $this->info($msg);
+            $service->init(function (string $message, string $type = self::LOG_TYPE_INFO) {
+                if ($type == self::LOG_TYPE_INFO) {
+                    $this->info($message);
+                } else {
+                    $this->error($message);
+                }
             });
         });
 

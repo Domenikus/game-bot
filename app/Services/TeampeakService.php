@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Commands\Run;
 use App\User;
 use Exception;
 use Illuminate\Support\Facades\Http;
@@ -44,7 +45,7 @@ class TeampeakService
         $this->server = TeamSpeak3::factory($uri);
     }
 
-    public function initializeEventListeners(callable $callback)
+    public function init(callable $callback)
     {
         $this->callback = $callback;
 
@@ -71,8 +72,8 @@ class TeampeakService
                     $this->assignServerGroups($user);
                     call_user_func($this->callback, "Registration successful");
                 } else {
-                    $this->server->clientGetByUid($identityId)->message("Registration failed");
-                    call_user_func($this->callback, "Registration failed. Please enter correct username and plattform.");
+                    $this->server->clientGetByUid($identityId)->message("Registration failed. Please enter correct username and plattform.");
+                    call_user_func($this->callback, "Registration failed", Run::LOG_TYPE_ERROR);
                 }
             } else if ($data['msg']->startsWith("!update")) {
                 $user = User::find($identityId);
@@ -84,7 +85,6 @@ class TeampeakService
                         $user->save();
 
                         $this->assignServerGroups($user);
-                        call_user_func($this->callback, "Player stats updated");
                     }
                 }
             } else if ($data['msg']->startsWith("!unregister")) {
@@ -115,7 +115,6 @@ class TeampeakService
                     $user->save();
 
                     $this->assignServerGroups($user);
-                    call_user_func($this->callback, "Player stats updated");
                 }
             }
         });
@@ -125,7 +124,7 @@ class TeampeakService
     {
         TeamSpeak3_Helper_Signal::getInstance()->subscribe("serverqueryWaitTimeout", function ($seconds, TeamSpeak3_Adapter_ServerQuery $adapter) {
             if ($adapter->getQueryLastTimestamp() < time() - 180) {
-                call_user_func($this->callback, "No reply from the server for " . $seconds . " seconds. Sending keep alive command.");
+                call_user_func($this->callback, "No reply from the server for " . $seconds . " seconds. Sending keep alive command.", Run::LOG_TYPE_ERROR);
                 $adapter->request("clientupdate");
                 $this->server = $adapter->getHost()->serverGetSelected();
             }
@@ -136,6 +135,7 @@ class TeampeakService
     {
         $this->assignRankStatus($user);
         $this->assignLegend($user);
+        call_user_func($this->callback, "Player stats updated");
     }
 
     private function removeServerGroups(User $user)
@@ -153,7 +153,7 @@ class TeampeakService
         if ($response->successful()) {
             $stats = $response->body();
         } else {
-            call_user_func($this->callback, "Combination of name and plattform not found");
+            call_user_func($this->callback, "Combination of name and plattform not found", Run::LOG_TYPE_ERROR);
         }
 
         return $stats;
