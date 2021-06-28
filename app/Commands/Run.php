@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Controllers\AppController;
-use App\Services\TeampeakService;
 use LaravelZero\Framework\Commands\Command;
 
 
