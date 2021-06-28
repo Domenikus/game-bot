@@ -8,6 +8,11 @@ return [
     "query_port" => env('TEAMSPEAK_QUERY_PORT', 10011),
     "bot_name" => env('TEAMSPEAK_BOT_NAME', "ranked-bot"),
 
+    "listener" => [
+      "globalChat" =>   env('LISTENER_GLOBAL_CHAT', true),
+      "enterView" =>   env('LISTENER_ENTER_VIEW', true),
+    ],
+
     "server_groups_ranked" => [
         "Bronze 1" => env('TEAMSPEAK_GROUP_RANKED_BRONZE1', 9),
         "Bronze 2" => env('TEAMSPEAK_GROUP_RANKED_BRONZE2', 10),

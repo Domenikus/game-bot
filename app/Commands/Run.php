@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Controllers\AppController;
 use App\Services\TeampeakService;
 use LaravelZero\Framework\Commands\Command;
 
@@ -28,30 +29,32 @@ class Run extends Command
     /**
      * Execute the console command.
      *
-     * @param TeampeakService $service
+     * @param AppController $controller
      * @return void
      */
-    public function handle(TeampeakService $service)
+    public function handle(AppController $controller)
     {
-        $this->task("Connect to teamspeak server", function () use (&$service) {
+        $this->task("Connect to teamspeak server", function () use (&$controller) {
             $this->newLine();
-            $service->connect();
+            $controller->connectToTeamspeakServer();
         });
 
-        $this->task("Initialize event listeners", function () use (&$service) {
+        $this->task("Initialize event listeners", function () use (&$controller) {
             $this->newLine();
-            $service->init(function (string $message, string $type = self::LOG_TYPE_INFO) {
+            $controller->setCallback((function (string $message, string $type = self::LOG_TYPE_INFO) {
                 if ($type == self::LOG_TYPE_INFO) {
                     $this->info($message);
                 } else {
                     $this->error($message);
                 }
-            });
+            }));
+
+            $controller->initListener();
         });
 
-        $this->task("Listen for events", function () use (&$service) {
+        $this->task("Listen for events", function () use (&$controller) {
             $this->newLine();
-            $service->listen();
+            $controller->listenToEvents();
         });
     }
 }
