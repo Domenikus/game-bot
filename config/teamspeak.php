@@ -59,6 +59,7 @@ return [
         "Fuse" => env('TEAMSPEAK_GROUP_LEGENDS_FUSE', 43),
         "Caustic" => env('TEAMSPEAK_GROUP_LEGENDS_CAUSTIC', 44),
         "Revenant" => env('TEAMSPEAK_GROUP_LEGENDS_REVENANT', 45),
-        "Crypto" => env('TEAMSPEAK_GROUP_LEGENDS_CRYPTO', 46)
+        "Crypto" => env('TEAMSPEAK_GROUP_LEGENDS_CRYPTO', 46),
+        "Seer" => env('TEAMSPEAK_GROUP_LEGENDS_SEER', 47)
     ]
 ];
