@@ -72,23 +72,19 @@ abstract class AbstractListener
         }
     }
 
-    public function handleUnregister(User $user, array $eventData)
+    public function handleUnregister(User $user)
     {
-        $params = explode(' ', $eventData['msg']->toString());
+        $user->loadMissing('games');
 
-        if (isset($params[1])) {
-            if ($game = Game::where('name', $params[1])->first()) {
-                $gameUser = GameUser::where([['game_id', $game->getKey()], ['user_identity_id', $user->getKey()]])->first();
-                if ($gameUser) {
-                    $gameUser->delete();
-                    call_user_func($this->callback, 'User successfully unregistered');
-                }
-            }
-        } else {
-            $user->delete();
-            call_user_func($this->callback, 'User successfully unregistered');
+        foreach ($user->games as $game) {
+            $assignments = Assignment::with(['type', 'game' => function ($query) use ($game) {
+                $query->where('name', $game->name);
+            }])->get();
+
+            $this->removeServerGroups($game->game_user, $assignments);
         }
 
+        $user->delete();
     }
 
     protected function updateServerGroups(GameUser $gameUser, Collection $assignments, AbstractGameInterface $interface)
@@ -117,6 +113,8 @@ abstract class AbstractListener
 
     protected function registerUser(array $params, string $identityId, AbstractGameInterface $interface)
     {
+        $teamspeakInterface = new Teamspeak($this->server);
+
         $options = $interface->mapRegistration($params);
 
         $user = User::with('games')->find($identityId);
@@ -130,12 +128,32 @@ abstract class AbstractListener
 
         if (GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first()) {
             $user->games()->updateExistingPivot($game->getKey(), ['options' => $options]);
-            call_user_func($this->callback, 'Existing GameUser successfully updated');
         } else {
             $user->games()->attach($game->getKey(), ['options' => $options]);
-            call_user_func($this->callback, 'New GameUser successfully created');
         }
 
-        $this->handleUpdate($user);
+        $gameUser = GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first();
+        if ($interface->getPlayerStats($gameUser)) {
+            call_user_func($this->callback, 'New GameUser successfully created');
+            $this->handleUpdate($user);
+        } else {
+            call_user_func($this->callback, 'GameUser could not be created');
+            $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($identityId), 'Registration could not be created please check params');
+            $gameUser->delete();
+        }
+    }
+
+    protected function removeServerGroups(GameUser $gameUser, Collection $assignments)
+    {
+        $teamspeakInterface = new Teamspeak($this->server);
+        $client = $teamspeakInterface->getClient($gameUser->user_identity_id);
+
+        $actualServerGroups = $client->memberOf();
+        $supportedTeamspeakServerGroupIds = $assignments->pluck('ts3_server_group_id')->toArray();
+        foreach ($actualServerGroups as $actualServerGroup) {
+            if (isset($actualServerGroup['sgid']) && in_array($actualServerGroup['sgid'], $supportedTeamspeakServerGroupIds)) {
+                $teamspeakInterface->removeServerGroup($client, $actualServerGroup['sgid']);
+            }
+        }
     }
 }

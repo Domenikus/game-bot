@@ -21,7 +21,7 @@ class Apex extends AbstractGameInterface
 
     public function getPlayerStats(GameUser $gameUser): array
     {
-        $stats = null;
+        $stats = [];
 
         $response = Http::withHeaders(['TRN-Api-Key' => config('app.apex-api-key')])
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $gameUser->options['platform'] . '/' . $gameUser->options['name']);

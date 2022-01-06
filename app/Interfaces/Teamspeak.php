@@ -45,4 +45,15 @@ class Teamspeak
 
         return true;
     }
+
+    public function sendMessageToClient(TeamSpeak3_Node_Client $client, string $message): bool
+    {
+        try {
+            $client->message($message);
+        } catch (Exception $e) {
+            return false;
+        }
+
+        return true;
+    }
 }

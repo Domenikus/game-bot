@@ -26,7 +26,7 @@ class GlobalChatListener extends AbstractListener
             } else if ($data['msg']->startsWith("!update") && $user) {
                 $this->handleUpdate($user);
             } else if ($data['msg']->startsWith("!unregister") && $user) {
-                $this->handleUnregister($user, $data);
+                $this->handleUnregister($user);
             }
         });
     }
