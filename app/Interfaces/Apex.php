@@ -60,7 +60,11 @@ class Apex extends AbstractGameInterface
         ];
 
         foreach ($stats['data']['segments'] as $segment) {
-            if ($segment['type'] == 'legend' && !empty($segment['stats']) && $segment['stats']['kills']['value'] > $characterWithMostKills['kills']) {
+            if (empty($segment['type']) || !isset($segment['stats']) || !isset($segment['stats']['kills']['value'])) {
+                continue;
+            }
+
+            if ($segment['type'] == 'legend' && $segment['stats']['kills']['value'] > $characterWithMostKills['kills']) {
                 $characterWithMostKills['name'] = $segment['metadata']['name'];
                 $characterWithMostKills['kills'] = $segment['stats']['kills']['value'];
             }
