@@ -14,9 +14,9 @@ return new class extends Migration {
      */
     public function up()
     {
-        $this->assignments();
         $this->games();
         $this->types();
+        $this->assignments();
         $this->users();
     }
 
