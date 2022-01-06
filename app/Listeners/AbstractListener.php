@@ -135,5 +135,7 @@ abstract class AbstractListener
             $user->games()->attach($game->getKey(), ['options' => $options]);
             call_user_func($this->callback, 'New GameUser successfully created');
         }
+
+        $this->handleUpdate($user);
     }
 }
