@@ -22,10 +22,10 @@ return new class extends Migration {
 
     private function assignments()
     {
-        $typeRank = Type::where('name', Type::NAME_RANK);
-        $typeChar = Type::where('name', Type::NAME_CHARACTER);
+        $typeRank = Type::where('name', Type::NAME_RANK)->first();
+        $typeChar = Type::where('name', Type::NAME_CHARACTER)->first();
 
-        $gameApex = Game::where('name', Game::NAME_APEX);
+        $gameApex = Game::where('name', Game::NAME_APEX)->first();
 
         DB::table('assignments')->insert([
             [
@@ -374,18 +374,18 @@ return new class extends Migration {
 
     private function users()
     {
-        $apex = Game::where('name', Game::NAME_APEX)->get();
+        $apex = Game::where('name', Game::NAME_APEX)->first();
 
         $L0raaaaa = new User();
         $L0raaaaa->identity_id = 'brFyS2Lmm3wsiA0S4utfpw0tShs=';
         $L0raaaaa->save();
 
 
-        $L0raaaaa->games()->attach($apex->getKey(), [['options' =>
+        $L0raaaaa->games()->attach($apex->getKey(), ['options' =>
             [
                 'platform' => 'origin',
                 'name' => 'L0raaaaa'
-            ]]]);
+            ]]);
 
 
         $r3v0l0 = new User();
@@ -393,10 +393,10 @@ return new class extends Migration {
         $r3v0l0->save();
 
 
-        $r3v0l0->games()->attach($apex->getKey(), [['options' =>
+        $r3v0l0->games()->attach($apex->getKey(), ['options' =>
             [
                 'platform' => 'origin',
                 'name' => 'r3v0l0'
-            ]]]);
+            ]]);
     }
 };
