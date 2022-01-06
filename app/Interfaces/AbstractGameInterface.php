@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 
 abstract class AbstractGameInterface
 {
-    abstract public function getPlayerStats(GameUser $gameUser): array;
+    abstract public function getPlayerStats(GameUser $gameUser): ?array;
 
     public function mapPlayerStats(array $stats, Collection $assignments): array
     {
