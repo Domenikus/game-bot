@@ -1,6 +1,7 @@
 FROM php:7.4.27-cli-alpine3.15
 
 RUN docker-php-ext-install mysqli pdo pdo_mysql posix && docker-php-ext-enable pdo_mysql posix
+RUN apk add ncurses
 RUN mkdir -p /usr/src/game-bot
 
 COPY /builds/game-bot /usr/src/game-bot/
