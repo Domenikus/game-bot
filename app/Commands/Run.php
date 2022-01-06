@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use App\Controllers\AppController;
+use App\Controllers\RunController;
 use LaravelZero\Framework\Commands\Command;
 
 
@@ -22,16 +22,14 @@ class Run extends Command
      */
     protected $description = 'Run the bot';
 
-    const LOG_TYPE_ERROR = 'error';
-    const LOG_TYPE_INFO = 'info';
 
     /**
      * Execute the console command.
      *
-     * @param AppController $controller
+     * @param RunController $controller
      * @return void
      */
-    public function handle(AppController $controller)
+    public function handle(RunController $controller)
     {
         $this->task("Connect to teamspeak server", function () use (&$controller) {
             $this->newLine();
@@ -40,8 +38,8 @@ class Run extends Command
 
         $this->task("Initialize event listeners", function () use (&$controller) {
             $this->newLine();
-            $controller->setCallback((function (string $message, string $type = self::LOG_TYPE_INFO) {
-                if ($type == self::LOG_TYPE_INFO) {
+            $controller->setCallback((function (string $message, string $type = RunController::LOG_TYPE_INFO) {
+                if ($type == RunController::LOG_TYPE_INFO) {
                     $this->info($message);
                 } else {
                     $this->error($message);

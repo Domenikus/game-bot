@@ -3,8 +3,6 @@
 
 namespace App\Listeners;
 
-
-use App\Services\TeampeakService;
 use App\User;
 use TeamSpeak3_Adapter_ServerQuery_Event;
 use TeamSpeak3_Helper_Signal;
@@ -22,16 +20,8 @@ class EnterViewListener extends AbstractListener
             $data = $event->getData();
             $identityId = $data['client_unique_identifier']->toString();
             $user = User::find($identityId);
-
             if ($user) {
-                $service = new TeampeakService($this->server, $this->callback);
-                $stats = $service->getPlayerStats($user->name, $user->plattform);
-                if ($stats) {
-                    $user->stats = $stats;
-                    $user->save();
-
-                    $service->assignServerGroups($user);
-                }
+                $this->handleUpdate($user);
             }
         });
     }

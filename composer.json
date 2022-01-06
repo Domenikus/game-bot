@@ -16,15 +16,15 @@
         }
     ],
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "^7.4",
+        "ext-json": "*",
         "guzzlehttp/guzzle": "^6.5.5",
         "illuminate/database": "^8.40",
         "illuminate/http": "^8.0",
         "laminas/laminas-text": "^2.8",
         "laravel-zero/framework": "^8.8",
-        "planetteamspeak/ts3-php-framework": "dev-master",
-        "ext-pthreads": "*",
-      "ext-json": "*"
+        "nunomaduro/laravel-console-menu": "^3.2",
+        "planetteamspeak/ts3-php-framework": "dev-master"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -48,5 +48,5 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "bin": ["apex-bot"]
+    "bin": ["game-bot"]
 }

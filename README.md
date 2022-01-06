@@ -1,3 +1,3 @@
 composer install
 
-php7.3 apex-bot app:build
+php7.4 game-bot app:build
