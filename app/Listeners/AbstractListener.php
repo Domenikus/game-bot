@@ -89,8 +89,8 @@ abstract class AbstractListener
 
     protected function updateServerGroups(GameUser $gameUser, Collection $assignments, AbstractGameInterface $interface)
     {
-        $stats = $interface->getPlayerStats($gameUser);
-        $newTeamspeakServerGroups = $interface->mapPlayerStats($stats, $assignments);
+        $stats = $interface->getStats($gameUser);
+        $newTeamspeakServerGroups = $interface->mapStats($stats, $assignments);
 
         $teamspeakInterface = new Teamspeak($this->server);
         $client = $teamspeakInterface->getClient($gameUser->user_identity_id);
@@ -115,7 +115,7 @@ abstract class AbstractListener
     {
         $teamspeakInterface = new Teamspeak($this->server);
 
-        $options = $interface->mapRegistration($params);
+        $options = $interface->register($params);
 
         $user = User::with('games')->find($identityId);
         if (!$user) {
@@ -133,7 +133,7 @@ abstract class AbstractListener
         }
 
         $gameUser = GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first();
-        if ($interface->getPlayerStats($gameUser)) {
+        if ($interface->getStats($gameUser)) {
             call_user_func($this->callback, 'New GameUser successfully created');
             $this->handleUpdate($user);
         } else {

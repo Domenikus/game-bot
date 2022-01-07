@@ -19,7 +19,7 @@ class Apex extends AbstractGameInterface
     ];
 
 
-    public function getPlayerStats(GameUser $gameUser): ?array
+    public function getStats(GameUser $gameUser): ?array
     {
         $stats = null;
 
@@ -80,7 +80,7 @@ class Apex extends AbstractGameInterface
     }
 
     // !register apex name plattform
-    public function mapRegistration($params): ?array
+    public function register($params): ?array
     {
         if (!isset($params[2])) {
             throw new Exception('No name given');

@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Collection;
 
 abstract class AbstractGameInterface
 {
-    abstract public function getPlayerStats(GameUser $gameUser): ?array;
+    public abstract function getStats(GameUser $gameUser): ?array;
 
-    public function mapPlayerStats(array $stats, Collection $assignments): array
+    public abstract function register(array $params): ?array;
+
+    public function mapStats(array $stats, Collection $assignments): array
     {
         $ts3ServerGroups = [];
         if ($rank = $this->mapRank($stats, $assignments->filter(function ($value) {
@@ -37,6 +39,4 @@ abstract class AbstractGameInterface
     {
         return null;
     }
-
-    public abstract function mapRegistration(array $params): ?array;
 }
