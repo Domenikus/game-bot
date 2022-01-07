@@ -6,7 +6,6 @@ use App\Assignment;
 use App\Game;
 use App\GameUser;
 use App\Type;
-use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 
@@ -79,20 +78,23 @@ class Apex extends AbstractGameInterface
         return null;
     }
 
-    // !register apex name plattform
     public function register($params): ?array
     {
-        if (!isset($params[2])) {
-            throw new Exception('No name given');
+        if (!isset($params[2], $params[3]) || !in_array($params[3], self::PLATFORMS)) {
+            return null;
         }
 
-        if (!isset($params[3]) || !in_array($params[3], self::PLATFORMS)) {
-            throw new Exception('No platform given');
-        }
-
-        return [
+        $options = [
             'name' => $params[2],
             'platform' => $params[3]
         ];
+
+        $gameUser = new GameUser();
+        $gameUser->options = $options;
+        if ($this->getStats($gameUser)) {
+            return $options;
+        }
+
+        return null;
     }
 }

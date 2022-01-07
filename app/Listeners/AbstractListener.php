@@ -116,6 +116,10 @@ abstract class AbstractListener
         $teamspeakInterface = new Teamspeak($this->server);
 
         $options = $interface->register($params);
+        if (!$options) {
+            $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($identityId), 'Registration failed, please check params');
+            return;
+        }
 
         $user = User::with('games')->find($identityId);
         if (!$user) {
@@ -132,15 +136,7 @@ abstract class AbstractListener
             $user->games()->attach($game->getKey(), ['options' => $options]);
         }
 
-        $gameUser = GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first();
-        if ($interface->getStats($gameUser)) {
-            call_user_func($this->callback, 'New GameUser successfully created');
-            $this->handleUpdate($user);
-        } else {
-            call_user_func($this->callback, 'GameUser could not be created');
-            $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($identityId), 'Registration could not be created please check params');
-            $gameUser->delete();
-        }
+        $this->handleUpdate($user);
     }
 
     protected function removeServerGroups(GameUser $gameUser, Collection $assignments)
