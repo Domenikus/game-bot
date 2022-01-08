@@ -24,11 +24,11 @@ class GlobalChatListener extends AbstractListener
 
             $params = explode('|', $data['msg']->toString());
             if ($data['msg']->startsWith("!register")) {
-                $this->handleRegister($params, $identityId);
+                $this->handleRegister($identityId, $params);
             } else if ($data['msg']->startsWith("!update") && $user) {
                 $this->handleUpdate($user);
             } else if ($data['msg']->startsWith("!unregister") && $user) {
-                $this->handleUnregister($user);
+                $this->handleUnregister($user, $params);
             }
         });
     }

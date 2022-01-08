@@ -57,7 +57,7 @@ abstract class AbstractListener
         }
     }
 
-    public function handleRegister(array $params, string $identityId)
+    public function handleRegister(string $identityId, array $params)
     {
         if (isset($params[1])) {
             switch ($params[1]) {
@@ -69,19 +69,32 @@ abstract class AbstractListener
         }
     }
 
-    public function handleUnregister(User $user)
+    public function handleUnregister(User $user, array $params)
     {
         $user->loadMissing('games');
 
-        foreach ($user->games as $game) {
-            $assignments = Assignment::with(['type', 'game' => function ($query) use ($game) {
-                $query->where('name', $game->name);
-            }])->get();
+        if (isset($params[1])) {
+            foreach ($user->games as $game) {
+                if ($game->name == $params[1]) {
+                    $assignments = Assignment::with(['type', 'game' => function ($query) use ($game) {
+                        $query->where('name', $game->name);
+                    }])->get();
 
-            $this->removeServerGroups($game->game_user, $assignments);
+                    $this->removeServerGroups($game->game_user, $assignments);
+                    $user->games()->detach($game->getKey());
+                }
+            }
+        } else {
+            foreach ($user->games as $game) {
+                $assignments = Assignment::with(['type', 'game' => function ($query) use ($game) {
+                    $query->where('name', $game->name);
+                }])->get();
+
+                $this->removeServerGroups($game->game_user, $assignments);
+            }
+
+            $user->delete();
         }
-
-        $user->delete();
     }
 
     protected function updateServerGroups(GameUser $gameUser, Collection $assignments, AbstractGameInterface $interface)
