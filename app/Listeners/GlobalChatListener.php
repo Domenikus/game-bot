@@ -19,10 +19,12 @@ class GlobalChatListener extends AbstractListener
             $this->server = $host->serverGetSelected();
 
             $data = $event->getData();
-            $user = User::find($data['invokeruid']->toString());
+            $identityId = $data['invokeruid']->toString();
+            $user = User::find($identityId);
 
+            $params = explode('|', $data['msg']->toString());
             if ($data['msg']->startsWith("!register")) {
-                $this->handleRegister($data);
+                $this->handleRegister($params, $identityId);
             } else if ($data['msg']->startsWith("!update") && $user) {
                 $this->handleUpdate($user);
             } else if ($data['msg']->startsWith("!unregister") && $user) {

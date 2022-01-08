@@ -57,11 +57,8 @@ abstract class AbstractListener
         }
     }
 
-    public function handleRegister(array $eventData)
+    public function handleRegister(array $params, string $identityId)
     {
-        $identityId = $eventData['invokeruid']->toString();
-        $params = explode(' ', $eventData['msg']->toString());
-
         if (isset($params[1])) {
             switch ($params[1]) {
                 case Game::NAME_APEX:
@@ -90,6 +87,10 @@ abstract class AbstractListener
     protected function updateServerGroups(GameUser $gameUser, Collection $assignments, AbstractGameInterface $interface)
     {
         $stats = $interface->getStats($gameUser);
+        if (!$stats) {
+            call_user_func($this->callback, 'Could not get game stats');
+            return;
+        }
         $newTeamspeakServerGroups = $interface->mapStats($stats, $assignments);
 
         $teamspeakInterface = new Teamspeak($this->server);
@@ -107,8 +108,9 @@ abstract class AbstractListener
 
         foreach ($newTeamspeakServerGroups as $newGroup) {
             $teamspeakInterface->addServerGroup($client, $newGroup);
-            call_user_func($this->callback, 'Server groups successfully updated');
         }
+
+        call_user_func($this->callback, 'Server groups successfully updated');
     }
 
     protected function registerUser(array $params, string $identityId, AbstractGameInterface $interface)
@@ -136,7 +138,7 @@ abstract class AbstractListener
             $user->games()->attach($game->getKey(), ['options' => $options]);
         }
 
-        $this->handleUpdate($user);
+        $this->handleUpdate($user->refresh());
     }
 
     protected function removeServerGroups(GameUser $gameUser, Collection $assignments)
