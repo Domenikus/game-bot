@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Controllers\RunController;
 use App\Interfaces\Teamspeak;
 use App\Listeners\EnterViewListener;
 use App\Listeners\GlobalChatListener;
