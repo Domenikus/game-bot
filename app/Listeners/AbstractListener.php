@@ -4,6 +4,7 @@
 namespace App\Listeners;
 
 
+use App\Commands\Run;
 use App\Game;
 use App\GameUser;
 use App\Interfaces\AbstractGameInterface;
@@ -88,6 +89,7 @@ abstract class AbstractListener
 
                     $this->removeServerGroups($game->game_user, $assignments);
                     $user->games()->detach($game->getKey());
+                    call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully unregistered from ' . $game->name);
                 }
             }
         } else {
@@ -95,6 +97,7 @@ abstract class AbstractListener
                 $assignments = $game->assignments()->get();
 
                 $this->removeServerGroups($game->game_user, $assignments);
+                call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully unregistered from ' . $game->name);
             }
 
             $user->delete();
@@ -105,7 +108,7 @@ abstract class AbstractListener
     {
         $stats = $interface->getStats($gameUser);
         if (!$stats) {
-            call_user_func($this->callback, 'Could not get game stats');
+            call_user_func($this->callback, 'Error while getting stats in ' . get_class($interface), Run::LOG_TYPE_ERROR);
             return;
         }
         $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments);
@@ -127,7 +130,7 @@ abstract class AbstractListener
             $teamspeakInterface->addServerGroup($client, $newGroup);
         }
 
-        call_user_func($this->callback, 'Server groups successfully updated');
+        call_user_func($this->callback, 'Server groups for user ' . $gameUser->user_identity_id . ' successfully updated in ' . get_class($interface));
     }
 
     protected function registerUser(array $params, string $identityId, AbstractGameInterface $interface)
@@ -136,6 +139,7 @@ abstract class AbstractListener
 
         $options = $interface->register($params);
         if (!$options) {
+            call_user_func($this->callback, 'Registration for user ' . $identityId . ' failed, please check params', Run::LOG_TYPE_ERROR);
             $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($identityId), 'Registration failed, please check params');
             return;
         }
@@ -155,6 +159,7 @@ abstract class AbstractListener
             $user->games()->attach($game->getKey(), ['options' => $options]);
         }
 
+        call_user_func($this->callback, 'User ' . $identityId . ' successfully registered in ' . get_class($interface));
         $this->handleUpdate($user->refresh());
     }
 

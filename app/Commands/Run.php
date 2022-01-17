@@ -13,6 +13,7 @@ use TeamSpeak3_Node_Server;
 class Run extends Command
 {
     const LOG_TYPE_INFO = 'info';
+    const LOG_TYPE_ERROR = 'error';
 
     /**
      * The signature of the command.
