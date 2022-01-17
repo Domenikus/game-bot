@@ -27,7 +27,8 @@ class Teamspeak
             . config('teamspeak.query_password') . "@"
             . config('teamspeak.ip') . ":"
             . config('teamspeak.query_port') . "/?server_port="
-            . config('teamspeak.port') . "&blocking=0";
+            . config('teamspeak.port') . "&blocking=0&nickname="
+            . config('teamspeak.bot_name');
         return TeamSpeak3::factory($uri);
     }
 
