@@ -2,8 +2,6 @@
 
 namespace App\Interfaces;
 
-use App\Assignment;
-use App\Game;
 use App\GameUser;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
@@ -22,7 +20,7 @@ class Apex extends AbstractGameInterface
     {
         $stats = null;
 
-        $response = Http::withHeaders(['TRN-Api-Key' => config('app.apex-api-key')])
+        $response = Http::withHeaders(['TRN-Api-Key' => config('game.apex-api-key')])
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $gameUser->options['platform'] . '/' . $gameUser->options['name']);
 
         if ($response->successful()) {
@@ -32,14 +30,26 @@ class Apex extends AbstractGameInterface
         return $stats;
     }
 
+    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
+    {
+        $ts3ServerGroups = [];
+        if ($rank = $this->mapRank($stats, $assignments->filter(function ($value) {
+            return $value->type->name == Type::TYPE_RANK_SOLO;
+        }))) {
+            $ts3ServerGroups[Type::TYPE_RANK_SOLO] = $rank;
+        }
+
+        if ($character = $this->mapLegend($stats, $assignments->filter(function ($value) {
+            return $value->type->name == Type::TYPE_CHARACTER;
+        }))) {
+            $ts3ServerGroups[Type::TYPE_CHARACTER] = $character;
+        }
+
+        return $ts3ServerGroups;
+    }
+
     protected function mapRank(array $stats, Collection $assignments): ?int
     {
-        $assignments = Assignment::with(['type' => function ($query) {
-            $query->where('name', Type::NAME_RANK);
-        }, 'game' => function ($query) {
-            $query->where('name', Game::NAME_APEX);
-        }])->get();
-
         $newRankName = $stats['data']["segments"][0]["stats"]["rankScore"]['metadata']['rankName'];
 
         foreach ($assignments as $assignment) {
@@ -51,7 +61,7 @@ class Apex extends AbstractGameInterface
         return null;
     }
 
-    protected function mapCharacter(array $stats, Collection $assignments): ?int
+    protected function mapLegend(array $stats, Collection $assignments): ?int
     {
         $characterWithMostKills = [
             'name' => '',

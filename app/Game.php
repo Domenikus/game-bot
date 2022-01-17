@@ -2,16 +2,19 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
+/**
+ * @method static where(string $col, string $value)
+ * @property string $name
+ */
 class Game extends Model
 {
     const NAME_APEX = 'apex';
+    const NAME_LEAGUE_OF_LEGENDS = 'lol';
 
     public function assignments(): HasMany
     {

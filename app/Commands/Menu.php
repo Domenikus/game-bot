@@ -6,15 +6,15 @@ use App\Assignment;
 use App\Game;
 use App\Type;
 use Closure;
-use Illuminate\Support\Collection;
+use Exception;
 use LaravelZero\Framework\Commands\Command;
 use PhpSchool\CliMenu\Builder\CliMenuBuilder;
 use PhpSchool\CliMenu\CliMenu;
-use PhpSchool\CliMenu\Input\InputIO;
-use PhpSchool\CliMenu\Input\Text;
-use PhpSchool\CliMenu\MenuStyle;
 
 
+/**
+ * @method menu(string $string)
+ */
 class Menu extends Command
 {
     /**
@@ -123,8 +123,8 @@ class Menu extends Command
                 ->setPlaceholderText("Some id")
                 ->ask();
 
-            $gameModel = Game::where(['name' => $game->fetch()])->firstOrFail();
-            $typeModel = Type::where(['name' => $type->fetch()])->firstOrFail();
+            $gameModel = Game::where('name', $game->fetch())->firstOrFail();
+            $typeModel = Type::where('name', $type->fetch())->firstOrFail();
 
             $assignment = new Assignment();
             $assignment->value = $value->fetch();
@@ -136,7 +136,7 @@ class Menu extends Command
                 $assignment->saveOrFail();
                 $flash = $menu->flash("Assignment successfully created");
                 $flash->getStyle()->setBg('green');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $flash = $menu->flash("Error while creating assignment");
                 $flash->getStyle()->setBg('red');
             }

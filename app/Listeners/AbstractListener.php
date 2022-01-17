@@ -4,11 +4,11 @@
 namespace App\Listeners;
 
 
-use App\Assignment;
 use App\Game;
 use App\GameUser;
 use App\Interfaces\AbstractGameInterface;
 use App\Interfaces\Apex;
+use App\Interfaces\Lol;
 use App\Interfaces\Teamspeak;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,10 +16,7 @@ use TeamSpeak3_Node_Server;
 
 abstract class AbstractListener
 {
-    /**
-     * @var TeamSpeak3_Node_Server
-     */
-    protected $server;
+    protected TeamSpeak3_Node_Server $server;
 
     /**
      * @var callable
@@ -44,28 +41,39 @@ abstract class AbstractListener
         $user->loadMissing('games');
 
         foreach ($user->games as $game) {
-            $assignments = Assignment::with(['type', 'game' => function ($query) use ($game) {
-                $query->where('name', $game->name);
-            }])->get();
+            $assignments = $game->assignments()->get();
 
             switch ($game->name) {
                 case Game::NAME_APEX:
-                    $apexInterface = resolve(Apex::class);
-                    $this->updateServerGroups($game->game_user, $assignments, $apexInterface);
+                    $interface = resolve(Apex::class);
                     break;
+                case Game::NAME_LEAGUE_OF_LEGENDS:
+                    $interface = resolve(Lol::class);
+                    break;
+                default:
+                    return;
             }
+
+            $this->updateServerGroups($game->game_user, $assignments, $interface);
         }
     }
 
     public function handleRegister(string $identityId, array $params)
     {
         if (isset($params[1])) {
+
             switch ($params[1]) {
                 case Game::NAME_APEX:
-                    $apexInterface = resolve(Apex::class);
-                    $this->registerUser($params, $identityId, $apexInterface);
+                    $interface = resolve(Apex::class);
                     break;
+                case Game::NAME_LEAGUE_OF_LEGENDS:
+                    $interface = resolve(Lol::class);
+                    break;
+                default:
+                    return;
             }
+
+            $this->registerUser($params, $identityId, $interface);
         }
     }
 
@@ -76,9 +84,7 @@ abstract class AbstractListener
         if (isset($params[1])) {
             foreach ($user->games as $game) {
                 if ($game->name == $params[1]) {
-                    $assignments = Assignment::with(['type', 'game' => function ($query) use ($game) {
-                        $query->where('name', $game->name);
-                    }])->get();
+                    $assignments = $game->assignments()->get();
 
                     $this->removeServerGroups($game->game_user, $assignments);
                     $user->games()->detach($game->getKey());
@@ -86,9 +92,7 @@ abstract class AbstractListener
             }
         } else {
             foreach ($user->games as $game) {
-                $assignments = Assignment::with(['type', 'game' => function ($query) use ($game) {
-                    $query->where('name', $game->name);
-                }])->get();
+                $assignments = $game->assignments()->get();
 
                 $this->removeServerGroups($game->game_user, $assignments);
             }
@@ -104,7 +108,7 @@ abstract class AbstractListener
             call_user_func($this->callback, 'Could not get game stats');
             return;
         }
-        $newTeamspeakServerGroups = $interface->mapStats($stats, $assignments);
+        $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments);
 
         $teamspeakInterface = new Teamspeak($this->server);
         $client = $teamspeakInterface->getClient($gameUser->user_identity_id);

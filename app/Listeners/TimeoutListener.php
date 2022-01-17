@@ -5,7 +5,6 @@ namespace App\Listeners;
 
 
 use App\Commands\Run;
-use App\Controllers\RunController;
 use TeamSpeak3_Adapter_ServerQuery;
 use TeamSpeak3_Helper_Signal;
 

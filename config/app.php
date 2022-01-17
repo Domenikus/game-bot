@@ -53,8 +53,6 @@ return [
     |
     */
 
-    'apex-api-key' => env('APEX_API_KEY', "a5979db2-d166-42f3-a17b-5e33444c243d"),
-
     'providers' => [
         App\Providers\AppServiceProvider::class,
     ],

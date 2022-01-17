@@ -1,7 +1,13 @@
 {
     "name": "laravel-zero/laravel-zero",
     "description": "The Laravel Zero Framework.",
-    "keywords": ["framework", "laravel", "laravel zero", "console", "cli"],
+    "keywords": [
+        "framework",
+        "laravel",
+        "laravel zero",
+        "console",
+        "cli"
+    ],
     "homepage": "https://laravel-zero.com",
     "type": "project",
     "license": "MIT",
@@ -11,14 +17,20 @@
     },
     "authors": [
         {
-            "name": "Nuno Maduro",
-            "email": "enunomaduro@gmail.com"
+            "name": "Dominik Süßenbach",
+            "email": "dominik@suessenbach.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/Domenikus/riot-php.git"
         }
     ],
     "require": {
         "php": "^7.4",
         "ext-json": "*",
-        "guzzlehttp/guzzle": "^6.5.5",
+        "guzzlehttp/guzzle": "^7",
         "illuminate/database": "^8.40",
         "illuminate/http": "^8.0",
         "laminas/laminas-text": "^2.8",
@@ -46,7 +58,16 @@
         "sort-packages": true,
         "optimize-autoloader": true
     },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "barryvdh/laravel-ide-helper"
+            ]
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "bin": ["game-bot"]
+    "bin": [
+        "game-bot"
+    ]
 }
