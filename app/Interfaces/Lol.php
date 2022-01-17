@@ -128,13 +128,13 @@ class Lol extends AbstractGameInterface
         }
 
         if (!empty($championPlayCount)) {
-            krsort($championPlayCount);
+            arsort($championPlayCount);
             $championAssignment = Assignment::where('value', array_key_first($championPlayCount))->first();
             $result[Type::TYPE_CHARACTER] = $championAssignment->ts3_server_group_id;
         }
 
         if (!empty($lanePlayCount)) {
-            krsort($lanePlayCount);
+            arsort($lanePlayCount);
             $championAssignment = Assignment::where('value', array_key_first($lanePlayCount))->first();
             $result[Type::TYPE_POSITION] = $championAssignment->ts3_server_group_id;
         }
