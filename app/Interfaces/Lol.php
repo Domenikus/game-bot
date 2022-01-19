@@ -90,13 +90,7 @@ class Lol extends AbstractGameInterface
             }
         }
 
-        foreach ($assignments as $assignment) {
-            if ($assignment->value == $newRankName) {
-                return $assignment->ts3_server_group_id;
-            }
-        }
-
-        return null;
+        return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $newRankName);
     }
 
     protected function mapMatches(GameUser $gameUser, array $matches, Collection $assignments): array
@@ -129,14 +123,12 @@ class Lol extends AbstractGameInterface
 
         if (!empty($championPlayCount)) {
             arsort($championPlayCount);
-            $championAssignment = Assignment::where('value', array_key_first($championPlayCount))->first();
-            $result[Type::TYPE_CHARACTER] = $championAssignment->ts3_server_group_id;
+            $result[Type::TYPE_CHARACTER] = array_key_first($championPlayCount);
         }
 
         if (!empty($lanePlayCount)) {
             arsort($lanePlayCount);
-            $championAssignment = Assignment::where('value', array_key_first($lanePlayCount))->first();
-            $result[Type::TYPE_POSITION] = $championAssignment->ts3_server_group_id;
+            $result[Type::TYPE_POSITION] = array_key_first($lanePlayCount);
         }
 
         return $result;
@@ -149,11 +141,7 @@ class Lol extends AbstractGameInterface
                 continue;
             }
 
-            foreach ($assignments as $assignment) {
-                if ($assignment->value === $participant['championName']) {
-                    return $participant['championName'];
-                }
-            }
+            return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $participant['championName']);
         }
 
         return null;
@@ -166,11 +154,7 @@ class Lol extends AbstractGameInterface
                 continue;
             }
 
-            foreach ($assignments as $assignment) {
-                if ($assignment->value === $participant['individualPosition']) {
-                    return $participant['individualPosition'];
-                }
-            }
+            return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $participant['individualPosition']);
         }
 
         return null;

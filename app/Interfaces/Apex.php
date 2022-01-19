@@ -51,14 +51,7 @@ class Apex extends AbstractGameInterface
     protected function mapRank(array $stats, Collection $assignments): ?int
     {
         $newRankName = $stats['data']["segments"][0]["stats"]["rankScore"]['metadata']['rankName'];
-
-        foreach ($assignments as $assignment) {
-            if ($assignment->value == $newRankName) {
-                return $assignment->ts3_server_group_id;
-            }
-        }
-
-        return null;
+        return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $newRankName);
     }
 
     protected function mapLegend(array $stats, Collection $assignments): ?int
@@ -79,13 +72,7 @@ class Apex extends AbstractGameInterface
             }
         }
 
-        foreach ($assignments as $assignment) {
-            if ($assignment->value == $characterWithMostKills['name']) {
-                return $assignment->ts3_server_group_id;
-            }
-        }
-
-        return null;
+        return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $characterWithMostKills['name']);
     }
 
     public function register($params): ?array

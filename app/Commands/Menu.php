@@ -127,7 +127,7 @@ class Menu extends Command
             $typeModel = Type::where('name', $type->fetch())->firstOrFail();
 
             $assignment = new Assignment();
-            $assignment->value = $value->fetch();
+            $assignment->value = strtolower($value->fetch());
             $assignment->type()->associate($typeModel);
             $assignment->game()->associate($gameModel);
             $assignment->ts3_server_group_id = $ts3_server_group_id->fetch();
