@@ -9,7 +9,7 @@ abstract class AbstractGameInterface
 {
     public abstract function getStats(GameUser $gameUser): ?array;
 
-    public abstract function register(array $params): ?array;
+    public abstract function getPlayerData(array $params): ?array;
 
     public abstract function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array;
 

@@ -20,7 +20,7 @@ class Lol extends AbstractGameInterface
     {
         $stats = null;
 
-        $leagueResponse = Http::withHeaders(['X-Riot-Token' => config('game.riot-api-key')])
+        $leagueResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
             ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' . $gameUser->options['id']);
 
         if ($matches = $this->getMatches($gameUser, 0, self::NUMBER_OF_MATCHES, self::MATCH_TYPE_RANKED)) {
@@ -36,7 +36,7 @@ class Lol extends AbstractGameInterface
 
     protected function getMatches(GameUser $gameUser, int $offset, int $count, string $type): array
     {
-        $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => config('game.riot-api-key')])
+        $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
             ->get('https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/' . $gameUser->options['puuid'] . '/ids',
                 [
                     'start' => $offset,
@@ -52,7 +52,7 @@ class Lol extends AbstractGameInterface
 
         $matches = [];
         foreach ($matchIds as $matchId) {
-            $matchResponse = Http::withHeaders(['X-Riot-Token' => config('game.riot-api-key')])
+            $matchResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
                 ->get('https://europe.api.riotgames.com/lol/match/v5/matches/' . $matchId);
 
             if ($matchResponse->successful()) {
@@ -160,30 +160,41 @@ class Lol extends AbstractGameInterface
         return null;
     }
 
-    public function register(array $params): ?array
+    public function getPlayerData(array $params): ?array
     {
         if (!isset($params[2])) {
             return null;
         }
 
-        $summonerResponse = Http::withHeaders(['X-Riot-Token' => config('game.riot-api-key')])
+        $summonerResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
             ->get('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' . $params[2]);
 
-        $response = null;
+        $result = null;
         if ($summonerResponse->successful()) {
             $summoner = json_decode($summonerResponse->body(), true);
+            $result = $this->verifySummoner($summoner);
+        }
 
-            $verificationResponse = Http::withHeaders(['X-Riot-Token' => config('game.riot-api-key')])
-                ->get('https://euw1.api.riotgames.com/lol/platform/v4/third-party-code/by-summoner/' . $summoner['id']);
+        return $result;
+    }
 
-            if ($verificationResponse->successful()) {
-                $verificationCode = json_decode($verificationResponse->body(), true);
-                if ($verificationCode == config('game.riot-verification-code')) {
-                    $response = $summoner;
-                }
+    protected function verifySummoner(array $summoner): ?array
+    {
+        if (empty(config('game.riot-verification-code'))) {
+            return $summoner;
+        }
+
+        $result = null;
+        $verificationResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
+            ->get('https://euw1.api.riotgames.com/lol/platform/v4/third-party-code/by-summoner/' . $summoner['id']);
+
+        if ($verificationResponse->successful()) {
+            $verificationCode = json_decode($verificationResponse->body(), true);
+            if ($verificationCode == config('game.riot-verification-code')) {
+                $result = $summoner;
             }
         }
 
-        return $response;
+        return $result;
     }
 }

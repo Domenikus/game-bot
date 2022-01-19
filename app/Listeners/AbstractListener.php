@@ -137,7 +137,7 @@ abstract class AbstractListener
     {
         $teamspeakInterface = new Teamspeak($this->server);
 
-        $options = $interface->register($params);
+        $options = $interface->getPlayerData($params);
         if (!$options) {
             call_user_func($this->callback, 'Registration for user ' . $identityId . ' failed, please check params', Run::LOG_TYPE_ERROR);
             $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($identityId), 'Registration failed, please check params');

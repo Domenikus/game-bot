@@ -75,7 +75,7 @@ class Apex extends AbstractGameInterface
         return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $characterWithMostKills['name']);
     }
 
-    public function register($params): ?array
+    public function getPlayerData($params): ?array
     {
         if (!isset($params[2], $params[3]) || !in_array($params[3], self::PLATFORMS)) {
             return null;
