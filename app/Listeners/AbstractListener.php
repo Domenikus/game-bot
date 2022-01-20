@@ -8,8 +8,9 @@ use App\Commands\Run;
 use App\Game;
 use App\GameUser;
 use App\Interfaces\AbstractGameInterface;
-use App\Interfaces\Apex;
-use App\Interfaces\Lol;
+use App\Interfaces\ApexLegends;
+use App\Interfaces\LeagueOfLegends;
+use App\Interfaces\TeamfightTactics;
 use App\Interfaces\Teamspeak;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -46,10 +47,13 @@ abstract class AbstractListener
 
             switch ($game->name) {
                 case Game::NAME_APEX:
-                    $interface = resolve(Apex::class);
+                    $interface = resolve(ApexLegends::class);
                     break;
                 case Game::NAME_LEAGUE_OF_LEGENDS:
-                    $interface = resolve(Lol::class);
+                    $interface = resolve(LeagueOfLegends::class);
+                    break;
+                case Game::NAME_TEAMFIGHT_TACTICS:
+                    $interface = resolve(TeamfightTactics::class);
                     break;
                 default:
                     return;
@@ -65,10 +69,13 @@ abstract class AbstractListener
 
             switch ($params[1]) {
                 case Game::NAME_APEX:
-                    $interface = resolve(Apex::class);
+                    $interface = resolve(ApexLegends::class);
                     break;
                 case Game::NAME_LEAGUE_OF_LEGENDS:
-                    $interface = resolve(Lol::class);
+                    $interface = resolve(LeagueOfLegends::class);
+                    break;
+                case Game::NAME_TEAMFIGHT_TACTICS:
+                    $interface = resolve(TeamfightTactics::class);
                     break;
                 default:
                     return;
@@ -106,7 +113,7 @@ abstract class AbstractListener
 
     protected function updateServerGroups(GameUser $gameUser, Collection $assignments, AbstractGameInterface $interface)
     {
-        $stats = $interface->getStats($gameUser);
+        $stats = $interface->getPlayerData($gameUser);
         if (!$stats) {
             call_user_func($this->callback, 'Error while getting stats in ' . get_class($interface), Run::LOG_TYPE_ERROR);
             return;
@@ -137,7 +144,7 @@ abstract class AbstractListener
     {
         $teamspeakInterface = new Teamspeak($this->server);
 
-        $options = $interface->getPlayerData($params);
+        $options = $interface->getPlayerIdentity($params);
         if (!$options) {
             call_user_func($this->callback, 'Registration for user ' . $identityId . ' failed, please check params', Run::LOG_TYPE_ERROR);
             $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($identityId), 'Registration failed, please check params');

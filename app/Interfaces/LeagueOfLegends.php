@@ -9,17 +9,17 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 
 
-class Lol extends AbstractGameInterface
+class LeagueOfLegends extends AbstractGameInterface
 {
     const QUEUE_TYPE_RANKED_SOLO = 'RANKED_SOLO_5x5';
     const QUEUE_TYPE_NAME_RANKED_GROUP = 'RANKED_FLEX_SR';
     const NUMBER_OF_MATCHES = 20;
     const MATCH_TYPE_RANKED = 'ranked';
 
-    public function getStats(GameUser $gameUser): ?array
+
+    public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
-
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
             ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' . $gameUser->options['id']);
 
@@ -160,7 +160,7 @@ class Lol extends AbstractGameInterface
         return null;
     }
 
-    public function getPlayerData(array $params): ?array
+    public function getPlayerIdentity(array $params): ?array
     {
         if (!isset($params[2])) {
             return null;

@@ -7,7 +7,7 @@ use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 
-class Apex extends AbstractGameInterface
+class ApexLegends extends AbstractGameInterface
 {
     const PLATFORMS = [
         'origin',
@@ -16,7 +16,7 @@ class Apex extends AbstractGameInterface
     ];
 
 
-    public function getStats(GameUser $gameUser): ?array
+    public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
 
@@ -75,7 +75,7 @@ class Apex extends AbstractGameInterface
         return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $characterWithMostKills['name']);
     }
 
-    public function getPlayerData($params): ?array
+    public function getPlayerIdentity($params): ?array
     {
         if (!isset($params[2], $params[3]) || !in_array($params[3], self::PLATFORMS)) {
             return null;
@@ -88,7 +88,7 @@ class Apex extends AbstractGameInterface
 
         $gameUser = new GameUser();
         $gameUser->options = $options;
-        if ($this->getStats($gameUser)) {
+        if ($this->getPlayerData($gameUser)) {
             return $options;
         }
 
