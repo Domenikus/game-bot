@@ -34,7 +34,7 @@ class AbstractListenerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMockForAbstractClass();
 
-        $t->handleUpdate($user);
+//        $t->handleUpdate($user);
 
         $t->expects($this->once())
             ->method('updateServerGroups');
