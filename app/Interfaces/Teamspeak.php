@@ -4,6 +4,7 @@ namespace App\Interfaces;
 
 use Exception;
 use TeamSpeak3;
+use TeamSpeak3_Adapter_ServerQuery_Exception;
 use TeamSpeak3_Node_Client;
 use TeamSpeak3_Node_Server;
 
@@ -20,6 +21,10 @@ class Teamspeak
     }
 
 
+    /**
+     * @return TeamSpeak3_Node_Server
+     * @throws Exception
+     */
     public static function connectToTeamspeakServer(): TeamSpeak3_Node_Server
     {
         $uri = "serverquery://"
@@ -32,6 +37,11 @@ class Teamspeak
         return TeamSpeak3::factory($uri);
     }
 
+    /**
+     * @param string $clientId
+     * @return TeamSpeak3_Node_Client
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
     public function getClient(string $clientId): TeamSpeak3_Node_Client
     {
         return $this->server->clientGetByUid($clientId);

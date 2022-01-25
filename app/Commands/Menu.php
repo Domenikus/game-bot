@@ -10,6 +10,7 @@ use Exception;
 use LaravelZero\Framework\Commands\Command;
 use PhpSchool\CliMenu\Builder\CliMenuBuilder;
 use PhpSchool\CliMenu\CliMenu;
+use PhpSchool\CliMenu\Exception\InvalidTerminalException;
 
 
 /**
@@ -35,12 +36,17 @@ class Menu extends Command
      * Execute the console command.
      *
      * @return void
+     * @throws InvalidTerminalException
      */
     public function handle()
     {
         $this->buildMenu();
     }
 
+    /**
+     * @return void
+     * @throws InvalidTerminalException
+     */
     private function buildMenu()
     {
         $this->menu('Game bot menu')

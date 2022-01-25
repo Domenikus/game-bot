@@ -21,15 +21,10 @@
             "email": "dominik@suessenbach.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/Domenikus/riot-php.git"
-        }
-    ],
     "require": {
         "php": "^7.4",
         "ext-json": "*",
+        "ext-pdo": "*",
         "guzzlehttp/guzzle": "^7",
         "illuminate/database": "^8.40",
         "illuminate/http": "^8.0",

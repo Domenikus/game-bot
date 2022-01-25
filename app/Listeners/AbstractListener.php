@@ -11,6 +11,7 @@ use App\Interfaces\AbstractGameInterface;
 use App\Interfaces\Teamspeak;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
+use TeamSpeak3_Adapter_ServerQuery_Exception;
 use TeamSpeak3_Node_Server;
 
 abstract class AbstractListener
@@ -92,6 +93,9 @@ abstract class AbstractListener
         }
     }
 
+    /**
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
     protected function updateServerGroups(GameUser $gameUser, Collection $assignments, AbstractGameInterface $interface)
     {
         $stats = $interface->getPlayerData($gameUser);
@@ -121,6 +125,13 @@ abstract class AbstractListener
         call_user_func($this->callback, 'Server groups for user ' . $gameUser->user_identity_id . ' successfully updated in ' . get_class($interface));
     }
 
+    /**
+     * @param array $params
+     * @param string $identityId
+     * @param AbstractGameInterface $interface
+     * @return void
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
     protected function registerUser(array $params, string $identityId, AbstractGameInterface $interface)
     {
         $teamspeakInterface = new Teamspeak($this->server);
@@ -151,6 +162,12 @@ abstract class AbstractListener
         $this->handleUpdate($user->refresh());
     }
 
+    /**
+     * @param GameUser $gameUser
+     * @param Collection $assignments
+     * @return void
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
     protected function removeServerGroups(GameUser $gameUser, Collection $assignments)
     {
         $teamspeakInterface = new Teamspeak($this->server);
