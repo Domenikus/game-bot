@@ -15,5 +15,6 @@
     "compactors": [
         "KevinGH\\Box\\Compactor\\Php",
         "KevinGH\\Box\\Compactor\\Json"
-    ]
+    ],
+    "dump-autoload": false
 }

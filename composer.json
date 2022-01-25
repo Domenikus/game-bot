@@ -29,7 +29,7 @@
         "illuminate/database": "^8.40",
         "illuminate/http": "^8.0",
         "laminas/laminas-text": "^2.8",
-        "laravel-zero/framework": "^8.9",
+        "laravel-zero/framework": "^8.9.1",
         "nunomaduro/laravel-console-menu": "^3.2",
         "planetteamspeak/ts3-php-framework": "dev-master"
     },
@@ -52,7 +52,10 @@
     "config": {
         "preferred-install": "dist",
         "sort-packages": true,
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.0"
+        }
     },
     "extra": {
         "laravel": {
