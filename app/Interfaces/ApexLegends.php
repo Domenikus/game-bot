@@ -16,11 +16,16 @@ class ApexLegends extends AbstractGameInterface
     ];
 
 
+    public function getApiKey(): ?string
+    {
+        return config('game.apex-api-key');
+    }
+
     public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
 
-        $response = Http::withHeaders(['TRN-Api-Key' => config('game.apex-api-key')])
+        $response = Http::withHeaders(['TRN-Api-Key' => $this->getApiKey()])
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $gameUser->options['platform'] . '/' . $gameUser->options['name']);
 
         if ($response->successful()) {

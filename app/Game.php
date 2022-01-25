@@ -13,10 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Game extends Model
 {
-    const NAME_APEX = 'apex';
-    const NAME_LEAGUE_OF_LEGENDS = 'lol';
-    const NAME_TEAMFIGHT_TACTICS = 'tft';
-
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);

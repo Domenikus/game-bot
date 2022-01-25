@@ -12,10 +12,15 @@ class TeamfightTactics extends AbstractGameInterface
     const QUEUE_TYPE_RANK_TFT = 'RANKED_TFT';
 
 
+    public function getApiKey(): ?string
+    {
+        return config('game.tft-api-key');
+    }
+
     public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
-        $leagueResponse = Http::withHeaders(['X-Riot-Token' => config('game.tft-api-key')])
+        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->get('https://euw1.api.riotgames.com/tft/league/v1/entries/by-summoner/' . $gameUser->options['id']);
 
         if ($leagueResponse->successful()) {
@@ -31,7 +36,7 @@ class TeamfightTactics extends AbstractGameInterface
             return null;
         }
 
-        $summonerResponse = Http::withHeaders(['X-Riot-Token' => config('game.tft-api-key')])
+        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->get('https://euw1.api.riotgames.com/tft/summoner/v1/summoners/by-name/' . $params[2]);
 
         $summoner = null;

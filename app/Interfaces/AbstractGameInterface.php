@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Collection;
 
 abstract class AbstractGameInterface
 {
+    public abstract function getApiKey(): ?string;
+
     public abstract function getPlayerData(GameUser $gameUser): ?array;
 
     public abstract function getPlayerIdentity(array $params): ?array;

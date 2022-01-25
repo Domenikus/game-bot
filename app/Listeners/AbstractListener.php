@@ -8,9 +8,6 @@ use App\Commands\Run;
 use App\Game;
 use App\GameUser;
 use App\Interfaces\AbstractGameInterface;
-use App\Interfaces\ApexLegends;
-use App\Interfaces\LeagueOfLegends;
-use App\Interfaces\TeamfightTactics;
 use App\Interfaces\Teamspeak;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -44,41 +41,25 @@ abstract class AbstractListener
 
         foreach ($user->games as $game) {
             $assignments = $game->assignments()->get();
-
-            switch ($game->name) {
-                case Game::NAME_APEX:
-                    $interface = resolve(ApexLegends::class);
-                    break;
-                case Game::NAME_LEAGUE_OF_LEGENDS:
-                    $interface = resolve(LeagueOfLegends::class);
-                    break;
-                case Game::NAME_TEAMFIGHT_TACTICS:
-                    $interface = resolve(TeamfightTactics::class);
-                    break;
-                default:
+            if (isset(config('game.gameInterfaces')[$game->name])) {
+                $interface = resolve(config('game.gameInterfaces')[$game->name]);
+                if (!$interface->getApiKey()) {
+                    call_user_func($this->callback, 'No API key provided for ' . $game->name, Run::LOG_TYPE_ERROR);
                     return;
-            }
+                }
 
-            $this->updateServerGroups($game->game_user, $assignments, $interface);
+                $this->updateServerGroups($game->game_user, $assignments, $interface);
+            }
         }
     }
 
     public function handleRegister(string $identityId, array $params)
     {
-        if (isset($params[1])) {
-
-            switch ($params[1]) {
-                case Game::NAME_APEX:
-                    $interface = resolve(ApexLegends::class);
-                    break;
-                case Game::NAME_LEAGUE_OF_LEGENDS:
-                    $interface = resolve(LeagueOfLegends::class);
-                    break;
-                case Game::NAME_TEAMFIGHT_TACTICS:
-                    $interface = resolve(TeamfightTactics::class);
-                    break;
-                default:
-                    return;
+        if (isset($params[1]) && isset(config('game.gameInterfaces')[$params[1]])) {
+            $interface = resolve(config('game.gameInterfaces')[$params[1]]);
+            if (!$interface->getApiKey()) {
+                call_user_func($this->callback, 'No API key provided for ' . $params[1], Run::LOG_TYPE_ERROR);
+                return;
             }
 
             $this->registerUser($params, $identityId, $interface);

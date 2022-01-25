@@ -2,7 +2,6 @@
 
 namespace App\Interfaces;
 
-use App\Assignment;
 use App\GameUser;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,10 +16,15 @@ class LeagueOfLegends extends AbstractGameInterface
     const MATCH_TYPE_RANKED = 'ranked';
 
 
+    public function getApiKey(): ?string
+    {
+        return config('game.lol-api-key');
+    }
+
     public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
-        $leagueResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
+        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' . $gameUser->options['id']);
 
         if ($matches = $this->getMatches($gameUser, 0, self::NUMBER_OF_MATCHES, self::MATCH_TYPE_RANKED)) {
@@ -36,7 +40,7 @@ class LeagueOfLegends extends AbstractGameInterface
 
     protected function getMatches(GameUser $gameUser, int $offset, int $count, string $type): array
     {
-        $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
+        $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->get('https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/' . $gameUser->options['puuid'] . '/ids',
                 [
                     'start' => $offset,
@@ -52,7 +56,7 @@ class LeagueOfLegends extends AbstractGameInterface
 
         $matches = [];
         foreach ($matchIds as $matchId) {
-            $matchResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
+            $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
                 ->get('https://europe.api.riotgames.com/lol/match/v5/matches/' . $matchId);
 
             if ($matchResponse->successful()) {
@@ -66,19 +70,27 @@ class LeagueOfLegends extends AbstractGameInterface
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
     {
         $ts3ServerGroups = [];
-        if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
-            return $value->type->name == Type::TYPE_RANK_SOLO;
-        }), self::QUEUE_TYPE_RANKED_SOLO)) {
-            $ts3ServerGroups[Type::TYPE_RANK_SOLO] = $rank;
+        $matchData = [];
+
+        if (isset($stats['leagues'])) {
+            if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
+                return $value->type->name == Type::TYPE_RANK_SOLO;
+            }), self::QUEUE_TYPE_RANKED_SOLO)) {
+                $ts3ServerGroups[Type::TYPE_RANK_SOLO] = $rank;
+            }
+
+            if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
+                return $value->type->name == Type::TYPE_RANK_GROUP;
+            }), self::QUEUE_TYPE_NAME_RANKED_GROUP)) {
+                $ts3ServerGroups[Type::TYPE_RANK_GROUP] = $rank;
+            }
         }
 
-        if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
-            return $value->type->name == Type::TYPE_RANK_GROUP;
-        }), self::QUEUE_TYPE_NAME_RANKED_GROUP)) {
-            $ts3ServerGroups[Type::TYPE_RANK_GROUP] = $rank;
+        if (isset($stats['matches'])) {
+            $matchData = $this->mapMatches($gameUser, $stats['matches'], $assignments);
         }
 
-        return array_merge($ts3ServerGroups, $this->mapMatches($gameUser, $stats['matches'], $assignments));
+        return array_merge($ts3ServerGroups, $matchData);
     }
 
     protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?int
@@ -166,7 +178,7 @@ class LeagueOfLegends extends AbstractGameInterface
             return null;
         }
 
-        $summonerResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
+        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->get('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' . $params[2]);
 
         $result = null;
@@ -180,12 +192,12 @@ class LeagueOfLegends extends AbstractGameInterface
 
     protected function verifySummoner(array $summoner): ?array
     {
-        if (empty(config('game.riot-verification-code'))) {
+        if (!(config('game.riot-verification-code'))) {
             return $summoner;
         }
 
         $result = null;
-        $verificationResponse = Http::withHeaders(['X-Riot-Token' => config('game.lol-api-key')])
+        $verificationResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->get('https://euw1.api.riotgames.com/lol/platform/v4/third-party-code/by-summoner/' . $summoner['id']);
 
         if ($verificationResponse->successful()) {
