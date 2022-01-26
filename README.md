@@ -4,7 +4,7 @@
 
 ```
 composer install
-php7.4 game-bot migrate
+php8.0 game-bot migrate
 ```
 
 ## Run:
@@ -12,19 +12,19 @@ php7.4 game-bot migrate
 ### Bot:
 
 ```
-php7.4 game-bot run
+php8.0 game-bot run
 ```
 
 ### Menu:
 
 ```
-php7.4 game-bot menu
+php8.0 game-bot menu
 ```
 
 ## Build for production
 
 ```
-php7.4 game-bot app:build
+php8.0 game-bot app:build
 ```
 
 ## Bot chat commands
