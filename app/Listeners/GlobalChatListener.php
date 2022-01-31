@@ -11,7 +11,7 @@ use TeamSpeak3_Node_Host;
 
 class GlobalChatListener extends AbstractListener
 {
-    function init()
+    function init(): void
     {
         $this->server->notifyRegister("textserver");
 

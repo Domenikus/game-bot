@@ -12,7 +12,7 @@ class TimeoutListener extends AbstractListener
 {
     protected ?int $lastUpdate = null;
 
-    function init()
+    function init(): void
     {
         TeamSpeak3_Helper_Signal::getInstance()->subscribe("serverqueryWaitTimeout", function ($seconds, TeamSpeak3_Adapter_ServerQuery $adapter) {
             if ($adapter->getQueryLastTimestamp() < time() - 180) {

@@ -10,7 +10,7 @@ use TeamSpeak3_Node_Host;
 
 class EnterViewListener extends AbstractListener
 {
-    function init()
+    function init(): void
     {
         $this->server->notifyRegister("server");
 

@@ -3,7 +3,6 @@
 
 namespace App\Listeners;
 
-
 use App\Commands\Run;
 use App\Game;
 use App\GameUser;
@@ -34,9 +33,9 @@ abstract class AbstractListener
         $this->callback = $callback;
     }
 
-    abstract function init();
+    abstract function init(): void;
 
-    public function handleUpdate(User $user)
+    public function handleUpdate(User $user): void
     {
         if (!$user->isBlocked()) {
             $user->loadMissing('games');
@@ -56,7 +55,7 @@ abstract class AbstractListener
         }
     }
 
-    public function handleRegister(string $identityId, array $params)
+    public function handleRegister(string $identityId, array $params): void
     {
         if (isset($params[1]) && isset(config('game.gameInterfaces')[$params[1]])) {
             $interface = resolve(config('game.gameInterfaces')[$params[1]]);
@@ -69,7 +68,7 @@ abstract class AbstractListener
         }
     }
 
-    public function handleUnregister(User $user, array $params)
+    public function handleUnregister(User $user, array $params): void
     {
         $user->loadMissing('games');
 
@@ -100,7 +99,7 @@ abstract class AbstractListener
     /**
      * @throws TeamSpeak3_Adapter_ServerQuery_Exception
      */
-    public function handleAdmin(User $user, array $params)
+    public function handleAdmin(User $user, array $params): void
     {
         if ($user->isAdmin()) {
             switch ($params[1]) {
@@ -137,7 +136,7 @@ abstract class AbstractListener
     /**
      * @throws TeamSpeak3_Adapter_ServerQuery_Exception
      */
-    protected function updateServerGroups(GameUser $gameUser, Collection $assignments, AbstractGameInterface $interface)
+    protected function updateServerGroups(GameUser $gameUser, Collection $assignments, AbstractGameInterface $interface): void
     {
         $stats = $interface->getPlayerData($gameUser);
         if (!$stats) {
@@ -173,7 +172,7 @@ abstract class AbstractListener
      * @return void
      * @throws TeamSpeak3_Adapter_ServerQuery_Exception
      */
-    protected function registerUser(array $params, string $identityId, AbstractGameInterface $interface)
+    protected function registerUser(array $params, string $identityId, AbstractGameInterface $interface): void
     {
         $teamspeakInterface = new Teamspeak($this->server);
 
@@ -212,10 +211,9 @@ abstract class AbstractListener
     /**
      * @param GameUser $gameUser
      * @param Collection $assignments
-     * @return void
      * @throws TeamSpeak3_Adapter_ServerQuery_Exception
      */
-    protected function removeServerGroups(GameUser $gameUser, Collection $assignments)
+    protected function removeServerGroups(GameUser $gameUser, Collection $assignments): void
     {
         $teamspeakInterface = new Teamspeak($this->server);
         $client = $teamspeakInterface->getClient($gameUser->user_identity_id);
