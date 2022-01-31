@@ -38,18 +38,20 @@ abstract class AbstractListener
 
     public function handleUpdate(User $user)
     {
-        $user->loadMissing('games');
+        if (!$user->isBlocked()) {
+            $user->loadMissing('games');
 
-        foreach ($user->games as $game) {
-            $assignments = $game->assignments()->get();
-            if (isset(config('game.gameInterfaces')[$game->name])) {
-                $interface = resolve(config('game.gameInterfaces')[$game->name]);
-                if (!$interface->getApiKey()) {
-                    call_user_func($this->callback, 'No API key provided for ' . $game->name, Run::LOG_TYPE_ERROR);
-                    return;
+            foreach ($user->games as $game) {
+                $assignments = $game->assignments()->get();
+                if (isset(config('game.gameInterfaces')[$game->name])) {
+                    $interface = resolve(config('game.gameInterfaces')[$game->name]);
+                    if (!$interface->getApiKey()) {
+                        call_user_func($this->callback, 'No API key provided for ' . $game->name, Run::LOG_TYPE_ERROR);
+                        return;
+                    }
+
+                    $this->updateServerGroups($game->game_user, $assignments, $interface);
                 }
-
-                $this->updateServerGroups($game->game_user, $assignments, $interface);
             }
         }
     }
@@ -71,25 +73,64 @@ abstract class AbstractListener
     {
         $user->loadMissing('games');
 
-        if (isset($params[1])) {
-            foreach ($user->games as $game) {
-                if ($game->name == $params[1]) {
+        if (!$user->isBlocked()) {
+            if (isset($params[1])) {
+                foreach ($user->games as $game) {
+                    if ($game->name == $params[1]) {
+                        $assignments = $game->assignments()->get();
+
+                        $this->removeServerGroups($game->game_user, $assignments);
+                        $user->games()->detach($game->getKey());
+                        call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully unregistered from ' . $game->name);
+                    }
+                }
+            } else {
+                foreach ($user->games as $game) {
                     $assignments = $game->assignments()->get();
 
                     $this->removeServerGroups($game->game_user, $assignments);
-                    $user->games()->detach($game->getKey());
                     call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully unregistered from ' . $game->name);
                 }
-            }
-        } else {
-            foreach ($user->games as $game) {
-                $assignments = $game->assignments()->get();
 
-                $this->removeServerGroups($game->game_user, $assignments);
-                call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully unregistered from ' . $game->name);
+                $user->delete();
             }
+        }
+    }
 
-            $user->delete();
+    /**
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
+    public function handleAdmin(User $user, array $params)
+    {
+        if ($user->isAdmin()) {
+            switch ($params[1]) {
+                case 'unregister':
+                    if ($userToUnregister = User::find($params[2])) {
+                        $this->handleUnregister($userToUnregister, []);
+                    }
+                    break;
+                case 'block':
+                    if ($userToBlock = User::find($params[2])) {
+                        $userToBlock->blocked = true;
+                        if ($userToBlock->save()) {
+                            $teamspeakInterface = new Teamspeak($this->server);
+                            $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($user->identity_id), 'User ' . $user->identity_id . ' successfully blocked');
+                            call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully blocked');
+                        }
+                    }
+                    break;
+                case 'unblock':
+                    if ($userToUnblock = User::find($params[2])) {
+                        $userToUnblock->blocked = false;
+                        if ($userToUnblock->save()) {
+                            $teamspeakInterface = new Teamspeak($this->server);
+                            $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($user->identity_id), 'User ' . $user->identity_id . ' successfully unblocked');
+                            call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully unblocked');
+                        }
+                    }
+                    break;
+                default:
+            }
         }
     }
 
@@ -148,6 +189,12 @@ abstract class AbstractListener
             $user = new User();
             $user->identity_id = $identityId;
             $user->save();
+        }
+
+        if ($user->isBlocked()) {
+            call_user_func($this->callback, 'Blocked user ' . $identityId . ' tried to register');
+            $teamspeakInterface->sendMessageToClient($teamspeakInterface->getClient($identityId), 'Registration failed, you are blocked by the admin.');
+            return;
         }
 
         $game = Game::where('name', $params[1])->firstOrFail();
