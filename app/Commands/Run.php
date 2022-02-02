@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Interfaces\Teamspeak;
 use App\Listeners\EnterViewListener;
 use App\Listeners\GlobalChatListener;
+use App\Listeners\PrivateChatListener;
 use App\Listeners\TimeoutListener;
 use LaravelZero\Framework\Commands\Command;
 use TeamSpeak3_Node_Server;
@@ -68,6 +69,10 @@ class Run extends Command
 
         if (config('teamspeak.listener.globalChat')) {
             $listeners[] = new GlobalChatListener($server, $callback);
+        }
+
+        if (config('teamspeak.listener.privateChat')) {
+            $listeners[] = new PrivateChatListener($server, $callback);
         }
 
         if (config('teamspeak.listener.enterView')) {

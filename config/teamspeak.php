@@ -11,6 +11,7 @@ return [
     "listener" => [
         "globalChat" => env('LISTENER_GLOBAL_CHAT', true),
         "enterView" => env('LISTENER_ENTER_VIEW', true),
+        "privateChat" => env('LISTENER_PRIVATE_CHAT', true)
     ],
 
     'auto_update_interval' => env('AUTO_UPDATE_INTERVAL')
