@@ -35,6 +35,9 @@ abstract class AbstractListener
 
     abstract function init(): void;
 
+    /**
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
     public function handleUpdate(User $user): void
     {
         if (!$user->isBlocked()) {
@@ -55,6 +58,9 @@ abstract class AbstractListener
         }
     }
 
+    /**
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
     public function handleRegister(string $identityId, array $params): void
     {
         if (isset($params[1]) && isset(config('game.gameInterfaces')[$params[1]])) {
@@ -68,6 +74,9 @@ abstract class AbstractListener
         }
     }
 
+    /**
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
     public function handleUnregister(User $user, array $params): void
     {
         $user->loadMissing('games');
@@ -101,7 +110,7 @@ abstract class AbstractListener
      */
     public function handleAdmin(User $user, array $params): void
     {
-        if ($user->isAdmin()) {
+        if ($user->isAdmin() && isset($params[1])) {
             switch ($params[1]) {
                 case 'unregister':
                     if ($userToUnregister = User::find($params[2])) {
@@ -127,6 +136,9 @@ abstract class AbstractListener
                             call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully unblocked');
                         }
                     }
+                    break;
+                case 'update':
+                    $this->updateActiveClients();
                     break;
                 default:
             }
@@ -223,6 +235,18 @@ abstract class AbstractListener
         foreach ($actualServerGroups as $actualServerGroup) {
             if (isset($actualServerGroup['sgid']) && in_array($actualServerGroup['sgid'], $supportedTeamspeakServerGroupIds)) {
                 $teamspeakInterface->removeServerGroup($client, $actualServerGroup['sgid']);
+            }
+        }
+    }
+
+    /**
+     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     */
+    protected function updateActiveClients(): void
+    {
+        foreach ($this->server->clientList() as $client) {
+            if ($user = User::find($client->getInfo()['client_unique_identifier']->toString())) {
+                $this->handleUpdate($user);
             }
         }
     }
