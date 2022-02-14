@@ -39,19 +39,24 @@ class Teamspeak
 
     /**
      * @param string $clientId
-     * @return TeamSpeak3_Node_Client
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
+     * @return TeamSpeak3_Node_Client|null
      */
-    public function getClient(string $clientId): TeamSpeak3_Node_Client
+    public function getClient(string $clientId): ?TeamSpeak3_Node_Client
     {
-        return $this->server->clientGetByUid($clientId);
+        $result = null;
+
+        try {
+            $result = $this->server->clientGetByUid($clientId);
+        } catch (Exception) {}
+
+        return $result;
     }
 
     public function addServerGroup(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
     {
         try {
             $client->addServerGroup($serverGroupId);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return false;
         }
 
@@ -62,7 +67,7 @@ class Teamspeak
     {
         try {
             $client->remServerGroup($serverGroupId);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return false;
         }
 
@@ -73,7 +78,7 @@ class Teamspeak
     {
         try {
             $client->message($message);
-        } catch (Exception $e) {
+        } catch (Exception) {
             return false;
         }
 
