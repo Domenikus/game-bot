@@ -1,10 +1,12 @@
 # Game bot
 
+Teamspeak bot which syncs Teamspeak server groups with stata from games like LeagueOfLegends, TeamfightTactics or Apex Legends
+
 ## Setup:
 
 ```
 composer install
-php8.0 game-bot migrate
+php game-bot migrate
 ```
 
 ## Run:
@@ -12,29 +14,27 @@ php8.0 game-bot migrate
 ### Bot:
 
 ```
-php8.0 game-bot run
+php game-bot run
 ```
 
 ### Menu:
 
 ```
-php8.0 game-bot menu
+php game-bot menu
 ```
 
 ## Build for production
 
 ```
-php8.0 game-bot app:build
+php game-bot app:build
 ```
 
 ## Bot chat commands
 
 ### Register
 
-#### Apex
-
 ```
-!register|apex|{name}|{platform}
+!register|{game}|{name}|{platform}
 ```
 
 ### Unregister
@@ -48,3 +48,4 @@ php8.0 game-bot app:build
 ```
 !update
 ```
+
