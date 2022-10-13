@@ -14,9 +14,6 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
   - Rank
   - Most played legend
 
-
-- Cli menu to add and remove
-
 ## Setup
 
 ### Development
