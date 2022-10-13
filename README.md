@@ -94,7 +94,7 @@ Interacting with the bot from the teamspeak server using the chat
 ###### Register a game for the current user
 
 ```
-!register|{game}|{name}|{platform}
+!register|{game}|{name}|{?platform}
 ```
 
 ###### Unregister specific game
