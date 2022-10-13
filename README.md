@@ -1,51 +1,150 @@
 # Game bot
 
-Teamspeak bot which syncs Teamspeak server groups with stata from games like LeagueOfLegends, TeamfightTactics or Apex Legends
+Teamspeak bot which syncs stats from games with teamspeak server groups
 
-## Setup:
+## Supported games
+
+- League of Legends
+  - Most recent played champion
+  - Solo/Duo rank
+- Team fight Tactics
+  - Solo rank
+  - Double up (Work in progress)
+- Apex Legends
+  - Rank
+  - Most played legend
+
+
+- Cli menu to add and remove
+
+## Setup
+
+### Development
+
+Copy env.example file to .env file and fill necessary values
 
 ```
 composer install
+```
+
+```
 php game-bot migrate
 ```
 
-## Run:
-
-### Bot:
-
-```
-php game-bot run
-```
-
-### Menu:
-
-```
-php game-bot menu
-```
-
-## Build for production
+### Production
 
 ```
 php game-bot app:build
 ```
 
-## Bot chat commands
+## Run
 
-### Register
+### Development
+
+```
+php game-bot run
+```
+
+```
+php game-bot menu
+```
+
+### Production
+
+- Create a query user on the teamspeak server
+- Whitelist the ipaddress of the bot or turn of anti-flood-protection
+- Get Api keys
+    - Apex: [Tracker.gg](https://tracker.gg/developers) (optional)
+    - LoL: [Riot developers](https://developer.riotgames.com/apis) (optional)
+    - TFT: [Riot developers](https://developer.riotgames.com/apis) (optional)
+- Setup authentication key for riot games (optional)
+- Create a bot admin by copying ts3 client identity to admins env variable (optional)
+- Run bot menu to map game stats with ts3 server groups
+- Setup docker-compose file
+
+```
+game-bot:
+    container_name: game-bot
+    build:
+      context: ./game-bot
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+            TEAMSPEAK_IP: ""
+            TEAMSPEAK_PORT: ""
+            TEAMSPEAK_QUERY_USER: ""
+            TEAMSPEAK_QUERY_PASSWORD: ""
+            TEAMSPEAK_QUERY_PORT: ""
+            DB_CONNECTION: ""
+            DB_HOST: ""
+            DB_DATABASE: ""
+            DB_USERNAME: ""
+            DB_PASSWORD: ""
+            APEX_API_KEY: ""
+            LOL_API_KEY: ""
+            TFT_API_KEY: ""
+            RIOT_VERIFICATION_CODE: ""
+            AUTO_UPDATE_INTERVAL: "1800"
+            ADMINS: ""
+```
+
+## Usage
+
+#### User commands
+
+Interacting with the bot from the teamspeak server using the chat
+
+###### Register a game for the current user
 
 ```
 !register|{game}|{name}|{platform}
 ```
 
-### Unregister
+###### Unregister specific game
 
 ```
-!unregister|{?game}
+!unregister|{game}
 ```
 
-### Update
+###### Unregister from all games
+
+```
+!unregister
+```
+
+###### Update stats manually
 
 ```
 !update
 ```
+
+##### Admin commands
+
+###### Unregister given user
+
+```
+!admin|unregister|{user}
+```
+
+###### Block given user
+
+```
+!admin|block|{user}
+```
+
+###### Unblock given user
+
+```
+!admin|unblock|{user}
+```
+
+###### Update all current active clients
+
+```
+!admin|update
+```
+
+## Contribute
+
+Feel free to extend the functionality or add additional games
 

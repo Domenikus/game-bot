@@ -55,6 +55,9 @@
         "optimize-autoloader": true,
         "platform": {
             "php": "8.0"
+        },
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     },
     "extra": {
