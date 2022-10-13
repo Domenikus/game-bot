@@ -184,27 +184,7 @@ class LeagueOfLegends extends AbstractGameInterface
         $result = null;
         if ($summonerResponse->successful()) {
             $summoner = json_decode($summonerResponse->body(), true);
-            $result = $this->verifySummoner($summoner);
-        }
-
-        return $result;
-    }
-
-    protected function verifySummoner(array $summoner): ?array
-    {
-        if (!(config('game.riot-verification-code'))) {
-            return $summoner;
-        }
-
-        $result = null;
-        $verificationResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->get('https://euw1.api.riotgames.com/lol/platform/v4/third-party-code/by-summoner/' . $summoner['id']);
-
-        if ($verificationResponse->successful()) {
-            $verificationCode = json_decode($verificationResponse->body(), true);
-            if ($verificationCode == config('game.riot-verification-code')) {
-                $result = $summoner;
-            }
+            $result = $summoner;
         }
 
         return $result;

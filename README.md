@@ -54,7 +54,6 @@ php game-bot menu
     - Apex: [Tracker.gg](https://tracker.gg/developers) (optional)
     - LoL: [Riot developers](https://developer.riotgames.com/apis) (optional)
     - TFT: [Riot developers](https://developer.riotgames.com/apis) (optional)
-- Setup authentication key for riot games (optional)
 - Create a bot admin by copying ts3 client identity to admins env variable (optional)
 - Run bot menu to map game stats with ts3 server groups
 - Setup docker-compose file
@@ -80,7 +79,6 @@ game-bot:
             APEX_API_KEY: ""
             LOL_API_KEY: ""
             TFT_API_KEY: ""
-            RIOT_VERIFICATION_CODE: ""
             AUTO_UPDATE_INTERVAL: "1800"
             ADMINS: ""
 ```
