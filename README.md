@@ -7,6 +7,7 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
 - League of Legends
   - Most recent played champion
   - Solo/Duo rank
+  - Flex rank
 - Team fight Tactics
   - Solo rank
   - Double up (Work in progress)
