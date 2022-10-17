@@ -3,7 +3,6 @@
 namespace App\Interfaces;
 
 use App\GameUser;
-use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 
@@ -50,10 +49,15 @@ class TeamfightTactics extends AbstractGameInterface
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
     {
         $ts3ServerGroups = [];
-        if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
-            return $value->type->name == Type::TYPE_RANK_SOLO;
-        }), self::QUEUE_TYPE_RANK_TFT)) {
-            $ts3ServerGroups[Type::TYPE_RANK_SOLO] = $rank;
+
+        if (isset($stats['leagues'])) {
+            foreach ($queues as $queue) {
+                if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) use ($queue) {
+                    return $value->type->name == $queue->type->name;
+                }), $queue->name)) {
+                    $ts3ServerGroups[$queue->type->name] = $rank;
+                }
+            }
         }
 
         return $ts3ServerGroups;

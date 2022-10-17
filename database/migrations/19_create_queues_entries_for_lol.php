@@ -15,7 +15,7 @@ return new class extends Migration {
     {
         $lol = Game::where('name', 'lol')->first();
 
-        if ($lol->queues()->get()->isEmpty()) {
+        if (!$lol->queues()->where('name', 'RANKED_SOLO_5x5')->first()) {
             $rankSolo = Type::where('name', 'rank_solo')->first();
             if ($rankSolo) {
                 $rankedSoloQueue = new Queue();
@@ -23,7 +23,9 @@ return new class extends Migration {
                 $rankedSoloQueue->type()->associate($rankSolo);
                 $lol->queues()->save($rankedSoloQueue);
             }
+        }
 
+        if (!$lol->queues()->where('name', 'RANKED_FLEX_SR')->get()->first()) {
             $rankGroup = Type::where('name', 'rank_group')->first();
             if ($rankGroup) {
                 $rankedGroupQueue = new Queue();
@@ -31,7 +33,9 @@ return new class extends Migration {
                 $rankedGroupQueue->type()->associate($rankGroup);
                 $lol->queues()->save($rankedGroupQueue);
             }
+        }
 
+        if (!$lol->queues()->where('name', 'RANKED_TFT_DOUBLE_UP')->first()) {
             $rankDuo = Type::where('name', 'rank_duo')->first();
             if ($rankDuo) {
                 $rankedDuoQueue = new Queue();
@@ -50,8 +54,17 @@ return new class extends Migration {
     public function down(): void
     {
         $lol = Game::where('name', 'lol')->first();
-        foreach ($lol->queues()->get() as $queues) {
-            $queues->delete();
+
+        if ($solo = $lol->queues()->where('name', 'RANKED_SOLO_5x5')->first()) {
+            $solo->delete();
+        }
+
+        if ($group = $lol->queues()->where('name', 'RANKED_FLEX_SR')->first()) {
+            $group->delete();
+        }
+
+        if ($duo = $lol->queues()->where('name', 'RANKED_TFT_DOUBLE_UP')->first()) {
+            $duo->delete();
         }
     }
 };
