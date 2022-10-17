@@ -140,6 +140,14 @@ Interacting with the bot from the teamspeak server using the chat
 !admin|update
 ```
 
+## Configure
+
+### Assignments
+
+What is an assignment? Assignments are the mapping between a game stat and a ts3 server group. 
+Which means, if you want that players who reach "GOLD I" league in League of Legends, have the server group "Gold", you have to provide "gold ii" as a value and the id of the server group "gold".
+You can do this while using the provided cli menu.
+
 ## Contribute
 
 Feel free to extend the functionality or add additional games
