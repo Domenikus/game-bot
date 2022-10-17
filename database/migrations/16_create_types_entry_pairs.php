@@ -1,19 +1,19 @@
 <?php
 
-use App\Game;
+use App\Type;
 use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration {
 
     public function up(): void
     {
-        if (Game::where('name', 'lol')->first()) {
+        if (Type::where('name', 'rank_pair')->first()) {
             return;
         }
 
-        $game = new Game();
-        $game->name = 'lol';
-        $game->saveOrFail();
+        $type = new Type();
+        $type->name = 'rank_pair';
+        $type->saveOrFail();
     }
 
     /**
@@ -23,10 +23,10 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        if (!Game::where('name', 'lol')->first()) {
+        if (!Type::where('name', 'rank_pair')->first()) {
             return;
         }
 
-        Game::where('name', 'lol')->delete();
+        Type::where('name', 'rank_pair')->delete();
     }
 };

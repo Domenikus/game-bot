@@ -18,14 +18,21 @@ return new class extends Migration {
 
         $apex = Game::where('name', 'apex')->first();
         $apex->interface = ApexLegends::class;
-        $apex->save();
+        $apex->saveOrFail();
 
         $lol = Game::where('name', 'lol')->first();
         $lol->interface = LeagueOfLegends::class;
-        $lol->save();
+        $lol->saveOrFail();
 
         $tft = Game::where('name', 'tft')->first();
         $tft->interface = TeamfightTactics::class;
-        $tft->save();
+        $tft->saveOrFail();
+    }
+
+    public function down(): void
+    {
+        Schema::table('games', function (Blueprint $table) {
+            $table->dropColumn('interface');
+        });
     }
 };

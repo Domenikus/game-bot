@@ -7,12 +7,12 @@ return new class extends Migration {
 
     public function up(): void
     {
-        if (Type::where('name', Type::TYPE_CHARACTER)->first()) {
+        if (Type::where('name', 'character')->first()) {
             return;
         }
 
         $type = new Type();
-        $type->name = Type::TYPE_CHARACTER;
+        $type->name = 'character';
         $type->saveOrFail();
     }
 
@@ -21,12 +21,12 @@ return new class extends Migration {
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
-        if (!Type::where('name', Type::TYPE_CHARACTER)->first()) {
+        if (!Type::where('name', 'character')->first()) {
             return;
         }
 
-        Type::where('name', Type::TYPE_CHARACTER)->delete();
+        Type::where('name', 'character')->delete();
     }
 };

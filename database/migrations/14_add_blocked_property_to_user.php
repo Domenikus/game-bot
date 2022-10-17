@@ -12,4 +12,11 @@ return new class extends Migration {
             $table->boolean('blocked')->default(false);
         });
     }
+
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('blocked');
+        });
+    }
 };
