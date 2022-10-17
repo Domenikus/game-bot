@@ -52,10 +52,6 @@ class Menu extends Command
         $this->menu('Game bot menu')
             ->addItem('Create Assignment', $this->buildCreateAssignment())
             ->addSubMenu('Delete assignment', $this->buildDeleteAssignment())
-            ->addItem('Create game', $this->buildCreateGame())
-            ->addSubMenu('Delete game', $this->buildDeleteGame())
-            ->addItem('Create type', $this->buildCreateType())
-            ->addSubMenu('Delete type', $this->buildDeleteType())
             ->addItem('Refresh', function (CliMenu $menu) {
                 $menu->close();
                 $this->buildMenu();
@@ -91,7 +87,10 @@ class Menu extends Command
         return function (CliMenu $menu) {
             $value = $menu->askText()
                 ->setPromptText("Enter value")
-                ->setPlaceholderText("Some value")
+                ->setValidationFailedText('Invalid value, please provide at least one character')
+                ->setValidator(function ($value) {
+                    return !empty($value);
+                })
                 ->ask();
 
             $typesArray = [];
@@ -101,7 +100,6 @@ class Menu extends Command
 
             $type = $menu->askText()
                 ->setPromptText('Enter type')
-                ->setPlaceholderText('Some type')
                 ->setValidationFailedText('Wrong type, please provide on of the following: ' . implode(', ', $typesArray))
                 ->setValidator(function ($type) use ($typesArray) {
                     if (in_array($type, $typesArray)) {
@@ -118,7 +116,6 @@ class Menu extends Command
 
             $game = $menu->askText()
                 ->setPromptText('Enter game')
-                ->setPlaceholderText('Some game')
                 ->setValidationFailedText('Wrong game, please provide on of the following: ' . implode(', ', $gamesArray))
                 ->setValidator(function ($game) use ($gamesArray) {
                     if (in_array($game, $gamesArray)) {
@@ -130,7 +127,6 @@ class Menu extends Command
 
             $ts3_server_group_id = $menu->askNumber()
                 ->setPromptText("Enter teamspeak server group id")
-                ->setPlaceholderText("Some id")
                 ->ask();
 
             $gameModel = Game::where('name', $game->fetch())->firstOrFail();
@@ -152,114 +148,6 @@ class Menu extends Command
             }
 
             $flash->display();
-        };
-    }
-
-    private function buildCreateGame(): Closure
-    {
-        return function (CliMenu $menu) {
-            $name = $menu->askText()
-                ->setPromptText('Enter game name')
-                ->setPlaceholderText('Some name')
-                ->setValidationFailedText('Game name is already chosen')
-                ->setValidator(function ($name) {
-                    if (Game::where('name', $name)->first()) {
-                        return false;
-                    }
-
-                    return true;
-                })->ask();
-
-            $gameModel = new Game();
-            $gameModel->name = $name->fetch();
-
-            try {
-                $gameModel->saveOrFail();
-                $flash = $menu->flash("Game successfully created");
-                $flash->getStyle()->setBg('green');
-            } catch (Exception) {
-                $flash = $menu->flash("Error while creating game");
-                $flash->getStyle()->setBg('red');
-            }
-
-            $flash->display();
-        };
-    }
-
-    private function buildDeleteGame(): Closure
-    {
-        return function (CliMenuBuilder $b) {
-            $b->setTitle('Select game to delete');
-            $games = Game::all();
-            foreach ($games as $game) {
-                $b->addItem($game->value . '(' . $game->name . ')', function (CliMenu $menu) use ($game) {
-                    if ($game->delete()) {
-                        $flash = $menu->flash("Game successfully deleted");
-                        $flash->getStyle()->setBg('green');
-                        $menu->removeItem($menu->getSelectedItem());
-                        $menu->redraw();
-                    } else {
-                        $flash = $menu->flash("Error while deleting game");
-                        $flash->getStyle()->setBg('red');
-                    }
-
-                    $flash->display();
-                });
-            }
-        };
-    }
-
-    private function buildCreateType(): Closure
-    {
-        return function (CliMenu $menu) {
-            $name = $menu->askText()
-                ->setPromptText('Enter type name')
-                ->setPlaceholderText('Some name')
-                ->setValidationFailedText('Type name is already chosen')
-                ->setValidator(function ($name) {
-                    if (Type::where('name', $name)->first()) {
-                        return false;
-                    }
-
-                    return true;
-                })->ask();
-
-            $typeModel = new Type();
-            $typeModel->name = $name->fetch();
-
-            try {
-                $typeModel->saveOrFail();
-                $flash = $menu->flash("Type successfully created");
-                $flash->getStyle()->setBg('green');
-            } catch (Exception) {
-                $flash = $menu->flash("Error while creating type");
-                $flash->getStyle()->setBg('red');
-            }
-
-            $flash->display();
-        };
-    }
-
-    private function buildDeleteType(): Closure
-    {
-        return function (CliMenuBuilder $b) {
-            $b->setTitle('Select type to delete');
-            $types = Type::all();
-            foreach ($types as $type) {
-                $b->addItem($type->value . '(' . $type->name . ')', function (CliMenu $menu) use ($type) {
-                    if ($type->delete()) {
-                        $flash = $menu->flash("Type successfully deleted");
-                        $flash->getStyle()->setBg('green');
-                        $menu->removeItem($menu->getSelectedItem());
-                        $menu->redraw();
-                    } else {
-                        $flash = $menu->flash("Error while deleting type");
-                        $flash->getStyle()->setBg('red');
-                    }
-
-                    $flash->display();
-                });
-            }
         };
     }
 }
