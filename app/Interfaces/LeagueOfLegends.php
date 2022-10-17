@@ -10,10 +10,6 @@ use Illuminate\Support\Facades\Http;
 
 class LeagueOfLegends extends AbstractGameInterface
 {
-    const QUEUE_TYPE_RANKED_SOLO = 'RANKED_SOLO_5x5';
-    const QUEUE_TYPE_NAME_RANKED_GROUP = 'RANKED_FLEX_SR';
-    // Riot put tft double up into lol league endpoint. This is a workaround until they fix this issue
-    const QUEUE_TYPE_NAME_RANKED_TFT_DOUBLE_UP = 'RANKED_TFT_DOUBLE_UP';
     const NUMBER_OF_MATCHES = 20;
     const MATCH_TYPE_RANKED = 'ranked';
 
@@ -69,28 +65,18 @@ class LeagueOfLegends extends AbstractGameInterface
         return $matches;
     }
 
-    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
+    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
     {
         $ts3ServerGroups = [];
         $matchData = [];
 
         if (isset($stats['leagues'])) {
-            if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
-                return $value->type->name == Type::TYPE_RANK_SOLO;
-            }), self::QUEUE_TYPE_RANKED_SOLO)) {
-                $ts3ServerGroups[Type::TYPE_RANK_SOLO] = $rank;
-            }
-
-            if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
-                return $value->type->name == Type::TYPE_RANK_GROUP;
-            }), self::QUEUE_TYPE_NAME_RANKED_GROUP)) {
-                $ts3ServerGroups[Type::TYPE_RANK_GROUP] = $rank;
-            }
-
-            if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
-                return $value->type->name == Type::TYPE_RANK_PAIR;
-            }), self::QUEUE_TYPE_NAME_RANKED_TFT_DOUBLE_UP)) {
-                $ts3ServerGroups[Type::TYPE_RANK_PAIR] = $rank;
+            foreach ($queues as $queue) {
+                if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) use ($queue) {
+                    return $value->type->name == $queue->type->name;
+                }), $queue->name)) {
+                    $ts3ServerGroups[$queue->type->name] = $rank;
+                }
             }
         }
 

@@ -35,7 +35,7 @@ class ApexLegends extends AbstractGameInterface
         return $stats;
     }
 
-    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
+    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
     {
         $ts3ServerGroups = [];
         if ($rank = $this->mapRank($stats, $assignments->filter(function ($value) {

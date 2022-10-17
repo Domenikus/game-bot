@@ -22,4 +22,9 @@ class Game extends Model
     {
         return $this->belongsToMany(User::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
     }
+
+    public function queues(): HasMany
+    {
+        return $this->hasMany(Queue::class);
+    }
 }

@@ -45,13 +45,14 @@ abstract class AbstractListener
 
             foreach ($user->games as $game) {
                 $assignments = $game->assignments()->get();
+                $queues = $game->queues()->with('type')->get();
                 $interface = resolve($game->interface);
                 if (!$interface->getApiKey()) {
                     call_user_func($this->callback, 'No API key provided for ' . $game->name, Run::LOG_TYPE_ERROR);
                     return;
                 }
 
-                $this->updateServerGroups($game->game_user, $assignments, $interface);
+                $this->updateServerGroups($game->game_user, $queues, $assignments, $interface);
             }
         }
     }
@@ -158,6 +159,7 @@ abstract class AbstractListener
      */
     protected function updateServerGroups(
         GameUser $gameUser,
+        Collection $queues,
         Collection $assignments,
         AbstractGameInterface $interface
     ): void {
@@ -167,7 +169,7 @@ abstract class AbstractListener
                 Run::LOG_TYPE_ERROR);
             return;
         }
-        $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments);
+        $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments, $queues);
 
         $teamspeakInterface = new Teamspeak($this->server);
         if ($client = $teamspeakInterface->getClient($gameUser->user_identity_id)) {

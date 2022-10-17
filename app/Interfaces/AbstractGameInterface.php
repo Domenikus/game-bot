@@ -13,7 +13,12 @@ abstract class AbstractGameInterface
 
     public abstract function getPlayerIdentity(array $params): ?array;
 
-    public abstract function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array;
+    public abstract function mapStats(
+        GameUser $gameUser,
+        array $stats,
+        Collection $assignments,
+        Collection $queues
+    ): array;
 
     protected function getTs3ServerGroupIdForValueInGivenAssignments(Collection $assignments, string $value): ?int
     {

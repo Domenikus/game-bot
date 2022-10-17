@@ -47,7 +47,7 @@ class TeamfightTactics extends AbstractGameInterface
         return $summoner;
     }
 
-    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
+    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
     {
         $ts3ServerGroups = [];
         if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) {
