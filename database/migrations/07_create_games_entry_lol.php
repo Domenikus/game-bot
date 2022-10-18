@@ -23,10 +23,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        if (!Game::where('name', 'lol')->first()) {
-            return;
+        if ($game = Game::where('name', 'lol')->first()) {
+            $game->delete();
         }
-
-        Game::where('name', 'lol')->delete();
     }
 };

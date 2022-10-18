@@ -23,10 +23,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        if (!Type::where('name', 'position')->first()) {
-            return;
+        if ($type = Type::where('name', 'position')->first()) {
+            $type->delete();
         }
-
-        Type::where('name', 'position')->delete();
     }
 };
