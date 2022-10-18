@@ -25,7 +25,7 @@ return new class extends Migration {
             }
         }
 
-        if (!$lol->queues()->where('name', 'RANKED_FLEX_SR')->get()->first()) {
+        if (!$lol->queues()->where('name', 'RANKED_FLEX_SR')->first()) {
             $rankGroup = Type::where('name', 'rank_group')->first();
             if ($rankGroup) {
                 $rankedGroupQueue = new Queue();
