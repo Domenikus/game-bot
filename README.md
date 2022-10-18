@@ -10,9 +10,10 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
   - Flex rank
 - Team fight Tactics
   - Solo rank
-  - Double up (Work in progress)
+  - Double up
 - Apex Legends
   - Rank
+  - Arena rank
   - Most played legend
 
 ## Setup
