@@ -8,6 +8,7 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
   - Most recent played champion
   - Solo/Duo rank
   - Flex rank
+  - Prefered lane
 - Team fight Tactics
   - Solo rank
   - Double up
