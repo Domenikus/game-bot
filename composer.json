@@ -28,6 +28,7 @@
         "guzzlehttp/guzzle": "^7.4",
         "illuminate/database": "^9.0",
         "illuminate/http": "^9.0",
+        "illuminate/log": "^9.0",
         "laminas/laminas-text": "^2.9",
         "laravel-zero/framework": "^9.0",
         "nunomaduro/laravel-console-menu": "^3.3",
@@ -53,14 +54,17 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "optimize-autoloader": true,
-        "platform": {
-            "php": "8.0"
-        },
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
     },
-    "extra": {},
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "barryvdh/laravel-ide-helper"
+            ]
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "bin": [

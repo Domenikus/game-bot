@@ -6,6 +6,7 @@ use App\GameUser;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ApexLegends extends AbstractGameInterface
 {
@@ -30,6 +31,9 @@ class ApexLegends extends AbstractGameInterface
 
         if ($response->successful()) {
             $stats = json_decode($response->body(), true);
+        } else {
+            Log::error('Could not get player data from TRN API for Apex Legends',
+                ['apiKey' => $this->getApiKey(), 'response' => $response]);
         }
 
         return $stats;

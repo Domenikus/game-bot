@@ -3,41 +3,27 @@
 
 namespace App\Listeners;
 
-use App\Commands\Run;
 use App\Game;
 use App\GameUser;
 use App\Interfaces\AbstractGameInterface;
 use App\Interfaces\Teamspeak;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
-use TeamSpeak3_Adapter_ServerQuery_Exception;
+use Illuminate\Support\Facades\Log;
 use TeamSpeak3_Node_Server;
 
 abstract class AbstractListener
 {
     protected TeamSpeak3_Node_Server $server;
 
-    /**
-     * @var callable
-     */
-    protected $callback;
 
-    /**
-     * AbstractListener constructor.
-     * @param TeamSpeak3_Node_Server $server
-     * @param callable $callback
-     */
-    public function __construct(TeamSpeak3_Node_Server $server, callable $callback)
+    public function __construct(TeamSpeak3_Node_Server $server)
     {
         $this->server = $server;
-        $this->callback = $callback;
     }
 
     abstract function init(): void;
 
-    /**
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
-     */
     public function handleUpdate(User $user): void
     {
         if (!$user->isBlocked()) {
@@ -47,26 +33,19 @@ abstract class AbstractListener
                 $assignments = $game->assignments()->get();
                 $queues = $game->queues()->with('type')->get();
                 $interface = resolve($game->interface);
-                if (!$interface->getApiKey()) {
-                    call_user_func($this->callback, 'No API key provided for ' . $game->name, Run::LOG_TYPE_ERROR);
-                    return;
-                }
-
                 $this->updateServerGroups($game->game_user, $queues, $assignments, $interface);
             }
         }
     }
 
-    /**
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
-     */
     public function handleRegister(string $identityId, array $params): void
     {
         $game = Game::where('name', $params[1])->first();
         if (isset($params[1]) && $game) {
             $interface = resolve($game->interface);
             if (!$interface->getApiKey()) {
-                call_user_func($this->callback, 'No API key provided for ' . $params[1], Run::LOG_TYPE_ERROR);
+                Log::error('No API key provided, registration skipped',
+                    ['game' => $game, 'apiKey' => $interface->getApiKey()]);
                 return;
             }
 
@@ -74,9 +53,6 @@ abstract class AbstractListener
         }
     }
 
-    /**
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
-     */
     public function handleUnregister(User $user, array $params): void
     {
         $user->loadMissing('games');
@@ -89,8 +65,7 @@ abstract class AbstractListener
 
                         $this->removeServerGroups($game->game_user, $assignments);
                         $user->games()->detach($game->getKey());
-                        call_user_func($this->callback,
-                            'User ' . $user->identity_id . ' successfully unregistered from ' . $game->name);
+                        Log::info('User successfully unregistered', ['user' => $user, 'game' => $game]);
                     }
                 }
             } else {
@@ -98,8 +73,7 @@ abstract class AbstractListener
                     $assignments = $game->assignments()->get();
 
                     $this->removeServerGroups($game->game_user, $assignments);
-                    call_user_func($this->callback,
-                        'User ' . $user->identity_id . ' successfully unregistered from ' . $game->name);
+                    Log::info('User successfully unregistered', ['user' => $user, 'game' => $game]);
                 }
 
                 $user->delete();
@@ -107,9 +81,6 @@ abstract class AbstractListener
         }
     }
 
-    /**
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
-     */
     public function handleAdmin(User $user, array $params): void
     {
         if ($user->isAdmin() && isset($params[1])) {
@@ -127,7 +98,7 @@ abstract class AbstractListener
                             if ($client = $teamspeakInterface->getClient($user->identity_id)) {
                                 $teamspeakInterface->sendMessageToClient($client,
                                     'User ' . $user->identity_id . ' successfully blocked');
-                                call_user_func($this->callback, 'User ' . $user->identity_id . ' successfully blocked');
+                                Log::info('User successfully blocked', ['user' => $user]);
                             }
                         }
                     }
@@ -140,8 +111,7 @@ abstract class AbstractListener
                             if ($client = $teamspeakInterface->getClient($user->identity_id)) {
                                 $teamspeakInterface->sendMessageToClient($client,
                                     'User ' . $user->identity_id . ' successfully unblocked');
-                                call_user_func($this->callback,
-                                    'User ' . $user->identity_id . ' successfully unblocked');
+                                Log::info('User successfully unblocked', ['user' => $user]);
                             }
                         }
                     }
@@ -154,9 +124,6 @@ abstract class AbstractListener
         }
     }
 
-    /**
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
-     */
     protected function updateServerGroups(
         GameUser $gameUser,
         Collection $queues,
@@ -165,10 +132,9 @@ abstract class AbstractListener
     ): void {
         $stats = $interface->getPlayerData($gameUser);
         if (!$stats) {
-            call_user_func($this->callback, 'Error while getting stats in ' . get_class($interface),
-                Run::LOG_TYPE_ERROR);
             return;
         }
+
         $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments, $queues);
 
         $teamspeakInterface = new Teamspeak($this->server);
@@ -187,18 +153,10 @@ abstract class AbstractListener
                 $teamspeakInterface->addServerGroup($client, $newGroup);
             }
 
-            call_user_func($this->callback,
-                'Server groups for user ' . $gameUser->user_identity_id . ' successfully updated in ' . get_class($interface));
+            Log::info('Server groups successfully updated', ['gameUser' => $gameUser]);
         }
     }
 
-    /**
-     * @param array $params
-     * @param string $identityId
-     * @param AbstractGameInterface $interface
-     * @return void
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
-     */
     protected function registerUser(array $params, string $identityId, AbstractGameInterface $interface): void
     {
         $teamspeakInterface = new Teamspeak($this->server);
@@ -206,11 +164,10 @@ abstract class AbstractListener
         $options = $interface->getPlayerIdentity($params);
         if (!$options) {
             if ($client = $teamspeakInterface->getClient($identityId)) {
-                call_user_func($this->callback, 'Registration for user ' . $identityId . ' failed, please check params',
-                    Run::LOG_TYPE_ERROR);
                 $teamspeakInterface->sendMessageToClient($client, 'Registration failed, please check params');
             }
 
+            Log::info('Registration failed', ['identityId' => $identityId]);
             return;
         }
 
@@ -223,9 +180,10 @@ abstract class AbstractListener
 
         if ($user->isBlocked()) {
             if ($client = $teamspeakInterface->getClient($identityId)) {
-                call_user_func($this->callback, 'Blocked user ' . $identityId . ' tried to register');
-                $teamspeakInterface->sendMessageToClient($client, 'Registration failed, you are blocked by the admin.');
+                $teamspeakInterface->sendMessageToClient($client, 'Registration failed, you are blocked by an admin.');
+                Log::info('Blocked user tried to register', ['user' => $user]);
             }
+
             return;
         }
 
@@ -237,14 +195,10 @@ abstract class AbstractListener
             $user->games()->attach($game->getKey(), ['options' => $options]);
         }
 
-        call_user_func($this->callback, 'User ' . $identityId . ' successfully registered in ' . get_class($interface));
+        Log::info('User successfully registered', ['identityId' => $identityId, 'game' => $game]);
         $this->handleUpdate($user->refresh());
     }
 
-    /**
-     * @param GameUser $gameUser
-     * @param Collection $assignments
-     */
     protected function removeServerGroups(GameUser $gameUser, Collection $assignments): void
     {
         $teamspeakInterface = new Teamspeak($this->server);
@@ -261,9 +215,6 @@ abstract class AbstractListener
         }
     }
 
-    /**
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
-     */
     protected function updateActiveClients(): void
     {
         foreach ($this->server->clientList() as $client) {

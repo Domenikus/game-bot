@@ -65,19 +65,20 @@ class Menu extends Command
             $b->setTitle('Select assignment to delete');
             $assignments = Assignment::all();
             foreach ($assignments as $assignment) {
-                $b->addItem($assignment->value . '(' . $assignment->game->name . ')', function (CliMenu $menu) use ($assignment) {
-                    if ($assignment->delete()) {
-                        $flash = $menu->flash("Assignment successfully deleted");
-                        $flash->getStyle()->setBg('green');
-                        $menu->removeItem($menu->getSelectedItem());
-                        $menu->redraw();
-                    } else {
-                        $flash = $menu->flash("Error while deleting assignment");
-                        $flash->getStyle()->setBg('red');
-                    }
+                $b->addItem($assignment->value . '(' . $assignment->game->name . ')',
+                    function (CliMenu $menu) use ($assignment) {
+                        if ($assignment->delete()) {
+                            $flash = $menu->flash("Assignment successfully deleted");
+                            $flash->getStyle()->setBg('green');
+                            $menu->removeItem($menu->getSelectedItem());
+                            $menu->redraw();
+                        } else {
+                            $flash = $menu->flash("Error while deleting assignment");
+                            $flash->getStyle()->setBg('red');
+                        }
 
-                    $flash->display();
-                });
+                        $flash->display();
+                    });
             }
         };
     }
@@ -100,7 +101,8 @@ class Menu extends Command
 
             $type = $menu->askText()
                 ->setPromptText('Enter type')
-                ->setValidationFailedText('Wrong type, please provide on of the following: ' . implode(', ', $typesArray))
+                ->setValidationFailedText('Wrong type, please provide on of the following: ' . implode(', ',
+                        $typesArray))
                 ->setValidator(function ($type) use ($typesArray) {
                     if (in_array($type, $typesArray)) {
                         return true;
@@ -116,7 +118,8 @@ class Menu extends Command
 
             $game = $menu->askText()
                 ->setPromptText('Enter game')
-                ->setValidationFailedText('Wrong game, please provide on of the following: ' . implode(', ', $gamesArray))
+                ->setValidationFailedText('Wrong game, please provide on of the following: ' . implode(', ',
+                        $gamesArray))
                 ->setValidator(function ($game) use ($gamesArray) {
                     if (in_array($game, $gamesArray)) {
                         return true;

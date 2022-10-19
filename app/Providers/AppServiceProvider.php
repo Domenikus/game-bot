@@ -13,7 +13,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        config([
+            'logging.channels.daily.path' => \Phar::running()
+                ? dirname(\Phar::running(false)) . '/logs/game-bot.log'
+                : storage_path('logs/game-bot.log')
+        ]);
     }
 
     /**

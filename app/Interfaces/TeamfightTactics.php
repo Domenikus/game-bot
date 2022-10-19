@@ -5,12 +5,10 @@ namespace App\Interfaces;
 use App\GameUser;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TeamfightTactics extends AbstractGameInterface
 {
-    const QUEUE_TYPE_RANK_TFT = 'RANKED_TFT';
-
-
     public function getApiKey(): ?string
     {
         return config('game.tft-api-key');
@@ -24,6 +22,9 @@ class TeamfightTactics extends AbstractGameInterface
 
         if ($leagueResponse->successful()) {
             $stats['leagues'] = json_decode($leagueResponse->body(), true);
+        } else {
+            Log::error('Could not get player data from Riot API for Teamfight Tactics',
+                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $leagueResponse]);
         }
 
         return $stats;
@@ -41,6 +42,9 @@ class TeamfightTactics extends AbstractGameInterface
         $summoner = null;
         if ($summonerResponse->successful()) {
             $summoner = json_decode($summonerResponse->body(), true);
+        } else {
+            Log::error('Could not get player identity from Riot API for Teamfight Tactics',
+                ['apiKey' => $this->getApiKey(), 'params' => $params, 'response' => $summonerResponse]);
         }
 
         return $summoner;
