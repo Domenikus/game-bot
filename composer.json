@@ -25,12 +25,12 @@
         "php": "^8.0",
         "ext-json": "*",
         "ext-pdo": "*",
-        "guzzlehttp/guzzle": "^7",
-        "illuminate/database": "^8.40",
-        "illuminate/http": "^8.0",
-        "laminas/laminas-text": "^2.8",
-        "laravel-zero/framework": "^8.9.1",
-        "nunomaduro/laravel-console-menu": "^3.2",
+        "guzzlehttp/guzzle": "^7.4",
+        "illuminate/database": "^9.0",
+        "illuminate/http": "^9.0",
+        "laminas/laminas-text": "^2.9",
+        "laravel-zero/framework": "^9.0",
+        "nunomaduro/laravel-console-menu": "^3.3",
         "planetteamspeak/ts3-php-framework": "dev-master"
     },
     "require-dev": {
@@ -60,13 +60,7 @@
             "pestphp/pest-plugin": true
         }
     },
-    "extra": {
-        "laravel": {
-            "dont-discover": [
-                "barryvdh/laravel-ide-helper"
-            ]
-        }
-    },
+    "extra": {},
     "minimum-stability": "dev",
     "prefer-stable": true,
     "bin": [
