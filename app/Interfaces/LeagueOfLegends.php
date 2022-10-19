@@ -6,6 +6,7 @@ use App\GameUser;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 
 class LeagueOfLegends extends AbstractGameInterface
@@ -22,15 +23,12 @@ class LeagueOfLegends extends AbstractGameInterface
     public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
-        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' . $gameUser->options['id']);
-
         if ($matches = $this->getMatches($gameUser, 0, self::NUMBER_OF_MATCHES, self::MATCH_TYPE_RANKED)) {
             $stats['matches'] = $matches;
         }
 
-        if ($leagueResponse->successful()) {
-            $stats['leagues'] = json_decode($leagueResponse->body(), true);
+        if ($leagues = $this->getLeagues($gameUser)) {
+            $stats['leagues'] = $leagues;
         }
 
         return $stats;
@@ -50,6 +48,9 @@ class LeagueOfLegends extends AbstractGameInterface
         $matchIds = [];
         if ($matchIdsResponse->successful()) {
             $matchIds = json_decode($matchIdsResponse->body(), true);
+        } else {
+            Log::error('Could not get matche id\'s from Riot API for League of Legends',
+                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $matchIdsResponse]);
         }
 
         $matches = [];
@@ -59,10 +60,29 @@ class LeagueOfLegends extends AbstractGameInterface
 
             if ($matchResponse->successful()) {
                 $matches[] = json_decode(($matchResponse->body()), true);
+            } else {
+                Log::error('Could not get matches from Riot API for League of Legends',
+                    ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $matchResponse]);
             }
         }
 
         return $matches;
+    }
+
+    protected function getLeagues(GameUser $gameUser): array
+    {
+        $leagues = [];
+        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' . $gameUser->options['id']);
+
+        if ($leagueResponse->successful()) {
+            $leagues = json_decode($leagueResponse->body(), true);
+        } else {
+            Log::error('Could not get leagues from Riot API for League of Legends',
+                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $leagueResponse]);
+        }
+
+        return $leagues;
     }
 
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
@@ -160,7 +180,8 @@ class LeagueOfLegends extends AbstractGameInterface
                 continue;
             }
 
-            return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $participant['individualPosition']);
+            return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments,
+                $participant['individualPosition']);
         }
 
         return null;
@@ -179,6 +200,9 @@ class LeagueOfLegends extends AbstractGameInterface
         if ($summonerResponse->successful()) {
             $summoner = json_decode($summonerResponse->body(), true);
             $result = $summoner;
+        } else {
+            Log::error('Could not get player identity from Riot API for League of Legends',
+                ['apiKey' => $this->getApiKey(), 'params' => $params, 'response' => $summonerResponse]);
         }
 
         return $result;

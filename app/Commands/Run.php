@@ -13,9 +13,6 @@ use TeamSpeak3_Node_Server;
 
 class Run extends Command
 {
-    const LOG_TYPE_INFO = 'info';
-    const LOG_TYPE_ERROR = 'error';
-
     /**
      * The signature of the command.
      *
@@ -36,25 +33,28 @@ class Run extends Command
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         $server = null;
-        $callback = function (string $message, string $type = Run::LOG_TYPE_INFO) {
-            if ($type == Run::LOG_TYPE_INFO) {
-                $this->info($message);
-            } else {
-                $this->error($message);
-            }
-        };
 
-        $this->task("Connect to teamspeak server", function () use (&$server) {
+        $isConnectedToTeamspeakServer = $this->task("Connect to teamspeak server", function () use (&$server) {
             $this->newLine();
-            $server = Teamspeak::connectToTeamspeakServer();
+
+            if ($teamspeakServer = Teamspeak::connectToTeamspeakServer()) {
+                $server = $teamspeakServer;
+                return true;
+            }
+
+            return false;
         });
 
-        $this->task("Initialize event listeners", function () use (&$server, &$callback) {
+        if (!$isConnectedToTeamspeakServer) {
+            return;
+        }
+
+        $this->task("Initialize event listeners", function () use (&$server) {
             $this->newLine();
-            $this->initListener($server, $callback);
+            $this->initListener($server);
         });
 
         $this->task("Listen for events", function () use (&$server) {
@@ -63,23 +63,23 @@ class Run extends Command
         });
     }
 
-    private function initListener(TeamSpeak3_Node_Server $server, callable $callback): void
+    private function initListener(TeamSpeak3_Node_Server $server): void
     {
         $listeners = [];
 
         if (config('teamspeak.listener.globalChat')) {
-            $listeners[] = new GlobalChatListener($server, $callback);
+            $listeners[] = new GlobalChatListener($server);
         }
 
         if (config('teamspeak.listener.privateChat')) {
-            $listeners[] = new PrivateChatListener($server, $callback);
+            $listeners[] = new PrivateChatListener($server);
         }
 
         if (config('teamspeak.listener.enterView')) {
-            $listeners[] = new EnterViewListener($server, $callback);
+            $listeners[] = new EnterViewListener($server);
         }
 
-        $listeners[] = new TimeoutListener($server, $callback);
+        $listeners[] = new TimeoutListener($server);
 
         foreach ($listeners as $listener) {
             $listener->init();
