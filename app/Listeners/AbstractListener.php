@@ -65,7 +65,8 @@ abstract class AbstractListener
 
                         $this->removeServerGroups($game->game_user, $assignments);
                         $user->games()->detach($game->getKey());
-                        Log::info('User successfully unregistered', ['user' => $user, 'game' => $game]);
+                        Log::info('User successfully unregistered',
+                            ['user' => $user->identity_id, 'game' => $game->name]);
                     }
                 }
             } else {
@@ -73,7 +74,7 @@ abstract class AbstractListener
                     $assignments = $game->assignments()->get();
 
                     $this->removeServerGroups($game->game_user, $assignments);
-                    Log::info('User successfully unregistered', ['user' => $user, 'game' => $game]);
+                    Log::info('User successfully unregistered', ['user' => $user->identity_id, 'game' => $game->name]);
                 }
 
                 $user->delete();
@@ -98,7 +99,7 @@ abstract class AbstractListener
                             if ($client = $teamspeakInterface->getClient($user->identity_id)) {
                                 $teamspeakInterface->sendMessageToClient($client,
                                     'User ' . $user->identity_id . ' successfully blocked');
-                                Log::info('User successfully blocked', ['user' => $user]);
+                                Log::info('User successfully blocked', ['user' => $user->identity_id]);
                             }
                         }
                     }
@@ -111,7 +112,7 @@ abstract class AbstractListener
                             if ($client = $teamspeakInterface->getClient($user->identity_id)) {
                                 $teamspeakInterface->sendMessageToClient($client,
                                     'User ' . $user->identity_id . ' successfully unblocked');
-                                Log::info('User successfully unblocked', ['user' => $user]);
+                                Log::info('User successfully unblocked', ['user' => $user->identity_id]);
                             }
                         }
                     }
@@ -139,21 +140,25 @@ abstract class AbstractListener
 
         $teamspeakInterface = new Teamspeak($this->server);
         if ($client = $teamspeakInterface->getClient($gameUser->user_identity_id)) {
-            $actualServerGroups = $client->memberOf();
+            $teamspeakInterface->getServerGroupsAssignedToClient($client);
+            $actualServerGroups = $teamspeakInterface->getServerGroupsAssignedToClient($client);
             $supportedTeamspeakServerGroupIds = $assignments->pluck('ts3_server_group_id')->toArray();
+
             foreach ($actualServerGroups as $actualServerGroup) {
-                if (isset($actualServerGroup['sgid'])
-                    && in_array($actualServerGroup['sgid'], $supportedTeamspeakServerGroupIds)
-                    && !in_array($actualServerGroup['sgid'], $newTeamspeakServerGroups)) {
-                    $teamspeakInterface->removeServerGroup($client, $actualServerGroup['sgid']);
+                if (in_array($actualServerGroup, $supportedTeamspeakServerGroupIds)
+                    && !in_array($actualServerGroup, $newTeamspeakServerGroups)) {
+                    $teamspeakInterface->removeServerGroupFromClient($client, $actualServerGroup);
                 }
             }
 
             foreach ($newTeamspeakServerGroups as $newGroup) {
-                $teamspeakInterface->addServerGroup($client, $newGroup);
+                if (!in_array($newGroup, $actualServerGroups)) {
+                    $teamspeakInterface->addServerGroupToClient($client, $newGroup);
+                }
             }
 
-            Log::info('Server groups successfully updated', ['gameUser' => $gameUser]);
+            Log::info('Server groups successfully updated',
+                ['identityId' => $gameUser->user_identity_id, 'gameId' => $gameUser->game_id]);
         }
     }
 
@@ -181,7 +186,7 @@ abstract class AbstractListener
         if ($user->isBlocked()) {
             if ($client = $teamspeakInterface->getClient($identityId)) {
                 $teamspeakInterface->sendMessageToClient($client, 'Registration failed, you are blocked by an admin.');
-                Log::info('Blocked user tried to register', ['user' => $user]);
+                Log::info('Blocked user tried to register', ['user' => $user->identity_id]);
             }
 
             return;
@@ -195,7 +200,7 @@ abstract class AbstractListener
             $user->games()->attach($game->getKey(), ['options' => $options]);
         }
 
-        Log::info('User successfully registered', ['identityId' => $identityId, 'game' => $game]);
+        Log::info('User successfully registered', ['identityId' => $identityId, 'game' => $game->name]);
         $this->handleUpdate($user->refresh());
     }
 
@@ -209,7 +214,7 @@ abstract class AbstractListener
             foreach ($actualServerGroups as $actualServerGroup) {
                 if (isset($actualServerGroup['sgid']) && in_array($actualServerGroup['sgid'],
                         $supportedTeamspeakServerGroupIds)) {
-                    $teamspeakInterface->removeServerGroup($client, $actualServerGroup['sgid']);
+                    $teamspeakInterface->removeServerGroupFromClient($client, $actualServerGroup['sgid']);
                 }
             }
         }

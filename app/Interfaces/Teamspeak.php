@@ -52,7 +52,20 @@ class Teamspeak
         return $result;
     }
 
-    public function addServerGroup(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
+    public function getServerGroupsAssignedToClient(TeamSpeak3_Node_Client $client): array
+    {
+        $actualServerGroups = [];
+        $actualGroups = $client->memberOf();
+        foreach ($actualGroups as $group) {
+            if (isset($group['sgid'])) {
+                $actualServerGroups[] = $group['sgid'];
+            }
+        }
+
+        return $actualServerGroups;
+    }
+
+    public function addServerGroupToClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
     {
         try {
             $client->addServerGroup($serverGroupId);
@@ -64,7 +77,7 @@ class Teamspeak
         return false;
     }
 
-    public function removeServerGroup(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
+    public function removeServerGroupFromClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
     {
         try {
             $client->remServerGroup($serverGroupId);
