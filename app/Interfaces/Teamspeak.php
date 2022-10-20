@@ -33,7 +33,7 @@ class Teamspeak
                 . config('teamspeak.bot_name');
             $ts3NodeServer = TeamSpeak3::factory($uri);
         } catch (Exception $e) {
-            report($e);
+            Log::critical($e);
         }
 
         return $ts3NodeServer;
