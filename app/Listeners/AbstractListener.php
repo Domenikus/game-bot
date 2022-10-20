@@ -140,21 +140,25 @@ abstract class AbstractListener
 
         $teamspeakInterface = new Teamspeak($this->server);
         if ($client = $teamspeakInterface->getClient($gameUser->user_identity_id)) {
-            $actualServerGroups = $client->memberOf();
+            $teamspeakInterface->getServerGroupsAssignedToClient($client);
+            $actualServerGroups = $teamspeakInterface->getServerGroupsAssignedToClient($client);
             $supportedTeamspeakServerGroupIds = $assignments->pluck('ts3_server_group_id')->toArray();
+
             foreach ($actualServerGroups as $actualServerGroup) {
-                if (isset($actualServerGroup['sgid'])
-                    && in_array($actualServerGroup['sgid'], $supportedTeamspeakServerGroupIds)
-                    && !in_array($actualServerGroup['sgid'], $newTeamspeakServerGroups)) {
-                    $teamspeakInterface->removeServerGroup($client, $actualServerGroup['sgid']);
+                if (in_array($actualServerGroup, $supportedTeamspeakServerGroupIds)
+                    && !in_array($actualServerGroup, $newTeamspeakServerGroups)) {
+                    $teamspeakInterface->removeServerGroupFromClient($client, $actualServerGroup);
                 }
             }
 
             foreach ($newTeamspeakServerGroups as $newGroup) {
-                $teamspeakInterface->addServerGroup($client, $newGroup);
+                if (!in_array($newGroup, $actualServerGroups)) {
+                    $teamspeakInterface->addServerGroupToClient($client, $newGroup);
+                }
             }
 
-            Log::info('Server groups successfully updated', ['gameUser' => $gameUser]);
+            Log::info('Server groups successfully updated',
+                ['identityId' => $gameUser->user_identity_id, 'gameId' => $gameUser->game_id]);
         }
     }
 
@@ -210,7 +214,7 @@ abstract class AbstractListener
             foreach ($actualServerGroups as $actualServerGroup) {
                 if (isset($actualServerGroup['sgid']) && in_array($actualServerGroup['sgid'],
                         $supportedTeamspeakServerGroupIds)) {
-                    $teamspeakInterface->removeServerGroup($client, $actualServerGroup['sgid']);
+                    $teamspeakInterface->removeServerGroupFromClient($client, $actualServerGroup['sgid']);
                 }
             }
         }
