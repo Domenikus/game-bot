@@ -49,7 +49,7 @@ class LeagueOfLegends extends AbstractGameInterface
         if ($matchIdsResponse->successful()) {
             $matchIds = json_decode($matchIdsResponse->body(), true);
         } else {
-            Log::error('Could not get matche id\'s from Riot API for League of Legends',
+            Log::error('Could not get match id\'s from Riot API for League of Legends',
                 ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $matchIdsResponse]);
         }
 
