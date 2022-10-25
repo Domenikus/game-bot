@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Services;
 
 use Exception;
 use Illuminate\Support\Facades\Log;

@@ -5,8 +5,8 @@ namespace App\Listeners;
 
 use App\Game;
 use App\GameUser;
-use App\Interfaces\AbstractGameInterface;
-use App\Interfaces\Teamspeak;
+use App\Interfaces\GameApi;
+use App\Services\Teamspeak;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +30,7 @@ abstract class AbstractListener
             $user->loadMissing('games');
 
             foreach ($user->games as $game) {
-                $assignments = $game->assignments()->get();
+                $assignments = $game->assignments()->with(['type'])->get();
                 $queues = $game->queues()->with('type')->get();
                 $interface = resolve($game->interface);
                 $this->updateServerGroups($game->game_user, $queues, $assignments, $interface);
@@ -129,7 +129,7 @@ abstract class AbstractListener
         GameUser $gameUser,
         Collection $queues,
         Collection $assignments,
-        AbstractGameInterface $interface
+        GameApi $interface
     ): void {
         $stats = $interface->getPlayerData($gameUser);
         if (!$stats) {
@@ -140,7 +140,6 @@ abstract class AbstractListener
 
         $teamspeakInterface = new Teamspeak($this->server);
         if ($client = $teamspeakInterface->getClient($gameUser->user_identity_id)) {
-            $teamspeakInterface->getServerGroupsAssignedToClient($client);
             $actualServerGroups = $teamspeakInterface->getServerGroupsAssignedToClient($client);
             $supportedTeamspeakServerGroupIds = $assignments->pluck('ts3_server_group_id')->toArray();
 
@@ -162,7 +161,7 @@ abstract class AbstractListener
         }
     }
 
-    protected function registerUser(array $params, string $identityId, AbstractGameInterface $interface): void
+    protected function registerUser(array $params, string $identityId, GameApi $interface): void
     {
         $teamspeakInterface = new Teamspeak($this->server);
 

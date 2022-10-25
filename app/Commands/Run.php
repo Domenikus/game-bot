@@ -2,11 +2,11 @@
 
 namespace App\Commands;
 
-use App\Interfaces\Teamspeak;
 use App\Listeners\EnterViewListener;
 use App\Listeners\GlobalChatListener;
 use App\Listeners\PrivateChatListener;
 use App\Listeners\TimeoutListener;
+use App\Services\Teamspeak;
 use LaravelZero\Framework\Commands\Command;
 use TeamSpeak3_Node_Server;
 

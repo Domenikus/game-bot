@@ -2,12 +2,13 @@
 
 namespace App\Interfaces;
 
+use App\Assignment;
 use App\GameUser;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class TeamfightTactics extends AbstractGameInterface
+class TeamfightTactics implements GameApi
 {
     public function getApiKey(): ?string
     {
@@ -56,10 +57,11 @@ class TeamfightTactics extends AbstractGameInterface
 
         if (isset($stats['leagues'])) {
             foreach ($queues as $queue) {
-                if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) use ($queue) {
-                    return $value->type->name == $queue->type->name;
-                }), $queue->name)) {
-                    $ts3ServerGroups[$queue->type->name] = $rank;
+                if ($rankAssignment = $this->mapRank($stats['leagues'],
+                    $assignments->filter(function ($value) use ($queue) {
+                        return $value->type->name == $queue->type->name;
+                    }), $queue->name)) {
+                    $ts3ServerGroups[$queue->type->name] = $rankAssignment->ts3_server_group_id;
                 }
             }
         }
@@ -67,7 +69,7 @@ class TeamfightTactics extends AbstractGameInterface
         return $ts3ServerGroups;
     }
 
-    protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?int
+    protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
     {
         $newRankName = '';
         foreach ($leagues as $league) {
@@ -75,7 +77,6 @@ class TeamfightTactics extends AbstractGameInterface
                 $newRankName = $league['tier'] . ' ' . $league['rank'];
             }
         }
-
-        return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $newRankName);
+        return $assignments->where('value', strtolower($newRankName))->first();
     }
 }

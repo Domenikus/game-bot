@@ -2,13 +2,14 @@
 
 namespace App\Interfaces;
 
+use App\Assignment;
 use App\GameUser;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class ApexLegends extends AbstractGameInterface
+class ApexLegends implements GameApi
 {
     const PLATFORMS = [
         'origin',
@@ -45,25 +46,25 @@ class ApexLegends extends AbstractGameInterface
 
         if (isset($stats['data']["segments"][0]["stats"])) {
             foreach ($queues as $queue) {
-                if ($rank = $this->mapRank($stats['data']["segments"][0]["stats"],
+                if ($rankAssignment = $this->mapRank($stats['data']["segments"][0]["stats"],
                     $assignments->filter(function ($value) use ($queue) {
                         return $value->type->name == $queue->type->name;
                     }), $queue->name)) {
-                    $ts3ServerGroups[$queue->type->name] = $rank;
+                    $ts3ServerGroups[$queue->type->name] = $rankAssignment->ts3_server_group_id;
                 }
             }
         }
 
-        if ($character = $this->mapLegend($stats, $assignments->filter(function ($value) {
+        if ($characterAssignment = $this->mapLegend($stats, $assignments->filter(function ($value) {
             return $value->type->name == Type::TYPE_CHARACTER;
         }))) {
-            $ts3ServerGroups[Type::TYPE_CHARACTER] = $character;
+            $ts3ServerGroups[Type::TYPE_CHARACTER] = $characterAssignment->ts3_server_group_id;
         }
 
         return $ts3ServerGroups;
     }
 
-    protected function mapRank(array $stats, Collection $assignments, string $queueType): ?int
+    protected function mapRank(array $stats, Collection $assignments, string $queueType): ?Assignment
     {
         $newRankName = '';
         foreach ($stats as $key => $stat) {
@@ -72,10 +73,10 @@ class ApexLegends extends AbstractGameInterface
             }
         }
 
-        return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $newRankName);
+        return $assignments->where('value', strtolower($newRankName))->first();
     }
 
-    protected function mapLegend(array $stats, Collection $assignments): ?int
+    protected function mapLegend(array $stats, Collection $assignments): ?Assignment
     {
         $characterWithMostKills = [
             'name' => '',
@@ -93,7 +94,7 @@ class ApexLegends extends AbstractGameInterface
             }
         }
 
-        return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $characterWithMostKills['name']);
+        return $assignments->where('value', strtolower($characterWithMostKills['name']))->first();
     }
 
     public function getPlayerIdentity($params): ?array

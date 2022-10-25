@@ -2,6 +2,7 @@
 
 namespace App\Interfaces;
 
+use App\Assignment;
 use App\GameUser;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 
-class LeagueOfLegends extends AbstractGameInterface
+class LeagueOfLegends implements GameApi
 {
     const NUMBER_OF_MATCHES = 20;
     const MATCH_TYPE_RANKED = 'ranked';
@@ -92,10 +93,11 @@ class LeagueOfLegends extends AbstractGameInterface
 
         if (isset($stats['leagues'])) {
             foreach ($queues as $queue) {
-                if ($rank = $this->mapRank($stats['leagues'], $assignments->filter(function ($value) use ($queue) {
-                    return $value->type->name == $queue->type->name;
-                }), $queue->name)) {
-                    $ts3ServerGroups[$queue->type->name] = $rank;
+                if ($rankAssignment = $this->mapRank($stats['leagues'],
+                    $assignments->filter(function ($value) use ($queue) {
+                        return $value->type->name == $queue->type->name;
+                    }), $queue->name)) {
+                    $ts3ServerGroups[$queue->type->name] = $rankAssignment->ts3_server_group_id;
                 }
             }
         }
@@ -107,7 +109,7 @@ class LeagueOfLegends extends AbstractGameInterface
         return array_merge($ts3ServerGroups, $matchData);
     }
 
-    protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?int
+    protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
     {
         $newRankName = '';
         foreach ($leagues as $league) {
@@ -116,7 +118,7 @@ class LeagueOfLegends extends AbstractGameInterface
             }
         }
 
-        return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $newRankName);
+        return $assignments->where('value', strtolower($newRankName))->first();
     }
 
     protected function mapMatches(GameUser $gameUser, array $matches, Collection $assignments): array
@@ -126,24 +128,24 @@ class LeagueOfLegends extends AbstractGameInterface
         $championPlayCount = [];
         $lanePlayCount = [];
         foreach ($matches as $match) {
-            if ($champion = $this->mapChampion($gameUser, $match, $assignments->filter(function ($value) {
+            if ($championAssignment = $this->mapChampion($gameUser, $match, $assignments->filter(function ($value) {
                 return $value->type->name == Type::TYPE_CHARACTER;
             }))) {
-                if (!isset($championPlayCount[$champion])) {
-                    $championPlayCount[$champion] = 0;
+                if (!isset($championPlayCount[$championAssignment->ts3_server_group_id])) {
+                    $championPlayCount[$championAssignment->ts3_server_group_id] = 0;
                 }
 
-                $championPlayCount[$champion]++;
+                $championPlayCount[$championAssignment->ts3_server_group_id]++;
             }
 
-            if ($champion = $this->mapLane($gameUser, $match, $assignments->filter(function ($value) {
+            if ($championAssignment = $this->mapLane($gameUser, $match, $assignments->filter(function ($value) {
                 return $value->type->name == Type::TYPE_POSITION;
             }))) {
-                if (!isset($lanePlayCount[$champion])) {
-                    $lanePlayCount[$champion] = 0;
+                if (!isset($lanePlayCount[$championAssignment->ts3_server_group_id])) {
+                    $lanePlayCount[$championAssignment->ts3_server_group_id] = 0;
                 }
 
-                $lanePlayCount[$champion]++;
+                $lanePlayCount[$championAssignment->ts3_server_group_id]++;
             }
         }
 
@@ -160,28 +162,27 @@ class LeagueOfLegends extends AbstractGameInterface
         return $result;
     }
 
-    protected function mapChampion(GameUser $gameUser, array $match, Collection $assignments): ?string
+    protected function mapChampion(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
     {
         foreach ($match['info']['participants'] as $participant) {
             if ($participant['puuid'] !== $gameUser->options['puuid']) {
                 continue;
             }
 
-            return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments, $participant['championName']);
+            return $assignments->where('value', strtolower($participant['championName']))->first();
         }
 
         return null;
     }
 
-    protected function mapLane(GameUser $gameUser, array $match, Collection $assignments): ?string
+    protected function mapLane(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
     {
         foreach ($match['info']['participants'] as $participant) {
             if ($participant['puuid'] !== $gameUser->options['puuid']) {
                 continue;
             }
 
-            return $this->getTs3ServerGroupIdForValueInGivenAssignments($assignments,
-                $participant['individualPosition']);
+            return $assignments->where('value', strtolower($participant['individualPosition']))->first();
         }
 
         return null;
