@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class ApexLegends implements GameApi
+class ApexLegendsGateway implements GameGateway
 {
     const PLATFORMS = [
         'origin',
@@ -17,24 +17,26 @@ class ApexLegends implements GameApi
         'psn'
     ];
 
+    protected string $apiKey;
 
-    public function getApiKey(): ?string
+
+    public function __construct(string $apiKey)
     {
-        return config('game.apex-api-key');
+        $this->apiKey = $apiKey;
     }
 
     public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
 
-        $response = Http::withHeaders(['TRN-Api-Key' => $this->getApiKey()])
+        $response = Http::withHeaders(['TRN-Api-Key' => $this->apiKey])
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $gameUser->options['platform'] . '/' . $gameUser->options['name']);
 
         if ($response->successful()) {
             $stats = json_decode($response->body(), true);
         } else {
             Log::error('Could not get player data from TRN API for Apex Legends',
-                ['apiKey' => $this->getApiKey(), 'response' => $response]);
+                ['apiKey' => $this->apiKey, 'response' => $response]);
         }
 
         return $stats;

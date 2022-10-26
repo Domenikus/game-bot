@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
@@ -10,15 +10,17 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 
-class LeagueOfLegends implements GameApi
+class LeagueOfLegendsGateway implements GameGateway
 {
     const NUMBER_OF_MATCHES = 20;
     const MATCH_TYPE_RANKED = 'ranked';
 
+    protected string $apiKey;
 
-    public function getApiKey(): ?string
+
+    public function __construct(string $apiKey)
     {
-        return config('game.lol-api-key');
+        $this->apiKey = $apiKey;
     }
 
     public function getPlayerData(GameUser $gameUser): ?array
@@ -37,7 +39,7 @@ class LeagueOfLegends implements GameApi
 
     protected function getMatches(GameUser $gameUser, int $offset, int $count, string $type): array
     {
-        $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+        $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
             ->get('https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/' . $gameUser->options['puuid'] . '/ids',
                 [
                     'start' => $offset,
@@ -51,19 +53,19 @@ class LeagueOfLegends implements GameApi
             $matchIds = json_decode($matchIdsResponse->body(), true);
         } else {
             Log::error('Could not get match id\'s from Riot API for League of Legends',
-                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $matchIdsResponse]);
+                ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $matchIdsResponse]);
         }
 
         $matches = [];
         foreach ($matchIds as $matchId) {
-            $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
                 ->get('https://europe.api.riotgames.com/lol/match/v5/matches/' . $matchId);
 
             if ($matchResponse->successful()) {
                 $matches[] = json_decode(($matchResponse->body()), true);
             } else {
                 Log::error('Could not get matches from Riot API for League of Legends',
-                    ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $matchResponse]);
+                    ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $matchResponse]);
             }
         }
 
@@ -73,14 +75,14 @@ class LeagueOfLegends implements GameApi
     protected function getLeagues(GameUser $gameUser): array
     {
         $leagues = [];
-        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
             ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' . $gameUser->options['id']);
 
         if ($leagueResponse->successful()) {
             $leagues = json_decode($leagueResponse->body(), true);
         } else {
             Log::error('Could not get leagues from Riot API for League of Legends',
-                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $leagueResponse]);
+                ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $leagueResponse]);
         }
 
         return $leagues;
@@ -194,7 +196,7 @@ class LeagueOfLegends implements GameApi
             return null;
         }
 
-        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
             ->get('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' . $params[2]);
 
         $result = null;
@@ -203,7 +205,7 @@ class LeagueOfLegends implements GameApi
             $result = $summoner;
         } else {
             Log::error('Could not get player identity from Riot API for League of Legends',
-                ['apiKey' => $this->getApiKey(), 'params' => $params, 'response' => $summonerResponse]);
+                ['apiKey' => $this->apiKey, 'params' => $params, 'response' => $summonerResponse]);
         }
 
         return $result;

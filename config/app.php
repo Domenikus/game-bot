@@ -1,5 +1,7 @@
 <?php
 
+use App\Providers\GameServiceProvider;
+
 return [
 
     /*
@@ -55,6 +57,7 @@ return [
 
     'providers' => [
         App\Providers\AppServiceProvider::class,
+        GameServiceProvider::class,
     ],
 
 ];

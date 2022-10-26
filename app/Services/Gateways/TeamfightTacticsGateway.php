@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Interfaces;
+namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
@@ -8,24 +8,27 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class TeamfightTactics implements GameApi
+class TeamfightTacticsGateway implements GameGateway
 {
-    public function getApiKey(): ?string
+    protected string $apiKey;
+
+
+    public function __construct(string $apiKey)
     {
-        return config('game.tft-api-key');
+        $this->apiKey = $apiKey;
     }
 
     public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
-        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
             ->get('https://euw1.api.riotgames.com/tft/league/v1/entries/by-summoner/' . $gameUser->options['id']);
 
         if ($leagueResponse->successful()) {
             $stats['leagues'] = json_decode($leagueResponse->body(), true);
         } else {
             Log::error('Could not get player data from Riot API for Teamfight Tactics',
-                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'response' => $leagueResponse]);
+                ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $leagueResponse]);
         }
 
         return $stats;
@@ -37,7 +40,7 @@ class TeamfightTactics implements GameApi
             return null;
         }
 
-        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
             ->get('https://euw1.api.riotgames.com/tft/summoner/v1/summoners/by-name/' . $params[2]);
 
         $summoner = null;
@@ -45,7 +48,7 @@ class TeamfightTactics implements GameApi
             $summoner = json_decode($summonerResponse->body(), true);
         } else {
             Log::error('Could not get player identity from Riot API for Teamfight Tactics',
-                ['apiKey' => $this->getApiKey(), 'params' => $params, 'response' => $summonerResponse]);
+                ['apiKey' => $this->apiKey, 'params' => $params, 'response' => $summonerResponse]);
         }
 
         return $summoner;

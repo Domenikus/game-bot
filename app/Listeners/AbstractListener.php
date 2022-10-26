@@ -5,10 +5,12 @@ namespace App\Listeners;
 
 use App\Game;
 use App\GameUser;
-use App\Interfaces\GameApi;
+use App\Services\Gateways\GameGateway;
+use App\Services\Gateways\GameGatewayRegistry;
 use App\Services\Teamspeak;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use TeamSpeak3_Node_Server;
 
@@ -32,7 +34,8 @@ abstract class AbstractListener
             foreach ($user->games as $game) {
                 $assignments = $game->assignments()->with(['type'])->get();
                 $queues = $game->queues()->with('type')->get();
-                $interface = resolve($game->interface);
+                $registry = App::make(GameGatewayRegistry::class);
+                $interface = $registry->get($game->name);
                 $this->updateServerGroups($game->game_user, $queues, $assignments, $interface);
             }
         }
@@ -42,14 +45,10 @@ abstract class AbstractListener
     {
         $game = Game::where('name', $params[1])->first();
         if (isset($params[1]) && $game) {
-            $interface = resolve($game->interface);
-            if (!$interface->getApiKey()) {
-                Log::error('No API key provided, registration skipped',
-                    ['game' => $game, 'apiKey' => $interface->getApiKey()]);
-                return;
-            }
-
+            $registry = App::make(GameGatewayRegistry::class);
+            $interface = $registry->get($game->name);
             $this->registerUser($params, $identityId, $interface);
+
         }
     }
 
@@ -129,7 +128,7 @@ abstract class AbstractListener
         GameUser $gameUser,
         Collection $queues,
         Collection $assignments,
-        GameApi $interface
+        GameGateway $interface
     ): void {
         $stats = $interface->getPlayerData($gameUser);
         if (!$stats) {
@@ -161,7 +160,7 @@ abstract class AbstractListener
         }
     }
 
-    protected function registerUser(array $params, string $identityId, GameApi $interface): void
+    protected function registerUser(array $params, string $identityId, GameGateway $interface): void
     {
         $teamspeakInterface = new Teamspeak($this->server);
 
