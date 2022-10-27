@@ -10,7 +10,6 @@ use App\Services\Teamspeak;
 use LaravelZero\Framework\Commands\Command;
 use TeamSpeak3_Node_Server;
 
-
 class Run extends Command
 {
     /**
@@ -27,7 +26,6 @@ class Run extends Command
      */
     protected $description = 'Run the bot';
 
-
     /**
      * Execute the console command.
      *
@@ -37,11 +35,12 @@ class Run extends Command
     {
         $server = null;
 
-        $isConnectedToTeamspeakServer = $this->task("Connect to teamspeak server", function () use (&$server) {
+        $isConnectedToTeamspeakServer = $this->task('Connect to teamspeak server', function () use (&$server) {
             $this->newLine();
 
             if ($teamspeakServer = Teamspeak::connectToTeamspeakServer()) {
                 $server = $teamspeakServer;
+
                 return true;
             }
 
@@ -52,13 +51,15 @@ class Run extends Command
             return;
         }
 
-        $this->task("Initialize event listeners", function () use (&$server) {
+        $this->task('Initialize event listeners', function () use (&$server) {
             $this->newLine();
+            /** @phpstan-ignore-next-line */ // Already checked in line 41
             $this->initListener($server);
         });
 
-        $this->task("Listen for events", function () use (&$server) {
+        $this->task('Listen for events', function () use (&$server) {
             $this->newLine();
+            /** @phpstan-ignore-next-line */ // Already checked in line 41
             $this->listenToEvents($server);
         });
     }
@@ -88,7 +89,9 @@ class Run extends Command
 
     public function listenToEvents(TeamSpeak3_Node_Server $server): void
     {
+        /** @phpstan-ignore-next-line */ // Intended behavior
         while (true) {
+            /** @phpstan-ignore-next-line */ // Unfortunately no type hint in teamspeak library
             $server->getAdapter()->wait();
         }
     }

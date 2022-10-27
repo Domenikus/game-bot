@@ -17,16 +17,25 @@ class GameServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->app->make(GameGatewayRegistry::class)
-            ->register(Game::GAME_NAME_APEX_LEGENDS, new ApexLegendsGateway(config('apex-legends.apiKey')));
+        $registry = $this->app->make(GameGatewayRegistry::class);
+        if ($registry instanceof GameGatewayRegistry) {
+            $apexApiKey = config('apex-legends.apiKey');
+            if (is_string($apexApiKey)) {
+                $registry->register(Game::GAME_NAME_APEX_LEGENDS, new ApexLegendsGateway($apexApiKey));
+            }
 
-        $this->app->make(GameGatewayRegistry::class)
-            ->register(Game::GAME_NAME_LEAGUE_OF_LEGENDS,
-                new LeagueOfLegendsGateway(config('league-of-legends.apiKey')));
+            $lolApiKey = config('league-of-legends.apiKey');
+            if (is_string($lolApiKey)) {
+                $registry->register(Game::GAME_NAME_LEAGUE_OF_LEGENDS,
+                    new LeagueOfLegendsGateway($lolApiKey));
+            }
 
-        $this->app->make(GameGatewayRegistry::class)
-            ->register(Game::GAME_NAME_TEAMFIGHT_TACTICS,
-                new TeamfightTacticsGateway(config('teamfight-tactics.apiKey')));
+            $tftApiKey = config('teamfight-tactics.apiKey');
+            if (is_string($tftApiKey)) {
+                $registry->register(Game::GAME_NAME_TEAMFIGHT_TACTICS,
+                    new TeamfightTacticsGateway($tftApiKey));
+            }
+        }
     }
 
     public function register(): void

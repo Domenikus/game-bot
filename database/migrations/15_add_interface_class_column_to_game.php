@@ -9,22 +9,21 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     public function up(): void
     {
         Schema::table('games', function (Blueprint $table) {
             $table->string('interface');
         });
 
-        $apex = Game::where('name', 'apex')->first();
+        $apex = Game::where('name', 'apex')->firstOrFail();
         $apex->interface = ApexLegendsGateway::class;
         $apex->saveOrFail();
 
-        $lol = Game::where('name', 'lol')->first();
+        $lol = Game::where('name', 'lol')->firstOrFail();
         $lol->interface = LeagueOfLegendsGateway::class;
         $lol->saveOrFail();
 
-        $tft = Game::where('name', 'tft')->first();
+        $tft = Game::where('name', 'tft')->firstOrFail();
         $tft->interface = TeamfightTacticsGateway::class;
         $tft->saveOrFail();
     }

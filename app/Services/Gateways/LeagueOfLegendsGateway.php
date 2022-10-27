@@ -4,19 +4,19 @@ namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
+use App\Queue;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-
 class LeagueOfLegendsGateway implements GameGateway
 {
     const NUMBER_OF_MATCHES = 20;
+
     const MATCH_TYPE_RANKED = 'ranked';
 
     protected string $apiKey;
-
 
     public function __construct(string $apiKey)
     {
@@ -44,13 +44,16 @@ class LeagueOfLegendsGateway implements GameGateway
                 [
                     'start' => $offset,
                     'count' => $count,
-                    'type' => $type
+                    'type' => $type,
                 ]
             );
 
         $matchIds = [];
         if ($matchIdsResponse->successful()) {
-            $matchIds = json_decode($matchIdsResponse->body(), true);
+            $decodedBody = json_decode($matchIdsResponse->body(), true);
+            if (is_array($decodedBody)) {
+                $matchIds = $decodedBody;
+            }
         } else {
             Log::error('Could not get match id\'s from Riot API for League of Legends',
                 ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $matchIdsResponse]);
@@ -79,7 +82,10 @@ class LeagueOfLegendsGateway implements GameGateway
             ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' . $gameUser->options['id']);
 
         if ($leagueResponse->successful()) {
-            $leagues = json_decode($leagueResponse->body(), true);
+            $decodedBody = json_decode($leagueResponse->body(), true);
+            if (is_array($decodedBody)) {
+                $leagues = $decodedBody;
+            }
         } else {
             Log::error('Could not get leagues from Riot API for League of Legends',
                 ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $leagueResponse]);
@@ -88,6 +94,13 @@ class LeagueOfLegendsGateway implements GameGateway
         return $leagues;
     }
 
+    /**
+     * @param GameUser $gameUser
+     * @param array $stats
+     * @param Collection<int, Assignment> $assignments
+     * @param Collection<int, Queue> $queues
+     * @return array
+     */
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
     {
         $ts3ServerGroups = [];
@@ -97,9 +110,9 @@ class LeagueOfLegendsGateway implements GameGateway
             foreach ($queues as $queue) {
                 if ($rankAssignment = $this->mapRank($stats['leagues'],
                     $assignments->filter(function ($value) use ($queue) {
-                        return $value->type->name == $queue->type->name;
+                        return $value->type?->name == $queue->type?->name;
                     }), $queue->name)) {
-                    $ts3ServerGroups[$queue->type->name] = $rankAssignment->ts3_server_group_id;
+                    $ts3ServerGroups[$queue->type?->name] = $rankAssignment->ts3_server_group_id;
                 }
             }
         }
@@ -111,6 +124,12 @@ class LeagueOfLegendsGateway implements GameGateway
         return array_merge($ts3ServerGroups, $matchData);
     }
 
+    /**
+     * @param array $leagues
+     * @param Collection<int, Assignment> $assignments
+     * @param string $queueType
+     * @return Assignment|null
+     */
     protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
     {
         $newRankName = '';
@@ -123,6 +142,12 @@ class LeagueOfLegendsGateway implements GameGateway
         return $assignments->where('value', strtolower($newRankName))->first();
     }
 
+    /**
+     * @param GameUser $gameUser
+     * @param array $matches
+     * @param Collection<int, Assignment> $assignments
+     * @return array
+     */
     protected function mapMatches(GameUser $gameUser, array $matches, Collection $assignments): array
     {
         $result = [];
@@ -131,7 +156,7 @@ class LeagueOfLegendsGateway implements GameGateway
         $lanePlayCount = [];
         foreach ($matches as $match) {
             if ($championAssignment = $this->mapChampion($gameUser, $match, $assignments->filter(function ($value) {
-                return $value->type->name == Type::TYPE_CHARACTER;
+                return $value->type?->name == Type::TYPE_CHARACTER;
             }))) {
                 if (!isset($championPlayCount[$championAssignment->ts3_server_group_id])) {
                     $championPlayCount[$championAssignment->ts3_server_group_id] = 0;
@@ -141,7 +166,7 @@ class LeagueOfLegendsGateway implements GameGateway
             }
 
             if ($championAssignment = $this->mapLane($gameUser, $match, $assignments->filter(function ($value) {
-                return $value->type->name == Type::TYPE_POSITION;
+                return $value->type?->name == Type::TYPE_POSITION;
             }))) {
                 if (!isset($lanePlayCount[$championAssignment->ts3_server_group_id])) {
                     $lanePlayCount[$championAssignment->ts3_server_group_id] = 0;
@@ -164,6 +189,12 @@ class LeagueOfLegendsGateway implements GameGateway
         return $result;
     }
 
+    /**
+     * @param GameUser $gameUser
+     * @param array $match
+     * @param Collection<int, Assignment> $assignments
+     * @return Assignment|null
+     */
     protected function mapChampion(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
     {
         foreach ($match['info']['participants'] as $participant) {
@@ -177,6 +208,12 @@ class LeagueOfLegendsGateway implements GameGateway
         return null;
     }
 
+    /**
+     * @param GameUser $gameUser
+     * @param array $match
+     * @param Collection<int, Assignment> $assignments
+     * @return Assignment|null
+     */
     protected function mapLane(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
     {
         foreach ($match['info']['participants'] as $participant) {
@@ -201,8 +238,10 @@ class LeagueOfLegendsGateway implements GameGateway
 
         $result = null;
         if ($summonerResponse->successful()) {
-            $summoner = json_decode($summonerResponse->body(), true);
-            $result = $summoner;
+            $decodedBody = json_decode($summonerResponse->body(), true);
+            if (is_array($decodedBody)) {
+                $result = $decodedBody;
+            }
         } else {
             Log::error('Could not get player identity from Riot API for League of Legends',
                 ['apiKey' => $this->apiKey, 'params' => $params, 'response' => $summonerResponse]);

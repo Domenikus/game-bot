@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->string('ts3_server_group_id');
             $table->timestamps();
 
-            $table->unique(array('value', 'ts3_server_group_id', 'game_id', 'type_id'));
+            $table->unique(['value', 'ts3_server_group_id', 'game_id', 'type_id']);
             $table->foreign('type_id')->references('id')->on('types')->onDelete('cascade');
             $table->foreign('game_id')->references('id')->on('games')->onDelete('cascade');
         });

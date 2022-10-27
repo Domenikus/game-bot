@@ -12,7 +12,6 @@ use PhpSchool\CliMenu\Builder\CliMenuBuilder;
 use PhpSchool\CliMenu\CliMenu;
 use PhpSchool\CliMenu\Exception\InvalidTerminalException;
 
-
 /**
  * @method menu(string $string)
  */
@@ -36,15 +35,17 @@ class Menu extends Command
      * Execute the console command.
      *
      * @return void
+     *
      * @throws InvalidTerminalException
      */
-    public function handle()
+    public function handle(): void
     {
         $this->buildMenu();
     }
 
     /**
      * @return void
+     *
      * @throws InvalidTerminalException
      */
     private function buildMenu()
@@ -63,22 +64,24 @@ class Menu extends Command
     {
         return function (CliMenuBuilder $b) {
             $b->setTitle('Select assignment to delete');
-            $assignments = Assignment::all();
+            $assignments = Assignment::with('game')->get();
             foreach ($assignments as $assignment) {
-                $b->addItem($assignment->value . '(' . $assignment->game->name . ')',
-                    function (CliMenu $menu) use ($assignment) {
-                        if ($assignment->delete()) {
-                            $flash = $menu->flash("Assignment successfully deleted");
-                            $flash->getStyle()->setBg('green');
-                            $menu->removeItem($menu->getSelectedItem());
-                            $menu->redraw();
-                        } else {
-                            $flash = $menu->flash("Error while deleting assignment");
-                            $flash->getStyle()->setBg('red');
-                        }
+                if ($assignment->game) {
+                    $b->addItem($assignment->value . '(' . $assignment->game->name . ')',
+                        function (CliMenu $menu) use ($assignment) {
+                            if ($assignment->delete()) {
+                                $flash = $menu->flash('Assignment successfully deleted');
+                                $flash->getStyle()->setBg('green');
+                                $menu->removeItem($menu->getSelectedItem());
+                                $menu->redraw();
+                            } else {
+                                $flash = $menu->flash('Error while deleting assignment');
+                                $flash->getStyle()->setBg('red');
+                            }
 
-                        $flash->display();
-                    });
+                            $flash->display();
+                        });
+                }
             }
         };
     }
@@ -86,20 +89,22 @@ class Menu extends Command
     private function buildCreateAssignment(): Closure
     {
         return function (CliMenu $menu) {
-            $value = $menu->askText()
-                ->setPromptText("Enter value")
+            /** @phpstan-ignore-next-line */
+            $value = $menu
+                ->askText()
+                ->setPromptText('Enter value')
                 ->setValidationFailedText('Invalid value, please provide at least one character')
                 ->setValidator(function ($value) {
                     return !empty($value);
                 })
                 ->ask();
 
-            $typesArray = [];
-            if ($types = Type::all()) {
-                $typesArray = $types->pluck('name')->toArray();
-            }
+            $types = Type::all();
+            $typesArray = $types->pluck('name')->toArray();
 
-            $type = $menu->askText()
+            /** @phpstan-ignore-next-line */
+            $type = $menu
+                ->askText()
                 ->setPromptText('Enter type')
                 ->setValidationFailedText('Wrong type, please provide on of the following: ' . implode(', ',
                         $typesArray))
@@ -111,11 +116,10 @@ class Menu extends Command
                     return false;
                 })->ask();
 
-            $gamesArray = [];
-            if ($games = Game::all()) {
-                $gamesArray = $games->pluck('name')->toArray();
-            }
+            $games = Game::all();
+            $gamesArray = $games->pluck('name')->toArray();
 
+            /** @phpstan-ignore-next-line */
             $game = $menu->askText()
                 ->setPromptText('Enter game')
                 ->setValidationFailedText('Wrong game, please provide on of the following: ' . implode(', ',
@@ -129,7 +133,7 @@ class Menu extends Command
                 })->ask();
 
             $ts3_server_group_id = $menu->askNumber()
-                ->setPromptText("Enter teamspeak server group id")
+                ->setPromptText('Enter teamspeak server group id')
                 ->ask();
 
             $gameModel = Game::where('name', $game->fetch())->firstOrFail();
@@ -143,10 +147,10 @@ class Menu extends Command
 
             try {
                 $assignment->saveOrFail();
-                $flash = $menu->flash("Assignment successfully created");
+                $flash = $menu->flash('Assignment successfully created');
                 $flash->getStyle()->setBg('green');
             } catch (Exception) {
-                $flash = $menu->flash("Error while creating assignment");
+                $flash = $menu->flash('Error while creating assignment');
                 $flash->getStyle()->setBg('red');
             }
 

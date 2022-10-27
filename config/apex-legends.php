@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'apiKey' => env('APEX_API_KEY')
+    'apiKey' => env('APEX_API_KEY', ''),
 ];

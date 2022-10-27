@@ -1,10 +1,11 @@
 <?php
 
-
 namespace App\Listeners;
 
+use App\Assignment;
 use App\Game;
 use App\GameUser;
+use App\Queue;
 use App\Services\Gateways\GameGateway;
 use App\Services\Gateways\GameGatewayRegistry;
 use App\Services\Teamspeak;
@@ -18,13 +19,12 @@ abstract class AbstractListener
 {
     protected TeamSpeak3_Node_Server $server;
 
-
     public function __construct(TeamSpeak3_Node_Server $server)
     {
         $this->server = $server;
     }
 
-    abstract function init(): void;
+    abstract public function init(): void;
 
     public function handleUpdate(User $user): void
     {
@@ -48,11 +48,15 @@ abstract class AbstractListener
             $registry = App::make(GameGatewayRegistry::class);
             $interface = $registry->get($game->name);
             $this->registerUser($params, $identityId, $interface);
-
         }
     }
 
-    public function handleUnregister(User $user, array $params): void
+    /**
+     * @param User $user
+     * @param array $params
+     * @return void
+     */
+    public function handleUnregister(User $user, array $params = []): void
     {
         $user->loadMissing('games');
 
@@ -86,12 +90,12 @@ abstract class AbstractListener
         if ($user->isAdmin() && isset($params[1])) {
             switch ($params[1]) {
                 case 'unregister':
-                    if ($userToUnregister = User::find($params[2])) {
+                    if ($userToUnregister = User::where('identity_id', $params[2])->first()) {
                         $this->handleUnregister($userToUnregister, []);
                     }
                     break;
                 case 'block':
-                    if ($userToBlock = User::find($params[2])) {
+                    if ($userToBlock = User::where('identity_id', $params[2])->first()) {
                         $userToBlock->blocked = true;
                         if ($userToBlock->save()) {
                             $teamspeakInterface = new Teamspeak($this->server);
@@ -104,7 +108,7 @@ abstract class AbstractListener
                     }
                     break;
                 case 'unblock':
-                    if ($userToUnblock = User::find($params[2])) {
+                    if ($userToUnblock = User::where('identity_id', $params[2])->first()) {
                         $userToUnblock->blocked = false;
                         if ($userToUnblock->save()) {
                             $teamspeakInterface = new Teamspeak($this->server);
@@ -124,6 +128,13 @@ abstract class AbstractListener
         }
     }
 
+    /**
+     * @param GameUser $gameUser
+     * @param Collection<int, Queue> $queues
+     * @param Collection<int, Assignment> $assignments
+     * @param GameGateway $interface
+     * @return void
+     */
     protected function updateServerGroups(
         GameUser $gameUser,
         Collection $queues,
@@ -145,7 +156,9 @@ abstract class AbstractListener
             foreach ($actualServerGroups as $actualServerGroup) {
                 if (in_array($actualServerGroup, $supportedTeamspeakServerGroupIds)
                     && !in_array($actualServerGroup, $newTeamspeakServerGroups)) {
-                    $teamspeakInterface->removeServerGroupFromClient($client, $actualServerGroup);
+                    if (is_numeric($actualServerGroup)) {
+                        $teamspeakInterface->removeServerGroupFromClient($client, (int)$actualServerGroup);
+                    }
                 }
             }
 
@@ -171,6 +184,7 @@ abstract class AbstractListener
             }
 
             Log::info('Registration failed', ['identityId' => $identityId]);
+
             return;
         }
 
@@ -202,6 +216,11 @@ abstract class AbstractListener
         $this->handleUpdate($user->refresh());
     }
 
+    /**
+     * @param GameUser $gameUser
+     * @param Collection<int, Assignment> $assignments
+     * @return void
+     */
     protected function removeServerGroups(GameUser $gameUser, Collection $assignments): void
     {
         $teamspeakInterface = new Teamspeak($this->server);
@@ -221,7 +240,7 @@ abstract class AbstractListener
     protected function updateActiveClients(): void
     {
         foreach ($this->server->clientList() as $client) {
-            if ($user = User::find($client->getInfo()['client_unique_identifier']->toString())) {
+            if ($user = User::where('identity_id', $client->getInfo()['client_unique_identifier'])->first()) {
                 $this->handleUpdate($user);
             }
         }

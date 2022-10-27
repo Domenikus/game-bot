@@ -12,10 +12,7 @@ class Teamspeak
 {
     protected TeamSpeak3_Node_Server $server;
 
-    /**
-     * @param $server
-     */
-    public function __construct($server)
+    public function __construct(TeamSpeak3_Node_Server $server)
     {
         $this->server = $server;
     }
@@ -24,12 +21,12 @@ class Teamspeak
     {
         $ts3NodeServer = null;
         try {
-            $uri = "serverquery://"
-                . config('teamspeak.query_user') . ":"
-                . config('teamspeak.query_password') . "@"
-                . config('teamspeak.ip') . ":"
-                . config('teamspeak.query_port') . "/?server_port="
-                . config('teamspeak.port') . "&blocking=0&nickname="
+            $uri = 'serverquery://'
+                . config('teamspeak.query_user') . ':'
+                . config('teamspeak.query_password') . '@'
+                . config('teamspeak.ip') . ':'
+                . config('teamspeak.query_port') . '/?server_port='
+                . config('teamspeak.port') . '&blocking=0&nickname='
                 . config('teamspeak.bot_name');
             $ts3NodeServer = TeamSpeak3::factory($uri);
         } catch (Exception $e) {
@@ -52,6 +49,10 @@ class Teamspeak
         return $result;
     }
 
+    /**
+     * @param TeamSpeak3_Node_Client $client
+     * @return array<string>
+     */
     public function getServerGroupsAssignedToClient(TeamSpeak3_Node_Client $client): array
     {
         $actualServerGroups = [];
@@ -69,6 +70,7 @@ class Teamspeak
     {
         try {
             $client->addServerGroup($serverGroupId);
+
             return true;
         } catch (Exception $e) {
             Log::error($e, ['client' => $client, 'serverGroupId' => $serverGroupId]);
@@ -81,6 +83,7 @@ class Teamspeak
     {
         try {
             $client->remServerGroup($serverGroupId);
+
             return true;
         } catch (Exception $e) {
             Log::error($e, ['client' => $client, 'serverGroupId' => $serverGroupId]);
@@ -93,6 +96,7 @@ class Teamspeak
     {
         try {
             $client->message($message);
+
             return true;
         } catch (Exception $e) {
             Log::error($e, ['client' => $client, 'message' => $message]);

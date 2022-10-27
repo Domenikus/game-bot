@@ -4,6 +4,7 @@ namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
+use App\Queue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -11,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 class TeamfightTacticsGateway implements GameGateway
 {
     protected string $apiKey;
-
 
     public function __construct(string $apiKey)
     {
@@ -25,7 +25,10 @@ class TeamfightTacticsGateway implements GameGateway
             ->get('https://euw1.api.riotgames.com/tft/league/v1/entries/by-summoner/' . $gameUser->options['id']);
 
         if ($leagueResponse->successful()) {
-            $stats['leagues'] = json_decode($leagueResponse->body(), true);
+            $decodedBody = json_decode($leagueResponse->body(), true);
+            if (is_array($decodedBody)) {
+                $stats['leagues'] = $decodedBody;
+            }
         } else {
             Log::error('Could not get player data from Riot API for Teamfight Tactics',
                 ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $leagueResponse]);
@@ -45,7 +48,10 @@ class TeamfightTacticsGateway implements GameGateway
 
         $summoner = null;
         if ($summonerResponse->successful()) {
-            $summoner = json_decode($summonerResponse->body(), true);
+            $decodedBody = json_decode($summonerResponse->body(), true);
+            if (is_array($decodedBody)) {
+                $summoner = $decodedBody;
+            }
         } else {
             Log::error('Could not get player identity from Riot API for Teamfight Tactics',
                 ['apiKey' => $this->apiKey, 'params' => $params, 'response' => $summonerResponse]);
@@ -54,6 +60,13 @@ class TeamfightTacticsGateway implements GameGateway
         return $summoner;
     }
 
+    /**
+     * @param GameUser $gameUser
+     * @param array $stats
+     * @param Collection<int, Assignment> $assignments
+     * @param Collection<int, Queue> $queues
+     * @return array
+     */
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
     {
         $ts3ServerGroups = [];
@@ -62,9 +75,9 @@ class TeamfightTacticsGateway implements GameGateway
             foreach ($queues as $queue) {
                 if ($rankAssignment = $this->mapRank($stats['leagues'],
                     $assignments->filter(function ($value) use ($queue) {
-                        return $value->type->name == $queue->type->name;
+                        return $value->type?->name == $queue->type?->name;
                     }), $queue->name)) {
-                    $ts3ServerGroups[$queue->type->name] = $rankAssignment->ts3_server_group_id;
+                    $ts3ServerGroups[$queue->type?->name] = $rankAssignment->ts3_server_group_id;
                 }
             }
         }
@@ -72,6 +85,12 @@ class TeamfightTacticsGateway implements GameGateway
         return $ts3ServerGroups;
     }
 
+    /**
+     * @param array $leagues
+     * @param Collection<int, Assignment> $assignments
+     * @param string $queueType
+     * @return Assignment|null
+     */
     protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
     {
         $newRankName = '';
@@ -80,6 +99,7 @@ class TeamfightTacticsGateway implements GameGateway
                 $newRankName = $league['tier'] . ' ' . $league['rank'];
             }
         }
+
         return $assignments->where('value', strtolower($newRankName))->first();
     }
 }

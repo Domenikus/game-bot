@@ -11,13 +11,14 @@ class GameGatewayRegistry
     public function register(string $name, GameGateway $instance): static
     {
         $this->gateways[$name] = $instance;
+
         return $this;
     }
 
     /**
      * @throws InvalidGatewayException
      */
-    public function get(string $name)
+    public function get(string $name): GameGateway
     {
         if (isset($this->gateways[$name])) {
             return $this->gateways[$name];

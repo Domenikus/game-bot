@@ -142,12 +142,35 @@ Interacting with the bot from the teamspeak server using the chat
 !admin|update
 ```
 
+## Quality tools
+
+### PHPStan (Code quality) via [Larastan](https://github.com/nunomaduro/larastan)
+
+This command is used for analyzing your code quality.
+
+`composer analyse`
+
+For IDE integration refer [here](https://www.jetbrains.com/help/phpstorm/using-phpstan.html).
+
+### PHP CS Fixer (Code style) via [Pint](https://laravel.com/docs/9.x/pint)
+
+This command is used to show code style errors.
+
+`composer sniff`
+
+This command will try to auto fix your code.
+
+`composer lint`
+
+For IDE integration refer [here](https://gilbitron.me/blog/running-laravel-pint-in-phpstorm/).
+
 ## Configure
 
 ### Assignments
 
-What is an assignment? Assignments are the mapping between a game stat and a ts3 server group. 
-Which means, if you want that players who reach "GOLD I" league in League of Legends, have the server group "Gold", you have to provide "gold ii" as a value and the id of the server group "gold".
+What is an assignment? Assignments are the mapping between a game stat and a ts3 server group.
+Which means, if you want that players who reach "GOLD I" league in League of Legends, have the server group "Gold", you
+have to provide "gold ii" as a value and the id of the server group "gold".
 You can do this while using the provided cli menu.
 
 ## Contribute
