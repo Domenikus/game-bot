@@ -40,7 +40,7 @@ class LeagueOfLegendsGateway implements GameGateway
     protected function getMatches(GameUser $gameUser, int $offset, int $count, string $type): array
     {
         $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/' . $gameUser->options['puuid'] . '/ids',
+            ->get('https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/'.$gameUser->options['puuid'].'/ids',
                 [
                     'start' => $offset,
                     'count' => $count,
@@ -62,7 +62,7 @@ class LeagueOfLegendsGateway implements GameGateway
         $matches = [];
         foreach ($matchIds as $matchId) {
             $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-                ->get('https://europe.api.riotgames.com/lol/match/v5/matches/' . $matchId);
+                ->get('https://europe.api.riotgames.com/lol/match/v5/matches/'.$matchId);
 
             if ($matchResponse->successful()) {
                 $matches[] = json_decode(($matchResponse->body()), true);
@@ -79,7 +79,7 @@ class LeagueOfLegendsGateway implements GameGateway
     {
         $leagues = [];
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' . $gameUser->options['id']);
+            ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'.$gameUser->options['id']);
 
         if ($leagueResponse->successful()) {
             $decodedBody = json_decode($leagueResponse->body(), true);
@@ -95,10 +95,10 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param GameUser $gameUser
-     * @param array $stats
-     * @param Collection<int, Assignment> $assignments
-     * @param Collection<int, Queue> $queues
+     * @param  GameUser  $gameUser
+     * @param  array  $stats
+     * @param  Collection<int, Assignment>  $assignments
+     * @param  Collection<int, Queue>  $queues
      * @return array
      */
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
@@ -125,9 +125,9 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param array $leagues
-     * @param Collection<int, Assignment> $assignments
-     * @param string $queueType
+     * @param  array  $leagues
+     * @param  Collection<int, Assignment>  $assignments
+     * @param  string  $queueType
      * @return Assignment|null
      */
     protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
@@ -135,7 +135,7 @@ class LeagueOfLegendsGateway implements GameGateway
         $newRankName = '';
         foreach ($leagues as $league) {
             if ($league['queueType'] == $queueType) {
-                $newRankName = $league['tier'] . ' ' . $league['rank'];
+                $newRankName = $league['tier'].' '.$league['rank'];
             }
         }
 
@@ -143,9 +143,9 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param GameUser $gameUser
-     * @param array $matches
-     * @param Collection<int, Assignment> $assignments
+     * @param  GameUser  $gameUser
+     * @param  array  $matches
+     * @param  Collection<int, Assignment>  $assignments
      * @return array
      */
     protected function mapMatches(GameUser $gameUser, array $matches, Collection $assignments): array
@@ -158,7 +158,7 @@ class LeagueOfLegendsGateway implements GameGateway
             if ($championAssignment = $this->mapChampion($gameUser, $match, $assignments->filter(function ($value) {
                 return $value->type?->name == Type::TYPE_CHARACTER;
             }))) {
-                if (!isset($championPlayCount[$championAssignment->ts3_server_group_id])) {
+                if (! isset($championPlayCount[$championAssignment->ts3_server_group_id])) {
                     $championPlayCount[$championAssignment->ts3_server_group_id] = 0;
                 }
 
@@ -168,7 +168,7 @@ class LeagueOfLegendsGateway implements GameGateway
             if ($championAssignment = $this->mapLane($gameUser, $match, $assignments->filter(function ($value) {
                 return $value->type?->name == Type::TYPE_POSITION;
             }))) {
-                if (!isset($lanePlayCount[$championAssignment->ts3_server_group_id])) {
+                if (! isset($lanePlayCount[$championAssignment->ts3_server_group_id])) {
                     $lanePlayCount[$championAssignment->ts3_server_group_id] = 0;
                 }
 
@@ -176,12 +176,12 @@ class LeagueOfLegendsGateway implements GameGateway
             }
         }
 
-        if (!empty($championPlayCount)) {
+        if (! empty($championPlayCount)) {
             arsort($championPlayCount);
             $result[Type::TYPE_CHARACTER] = array_key_first($championPlayCount);
         }
 
-        if (!empty($lanePlayCount)) {
+        if (! empty($lanePlayCount)) {
             arsort($lanePlayCount);
             $result[Type::TYPE_POSITION] = array_key_first($lanePlayCount);
         }
@@ -190,9 +190,9 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param GameUser $gameUser
-     * @param array $match
-     * @param Collection<int, Assignment> $assignments
+     * @param  GameUser  $gameUser
+     * @param  array  $match
+     * @param  Collection<int, Assignment>  $assignments
      * @return Assignment|null
      */
     protected function mapChampion(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
@@ -209,9 +209,9 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param GameUser $gameUser
-     * @param array $match
-     * @param Collection<int, Assignment> $assignments
+     * @param  GameUser  $gameUser
+     * @param  array  $match
+     * @param  Collection<int, Assignment>  $assignments
      * @return Assignment|null
      */
     protected function mapLane(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
@@ -229,12 +229,12 @@ class LeagueOfLegendsGateway implements GameGateway
 
     public function getPlayerIdentity(array $params): ?array
     {
-        if (!isset($params[2])) {
+        if (! isset($params[2])) {
             return null;
         }
 
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' . $params[2]);
+            ->get('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'.$params[2]);
 
         $result = null;
         if ($summonerResponse->successful()) {

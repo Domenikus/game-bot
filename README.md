@@ -5,17 +5,17 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
 ## Supported games
 
 - League of Legends
-  - Most recent played champion
-  - Solo/Duo rank
-  - Flex rank
-  - Prefered lane
+    - Most recent played champion
+    - Solo/Duo rank
+    - Flex rank
+    - Prefered lane
 - Team fight Tactics
-  - Solo rank
-  - Double up
+    - Solo rank
+    - Double up
 - Apex Legends
-  - Rank
-  - Arena rank
-  - Most played legend
+    - Rank
+    - Arena rank
+    - Most played legend
 
 ## Setup
 

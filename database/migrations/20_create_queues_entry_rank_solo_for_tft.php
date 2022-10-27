@@ -5,7 +5,8 @@ use App\Queue;
 use App\Type;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -15,7 +16,7 @@ return new class extends Migration {
     {
         $tft = Game::where('name', 'tft')->firstOrFail();
 
-        if (!$tft->queues()->where('name', 'RANKED_TFT')->first()) {
+        if (! $tft->queues()->where('name', 'RANKED_TFT')->first()) {
             $rankSolo = Type::where('name', 'rank_solo')->first();
             if ($rankSolo) {
                 $rankedSoloQueue = new Queue();

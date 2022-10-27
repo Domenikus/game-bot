@@ -67,7 +67,7 @@ class Menu extends Command
             $assignments = Assignment::with('game')->get();
             foreach ($assignments as $assignment) {
                 if ($assignment->game) {
-                    $b->addItem($assignment->value . '(' . $assignment->game->name . ')',
+                    $b->addItem($assignment->value.'('.$assignment->game->name.')',
                         function (CliMenu $menu) use ($assignment) {
                             if ($assignment->delete()) {
                                 $flash = $menu->flash('Assignment successfully deleted');
@@ -95,7 +95,7 @@ class Menu extends Command
                 ->setPromptText('Enter value')
                 ->setValidationFailedText('Invalid value, please provide at least one character')
                 ->setValidator(function ($value) {
-                    return !empty($value);
+                    return ! empty($value);
                 })
                 ->ask();
 
@@ -106,8 +106,8 @@ class Menu extends Command
             $type = $menu
                 ->askText()
                 ->setPromptText('Enter type')
-                ->setValidationFailedText('Wrong type, please provide on of the following: ' . implode(', ',
-                        $typesArray))
+                ->setValidationFailedText('Wrong type, please provide on of the following: '.implode(', ',
+                    $typesArray))
                 ->setValidator(function ($type) use ($typesArray) {
                     if (in_array($type, $typesArray)) {
                         return true;
@@ -122,8 +122,8 @@ class Menu extends Command
             /** @phpstan-ignore-next-line */
             $game = $menu->askText()
                 ->setPromptText('Enter game')
-                ->setValidationFailedText('Wrong game, please provide on of the following: ' . implode(', ',
-                        $gamesArray))
+                ->setValidationFailedText('Wrong game, please provide on of the following: '.implode(', ',
+                    $gamesArray))
                 ->setValidator(function ($game) use ($gamesArray) {
                     if (in_array($game, $gamesArray)) {
                         return true;

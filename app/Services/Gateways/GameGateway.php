@@ -14,10 +14,10 @@ interface GameGateway
     public function getPlayerIdentity(array $params): ?array;
 
     /**
-     * @param GameUser $gameUser
-     * @param array $stats
-     * @param Collection<int, Assignment> $assignments
-     * @param Collection<int, Queue> $queues
+     * @param  GameUser  $gameUser
+     * @param  array  $stats
+     * @param  Collection<int, Assignment>  $assignments
+     * @param  Collection<int, Queue>  $queues
      * @return array
      */
     public function mapStats(

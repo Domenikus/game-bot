@@ -29,7 +29,7 @@ class ApexLegendsGateway implements GameGateway
         $stats = null;
 
         $response = Http::withHeaders(['TRN-Api-Key' => $this->apiKey])
-            ->get('https://public-api.tracker.gg/v2/apex/standard/profile/' . $gameUser->options['platform'] . '/' . $gameUser->options['name']);
+            ->get('https://public-api.tracker.gg/v2/apex/standard/profile/'.$gameUser->options['platform'].'/'.$gameUser->options['name']);
 
         if ($response->successful()) {
             $decodedBody = json_decode($response->body(), true);
@@ -69,9 +69,9 @@ class ApexLegendsGateway implements GameGateway
     }
 
     /**
-     * @param array $stats
-     * @param Collection<int, Assignment> $assignments
-     * @param string $queueType
+     * @param  array  $stats
+     * @param  Collection<int, Assignment>  $assignments
+     * @param  string  $queueType
      * @return Assignment|null
      */
     protected function mapRank(array $stats, Collection $assignments, string $queueType): ?Assignment
@@ -87,8 +87,8 @@ class ApexLegendsGateway implements GameGateway
     }
 
     /**
-     * @param array $stats
-     * @param Collection<int, Assignment> $assignments
+     * @param  array  $stats
+     * @param  Collection<int, Assignment>  $assignments
      * @return Assignment|null
      */
     protected function mapLegend(array $stats, Collection $assignments): ?Assignment
@@ -99,7 +99,7 @@ class ApexLegendsGateway implements GameGateway
         ];
 
         foreach ($stats['data']['segments'] as $segment) {
-            if (empty($segment['type']) || !isset($segment['stats']) || !isset($segment['stats']['kills']['value'])) {
+            if (empty($segment['type']) || ! isset($segment['stats']) || ! isset($segment['stats']['kills']['value'])) {
                 continue;
             }
 
@@ -114,7 +114,7 @@ class ApexLegendsGateway implements GameGateway
 
     public function getPlayerIdentity(array $params): ?array
     {
-        if (!isset($params[2], $params[3]) || !in_array($params[3], self::PLATFORMS)) {
+        if (! isset($params[2], $params[3]) || ! in_array($params[3], self::PLATFORMS)) {
             return null;
         }
 

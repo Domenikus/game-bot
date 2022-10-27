@@ -3,7 +3,8 @@
 use App\Game;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if (Game::where('name', 'tft')->first()) {

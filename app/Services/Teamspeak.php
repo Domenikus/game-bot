@@ -22,12 +22,12 @@ class Teamspeak
         $ts3NodeServer = null;
         try {
             $uri = 'serverquery://'
-                . config('teamspeak.query_user') . ':'
-                . config('teamspeak.query_password') . '@'
-                . config('teamspeak.ip') . ':'
-                . config('teamspeak.query_port') . '/?server_port='
-                . config('teamspeak.port') . '&blocking=0&nickname='
-                . config('teamspeak.bot_name');
+                .config('teamspeak.query_user').':'
+                .config('teamspeak.query_password').'@'
+                .config('teamspeak.ip').':'
+                .config('teamspeak.query_port').'/?server_port='
+                .config('teamspeak.port').'&blocking=0&nickname='
+                .config('teamspeak.bot_name');
             $ts3NodeServer = TeamSpeak3::factory($uri);
         } catch (Exception $e) {
             Log::critical($e);
@@ -50,7 +50,7 @@ class Teamspeak
     }
 
     /**
-     * @param TeamSpeak3_Node_Client $client
+     * @param  TeamSpeak3_Node_Client  $client
      * @return array<string>
      */
     public function getServerGroupsAssignedToClient(TeamSpeak3_Node_Client $client): array

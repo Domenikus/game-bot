@@ -3,7 +3,8 @@
 use App\Type;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         if ($type = Type::where('name', 'rank_pair')->first()) {

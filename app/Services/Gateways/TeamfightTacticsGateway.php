@@ -22,7 +22,7 @@ class TeamfightTacticsGateway implements GameGateway
     {
         $stats = null;
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://euw1.api.riotgames.com/tft/league/v1/entries/by-summoner/' . $gameUser->options['id']);
+            ->get('https://euw1.api.riotgames.com/tft/league/v1/entries/by-summoner/'.$gameUser->options['id']);
 
         if ($leagueResponse->successful()) {
             $decodedBody = json_decode($leagueResponse->body(), true);
@@ -39,12 +39,12 @@ class TeamfightTacticsGateway implements GameGateway
 
     public function getPlayerIdentity(array $params): ?array
     {
-        if (!isset($params[2])) {
+        if (! isset($params[2])) {
             return null;
         }
 
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://euw1.api.riotgames.com/tft/summoner/v1/summoners/by-name/' . $params[2]);
+            ->get('https://euw1.api.riotgames.com/tft/summoner/v1/summoners/by-name/'.$params[2]);
 
         $summoner = null;
         if ($summonerResponse->successful()) {
@@ -61,10 +61,10 @@ class TeamfightTacticsGateway implements GameGateway
     }
 
     /**
-     * @param GameUser $gameUser
-     * @param array $stats
-     * @param Collection<int, Assignment> $assignments
-     * @param Collection<int, Queue> $queues
+     * @param  GameUser  $gameUser
+     * @param  array  $stats
+     * @param  Collection<int, Assignment>  $assignments
+     * @param  Collection<int, Queue>  $queues
      * @return array
      */
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
@@ -86,9 +86,9 @@ class TeamfightTacticsGateway implements GameGateway
     }
 
     /**
-     * @param array $leagues
-     * @param Collection<int, Assignment> $assignments
-     * @param string $queueType
+     * @param  array  $leagues
+     * @param  Collection<int, Assignment>  $assignments
+     * @param  string  $queueType
      * @return Assignment|null
      */
     protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
@@ -96,7 +96,7 @@ class TeamfightTacticsGateway implements GameGateway
         $newRankName = '';
         foreach ($leagues as $league) {
             if ($league['queueType'] == $queueType) {
-                $newRankName = $league['tier'] . ' ' . $league['rank'];
+                $newRankName = $league['tier'].' '.$league['rank'];
             }
         }
 

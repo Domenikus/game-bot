@@ -3,7 +3,8 @@
 use App\Assignment;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         $assignments = Assignment::all();

@@ -5,7 +5,8 @@ use App\Queue;
 use App\Type;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -15,7 +16,7 @@ return new class extends Migration {
     {
         $lol = Game::where('name', 'lol')->firstOrFail();
 
-        if (!$lol->queues()->where('name', 'RANKED_SOLO_5x5')->first()) {
+        if (! $lol->queues()->where('name', 'RANKED_SOLO_5x5')->first()) {
             $rankSolo = Type::where('name', 'rank_solo')->first();
             if ($rankSolo) {
                 $rankedSoloQueue = new Queue();
@@ -25,7 +26,7 @@ return new class extends Migration {
             }
         }
 
-        if (!$lol->queues()->where('name', 'RANKED_FLEX_SR')->first()) {
+        if (! $lol->queues()->where('name', 'RANKED_FLEX_SR')->first()) {
             $rankGroup = Type::where('name', 'rank_group')->first();
             if ($rankGroup) {
                 $rankedGroupQueue = new Queue();
@@ -35,7 +36,7 @@ return new class extends Migration {
             }
         }
 
-        if (!$lol->queues()->where('name', 'RANKED_TFT_DOUBLE_UP')->first()) {
+        if (! $lol->queues()->where('name', 'RANKED_TFT_DOUBLE_UP')->first()) {
             $rankDuo = Type::where('name', 'rank_duo')->first();
             if ($rankDuo) {
                 $rankedDuoQueue = new Queue();

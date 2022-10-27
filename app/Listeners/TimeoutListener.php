@@ -31,7 +31,7 @@ class TimeoutListener extends AbstractListener
     protected function handleAutoUpdate(): void
     {
         if (config('teamspeak.auto_update_interval')) {
-            if (!$this->lastUpdate || $this->lastUpdate < time() - config('teamspeak.auto_update_interval')) {
+            if (! $this->lastUpdate || $this->lastUpdate < time() - config('teamspeak.auto_update_interval')) {
                 $this->lastUpdate = time();
                 $this->updateActiveClients();
             }

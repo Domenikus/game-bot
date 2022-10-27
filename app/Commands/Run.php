@@ -47,7 +47,7 @@ class Run extends Command
             return false;
         });
 
-        if (!$isConnectedToTeamspeakServer) {
+        if (! $isConnectedToTeamspeakServer) {
             return;
         }
 
