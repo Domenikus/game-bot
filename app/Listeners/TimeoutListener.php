@@ -16,7 +16,7 @@ class TimeoutListener extends AbstractListener
         TeamSpeak3_Helper_Signal::getInstance()->subscribe('serverqueryWaitTimeout',
             function ($seconds, TeamSpeak3_Adapter_ServerQuery $adapter) {
                 if ($adapter->getQueryLastTimestamp() < time() - 180) {
-                    Log::info('No reply from the server for " . $seconds . " seconds. Sending keep alive command.');
+                    Log::info('No reply from the server for '.$seconds.' seconds. Sending keep alive command.');
                     $adapter->request('clientupdate');
                     $this->server = $adapter->getHost()->serverGetSelected();
                 }
