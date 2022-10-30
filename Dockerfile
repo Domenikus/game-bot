@@ -1,4 +1,4 @@
-FROM php:8.0-cli-alpine3.15
+FROM php:8.1-cli-alpine
 
 RUN docker-php-ext-install mysqli pdo pdo_mysql posix && docker-php-ext-enable mysqli pdo pdo_mysql posix
 RUN apk add ncurses composer zlib

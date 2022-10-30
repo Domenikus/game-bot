@@ -50,6 +50,14 @@ class Teamspeak
     }
 
     /**
+     * @return TeamSpeak3_Node_Client[]
+     */
+    public function getActiveClients(): array
+    {
+        return $this->server->clientList();
+    }
+
+    /**
      * @param  TeamSpeak3_Node_Client  $client
      * @return array<string>
      */

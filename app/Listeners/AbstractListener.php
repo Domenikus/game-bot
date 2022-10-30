@@ -239,7 +239,9 @@ abstract class AbstractListener
 
     protected function updateActiveClients(): void
     {
-        foreach ($this->server->clientList() as $client) {
+        $teamspeakInterface = new Teamspeak($this->server);
+
+        foreach ($teamspeakInterface->getActiveClients() as $client) {
             if ($user = User::where('identity_id', $client->getInfo()['client_unique_identifier'])->first()) {
                 $this->handleUpdate($user);
             }
