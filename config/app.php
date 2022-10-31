@@ -1,7 +1,5 @@
 <?php
 
-use App\Providers\GameServiceProvider;
-
 return [
 
     /*
@@ -57,7 +55,12 @@ return [
 
     'providers' => [
         App\Providers\AppServiceProvider::class,
-        GameServiceProvider::class,
+        App\Providers\GameServiceProvider::class,
+        App\Providers\TeamspeakServiceProvider::class,
+    ],
+
+    'aliases' => [
+        TeamSpeak3::class => App\Facades\TeamSpeak3::class,
     ],
 
 ];

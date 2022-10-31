@@ -4,7 +4,6 @@ namespace App\Listeners;
 
 use Illuminate\Support\Facades\Log;
 use TeamSpeak3_Adapter_ServerQuery;
-use TeamSpeak3_Adapter_ServerQuery_Exception;
 use TeamSpeak3_Helper_Signal;
 
 class TimeoutListener extends AbstractListener
@@ -18,16 +17,12 @@ class TimeoutListener extends AbstractListener
                 if ($adapter->getQueryLastTimestamp() < time() - 180) {
                     Log::info('No reply from the server for '.$seconds.' seconds. Sending keep alive command.');
                     $adapter->request('clientupdate');
-                    $this->server = $adapter->getHost()->serverGetSelected();
                 }
 
                 $this->handleAutoUpdate();
             });
     }
 
-    /**
-     * @throws TeamSpeak3_Adapter_ServerQuery_Exception
-     */
     protected function handleAutoUpdate(): void
     {
         if (config('teamspeak.auto_update_interval')) {

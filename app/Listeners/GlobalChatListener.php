@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Facades\TeamSpeak3;
 use App\User;
 use TeamSpeak3_Adapter_ServerQuery_Event;
 use TeamSpeak3_Adapter_ServerQuery_Exception;
@@ -12,7 +13,7 @@ class GlobalChatListener extends AbstractListener
 {
     public function init(): void
     {
-        $this->server->notifyRegister('textserver');
+        TeamSpeak3::notifyRegister('textserver');
 
         TeamSpeak3_Helper_Signal::getInstance()->subscribe('notifyTextmessage',
             function (TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3_Node_Host $host) {
@@ -25,8 +26,6 @@ class GlobalChatListener extends AbstractListener
      */
     protected function handle(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3_Node_Host $host): void
     {
-        $this->server = $host->serverGetSelected();
-
         $data = $event->getData();
         $identityId = $data['invokeruid']->toString();
         $user = User::where('identity_id', $identityId)->first();

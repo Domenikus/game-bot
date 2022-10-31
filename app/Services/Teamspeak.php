@@ -2,46 +2,19 @@
 
 namespace App\Services;
 
+use App\Facades\TeamSpeak3;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use TeamSpeak3;
 use TeamSpeak3_Node_Client;
-use TeamSpeak3_Node_Server;
 
 class Teamspeak
 {
-    protected TeamSpeak3_Node_Server $server;
-
-    public function __construct(TeamSpeak3_Node_Server $server)
-    {
-        $this->server = $server;
-    }
-
-    public static function connectToTeamspeakServer(): ?TeamSpeak3_Node_Server
-    {
-        $ts3NodeServer = null;
-        try {
-            $uri = 'serverquery://'
-                .config('teamspeak.query_user').':'
-                .config('teamspeak.query_password').'@'
-                .config('teamspeak.ip').':'
-                .config('teamspeak.query_port').'/?server_port='
-                .config('teamspeak.port').'&blocking=0&nickname='
-                .config('teamspeak.bot_name');
-            $ts3NodeServer = TeamSpeak3::factory($uri);
-        } catch (Exception $e) {
-            Log::critical($e);
-        }
-
-        return $ts3NodeServer;
-    }
-
-    public function getClient(string $clientId): ?TeamSpeak3_Node_Client
+    public static function getClient(string $clientId): ?TeamSpeak3_Node_Client
     {
         $result = null;
 
         try {
-            $result = $this->server->clientGetByUid($clientId);
+            $result = TeamSpeak3::clientGetByUid($clientId);
         } catch (Exception $e) {
             Log::error($e, ['clientId' => $clientId]);
         }
@@ -52,16 +25,16 @@ class Teamspeak
     /**
      * @return TeamSpeak3_Node_Client[]
      */
-    public function getActiveClients(): array
+    public static function getActiveClients(): array
     {
-        return $this->server->clientList();
+        return TeamSpeak3::clientList();
     }
 
     /**
      * @param  TeamSpeak3_Node_Client  $client
      * @return array<string>
      */
-    public function getServerGroupsAssignedToClient(TeamSpeak3_Node_Client $client): array
+    public static function getServerGroupsAssignedToClient(TeamSpeak3_Node_Client $client): array
     {
         $actualServerGroups = [];
         $actualGroups = $client->memberOf();
@@ -74,7 +47,7 @@ class Teamspeak
         return $actualServerGroups;
     }
 
-    public function addServerGroupToClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
+    public static function addServerGroupToClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
     {
         try {
             $client->addServerGroup($serverGroupId);
@@ -87,7 +60,7 @@ class Teamspeak
         return false;
     }
 
-    public function removeServerGroupFromClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
+    public static function removeServerGroupFromClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
     {
         try {
             $client->remServerGroup($serverGroupId);
@@ -100,7 +73,7 @@ class Teamspeak
         return false;
     }
 
-    public function sendMessageToClient(TeamSpeak3_Node_Client $client, string $message): bool
+    public static function sendMessageToClient(TeamSpeak3_Node_Client $client, string $message): bool
     {
         try {
             $client->message($message);
