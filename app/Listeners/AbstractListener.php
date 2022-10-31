@@ -8,16 +8,14 @@ use App\GameUser;
 use App\Queue;
 use App\Services\Gateways\GameGateway;
 use App\Services\Gateways\GameGatewayRegistry;
-use App\Services\Teamspeak;
+use App\Services\Gateways\TeamspeakGateway;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
-abstract class AbstractListener
+abstract class AbstractListener implements TeamspeakListener
 {
-    abstract public function init(): void;
-
     public function handleUpdate(User $user): void
     {
         if (! $user->isBlocked()) {
@@ -90,8 +88,8 @@ abstract class AbstractListener
                     if ($userToBlock = User::where('identity_id', $params[2])->first()) {
                         $userToBlock->blocked = true;
                         if ($userToBlock->save()) {
-                            if ($client = Teamspeak::getClient($user->identity_id)) {
-                                Teamspeak::sendMessageToClient($client,
+                            if ($client = TeamspeakGateway::getClient($user->identity_id)) {
+                                TeamspeakGateway::sendMessageToClient($client,
                                     'User '.$user->identity_id.' successfully blocked');
                                 Log::info('User successfully blocked', ['user' => $user->identity_id]);
                             }
@@ -102,8 +100,8 @@ abstract class AbstractListener
                     if ($userToUnblock = User::where('identity_id', $params[2])->first()) {
                         $userToUnblock->blocked = false;
                         if ($userToUnblock->save()) {
-                            if ($client = Teamspeak::getClient($user->identity_id)) {
-                                Teamspeak::sendMessageToClient($client,
+                            if ($client = TeamspeakGateway::getClient($user->identity_id)) {
+                                TeamspeakGateway::sendMessageToClient($client,
                                     'User '.$user->identity_id.' successfully unblocked');
                                 Log::info('User successfully unblocked', ['user' => $user->identity_id]);
                             }
@@ -138,22 +136,22 @@ abstract class AbstractListener
 
         $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments, $queues);
 
-        if ($client = Teamspeak::getClient($gameUser->user_identity_id)) {
-            $actualServerGroups = Teamspeak::getServerGroupsAssignedToClient($client);
+        if ($client = TeamspeakGateway::getClient($gameUser->user_identity_id)) {
+            $actualServerGroups = TeamspeakGateway::getServerGroupsAssignedToClient($client);
             $supportedTeamspeakServerGroupIds = $assignments->pluck('ts3_server_group_id')->toArray();
 
             foreach ($actualServerGroups as $actualServerGroup) {
                 if (in_array($actualServerGroup, $supportedTeamspeakServerGroupIds)
                     && ! in_array($actualServerGroup, $newTeamspeakServerGroups)) {
                     if (is_numeric($actualServerGroup)) {
-                        Teamspeak::removeServerGroupFromClient($client, (int) $actualServerGroup);
+                        TeamspeakGateway::removeServerGroupFromClient($client, (int) $actualServerGroup);
                     }
                 }
             }
 
             foreach ($newTeamspeakServerGroups as $newGroup) {
                 if (! in_array($newGroup, $actualServerGroups)) {
-                    Teamspeak::addServerGroupToClient($client, $newGroup);
+                    TeamspeakGateway::addServerGroupToClient($client, $newGroup);
                 }
             }
 
@@ -166,8 +164,8 @@ abstract class AbstractListener
     {
         $options = $interface->getPlayerIdentity($params);
         if (! $options) {
-            if ($client = Teamspeak::getClient($identityId)) {
-                Teamspeak::sendMessageToClient($client, 'Registration failed, please check params');
+            if ($client = TeamspeakGateway::getClient($identityId)) {
+                TeamspeakGateway::sendMessageToClient($client, 'Registration failed, please check params');
             }
 
             Log::info('Registration failed', ['identityId' => $identityId]);
@@ -183,8 +181,8 @@ abstract class AbstractListener
         }
 
         if ($user->isBlocked()) {
-            if ($client = Teamspeak::getClient($identityId)) {
-                Teamspeak::sendMessageToClient($client, 'Registration failed, you are blocked by an admin.');
+            if ($client = TeamspeakGateway::getClient($identityId)) {
+                TeamspeakGateway::sendMessageToClient($client, 'Registration failed, you are blocked by an admin.');
                 Log::info('Blocked user tried to register', ['user' => $user->identity_id]);
             }
 
@@ -210,13 +208,13 @@ abstract class AbstractListener
      */
     protected function removeServerGroups(GameUser $gameUser, Collection $assignments): void
     {
-        if ($client = Teamspeak::getClient($gameUser->user_identity_id)) {
+        if ($client = TeamspeakGateway::getClient($gameUser->user_identity_id)) {
             $actualServerGroups = $client->memberOf();
             $supportedTeamspeakServerGroupIds = $assignments->pluck('ts3_server_group_id')->toArray();
             foreach ($actualServerGroups as $actualServerGroup) {
                 if (isset($actualServerGroup['sgid']) && in_array($actualServerGroup['sgid'],
                     $supportedTeamspeakServerGroupIds)) {
-                    Teamspeak::removeServerGroupFromClient($client, $actualServerGroup['sgid']);
+                    TeamspeakGateway::removeServerGroupFromClient($client, $actualServerGroup['sgid']);
                 }
             }
         }
@@ -224,7 +222,7 @@ abstract class AbstractListener
 
     protected function updateActiveClients(): void
     {
-        foreach (Teamspeak::getActiveClients() as $client) {
+        foreach (TeamspeakGateway::getActiveClients() as $client) {
             if ($user = User::where('identity_id', $client->getInfo()['client_unique_identifier'])->first()) {
                 $this->handleUpdate($user);
             }

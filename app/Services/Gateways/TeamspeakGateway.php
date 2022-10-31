@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Gateways;
 
 use App\Facades\TeamSpeak3;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use TeamSpeak3_Node_Client;
 
-class Teamspeak
+class TeamspeakGateway
 {
     public static function getClient(string $clientId): ?TeamSpeak3_Node_Client
     {

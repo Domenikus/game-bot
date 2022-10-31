@@ -3,10 +3,7 @@
 namespace App\Commands;
 
 use App\Facades\TeamSpeak3;
-use App\Listeners\EnterViewListener;
-use App\Listeners\GlobalChatListener;
-use App\Listeners\PrivateChatListener;
-use App\Listeners\TimeoutListener;
+use App\Listeners\TeamspeakListenerRegistry;
 use LaravelZero\Framework\Commands\Command;
 
 class Run extends Command
@@ -23,44 +20,24 @@ class Run extends Command
      */
     protected $description = 'Run the bot';
 
-    public function handle(): void
+    public function handle(TeamspeakListenerRegistry $listenerRegistry): void
     {
         $this->task('Connect to teamspeak server', function () {
             $this->newLine();
         });
 
-        $this->task('Initialize event listeners', function () {
+        $this->task('Initialize event listeners', function () use (&$listenerRegistry) {
             $this->newLine();
-            $this->initListener();
+
+            foreach ($listenerRegistry->getAll() as $listener) {
+                $listener->init();
+            }
         });
 
         $this->task('Listen for events', function () {
             $this->newLine();
             $this->listenToEvents();
         });
-    }
-
-    private function initListener(): void
-    {
-        $listeners = [];
-
-        if (config('teamspeak.listener.globalChat')) {
-            $listeners[] = new GlobalChatListener();
-        }
-
-        if (config('teamspeak.listener.privateChat')) {
-            $listeners[] = new PrivateChatListener();
-        }
-
-        if (config('teamspeak.listener.enterView')) {
-            $listeners[] = new EnterViewListener();
-        }
-
-        $listeners[] = new TimeoutListener();
-
-        foreach ($listeners as $listener) {
-            $listener->init();
-        }
     }
 
     public function listenToEvents(): void

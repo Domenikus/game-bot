@@ -57,6 +57,7 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\GameServiceProvider::class,
         App\Providers\TeamspeakServiceProvider::class,
+        App\Providers\TeamspeakListenerServiceProvider::class,
     ],
 
     'aliases' => [

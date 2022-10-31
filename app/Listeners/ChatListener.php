@@ -9,11 +9,12 @@ use TeamSpeak3_Adapter_ServerQuery_Exception;
 use TeamSpeak3_Helper_Signal;
 use TeamSpeak3_Node_Host;
 
-class GlobalChatListener extends AbstractListener
+class ChatListener extends AbstractListener
 {
     public function init(): void
     {
         TeamSpeak3::notifyRegister('textserver');
+        TeamSpeak3::notifyRegister('textprivate');
 
         TeamSpeak3_Helper_Signal::getInstance()->subscribe('notifyTextmessage',
             function (TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3_Node_Host $host) {

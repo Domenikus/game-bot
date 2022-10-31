@@ -10,6 +10,13 @@ class TimeoutListener extends AbstractListener
 {
     protected ?int $lastUpdate = null;
 
+    protected int $autoUpdateInterval;
+
+    public function __construct(int $autoUpdateInterval)
+    {
+        $this->autoUpdateInterval = $autoUpdateInterval;
+    }
+
     public function init(): void
     {
         TeamSpeak3_Helper_Signal::getInstance()->subscribe('serverqueryWaitTimeout',
@@ -26,7 +33,7 @@ class TimeoutListener extends AbstractListener
     protected function handleAutoUpdate(): void
     {
         if (config('teamspeak.auto_update_interval')) {
-            if (! $this->lastUpdate || $this->lastUpdate < time() - config('teamspeak.auto_update_interval')) {
+            if (! $this->lastUpdate || $this->lastUpdate < time() - $this->autoUpdateInterval) {
                 $this->lastUpdate = time();
                 $this->updateActiveClients();
             }
