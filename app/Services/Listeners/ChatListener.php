@@ -1,16 +1,24 @@
 <?php
 
-namespace App\Listeners;
+namespace App\Services\Listeners;
 
 use App\Facades\TeamSpeak3;
+use App\Services\UserServiceInterface;
 use App\User;
 use TeamSpeak3_Adapter_ServerQuery_Event;
 use TeamSpeak3_Adapter_ServerQuery_Exception;
 use TeamSpeak3_Helper_Signal;
 use TeamSpeak3_Node_Host;
 
-class ChatListener extends AbstractListener
+class ChatListener implements TeamspeakListener
 {
+    protected UserServiceInterface $userService;
+
+    public function __construct(UserServiceInterface $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function init(): void
     {
         TeamSpeak3::notifyRegister('textserver');
@@ -18,14 +26,14 @@ class ChatListener extends AbstractListener
 
         TeamSpeak3_Helper_Signal::getInstance()->subscribe('notifyTextmessage',
             function (TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3_Node_Host $host) {
-                $this->handle($event, $host);
+                $this->handle($event);
             });
     }
 
     /**
      * @throws TeamSpeak3_Adapter_ServerQuery_Exception
      */
-    protected function handle(TeamSpeak3_Adapter_ServerQuery_Event $event, TeamSpeak3_Node_Host $host): void
+    protected function handle(TeamSpeak3_Adapter_ServerQuery_Event $event): void
     {
         $data = $event->getData();
         $identityId = $data['invokeruid']->toString();
@@ -33,13 +41,13 @@ class ChatListener extends AbstractListener
 
         $params = explode('|', $data['msg']->toString());
         if ($data['msg']->startsWith('!register')) {
-            $this->handleRegister($identityId, $params);
+            $this->userService->handleRegister($identityId, $params);
         } elseif ($data['msg']->startsWith('!update') && $user) {
-            $this->handleUpdate($user);
+            $this->userService->handleUpdate($user);
         } elseif ($data['msg']->startsWith('!unregister') && $user) {
-            $this->handleUnregister($user, $params);
+            $this->userService->handleUnregister($user, $params);
         } elseif ($data['msg']->startsWith('!admin') && $user) {
-            $this->handleAdmin($user, $params);
+            $this->userService->handleAdmin($user, $params);
         }
     }
 }

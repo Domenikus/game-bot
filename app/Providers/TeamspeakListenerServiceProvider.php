@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
-use App\Listeners\ChatListener;
-use App\Listeners\EnterViewListener;
-use App\Listeners\TeamspeakListenerRegistry;
-use App\Listeners\TimeoutListener;
+use App\Services\Listeners\ChatListener;
+use App\Services\Listeners\EnterViewListener;
+use App\Services\Listeners\TeamspeakListenerRegistry;
+use App\Services\Listeners\TimeoutListener;
+use App\Services\UserServiceInterface;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
@@ -18,14 +19,15 @@ class TeamspeakListenerServiceProvider extends ServiceProvider implements Deferr
     public function boot(): void
     {
         $registry = $this->app->make(TeamspeakListenerRegistry::class);
-        if ($registry instanceof TeamspeakListenerRegistry) {
+        $service = $this->app->make(UserServiceInterface::class);
+        if ($registry instanceof TeamspeakListenerRegistry && $service instanceof UserServiceInterface) {
             $registry
-                ->register(new ChatListener())
-                ->register(new EnterViewListener());
+                ->register(new ChatListener($service))
+                ->register(new EnterViewListener($service));
 
             $autoUpdateInterval = config('teamspeak.auto_update_interval');
             if (is_int($autoUpdateInterval)) {
-                $registry->register(new TimeoutListener($autoUpdateInterval));
+                $registry->register(new TimeoutListener($service, $autoUpdateInterval));
             }
         }
     }

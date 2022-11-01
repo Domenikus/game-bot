@@ -1,20 +1,24 @@
 <?php
 
-namespace App\Listeners;
+namespace App\Services\Listeners;
 
+use App\Services\UserServiceInterface;
 use Illuminate\Support\Facades\Log;
 use TeamSpeak3_Adapter_ServerQuery;
 use TeamSpeak3_Helper_Signal;
 
-class TimeoutListener extends AbstractListener
+class TimeoutListener implements TeamspeakListener
 {
     protected ?int $lastUpdate = null;
 
     protected int $autoUpdateInterval;
 
-    public function __construct(int $autoUpdateInterval)
+    protected UserServiceInterface $userService;
+
+    public function __construct(UserServiceInterface $userService, int $autoUpdateInterval)
     {
         $this->autoUpdateInterval = $autoUpdateInterval;
+        $this->userService = $userService;
     }
 
     public function init(): void
@@ -35,7 +39,7 @@ class TimeoutListener extends AbstractListener
         if (config('teamspeak.auto_update_interval')) {
             if (! $this->lastUpdate || $this->lastUpdate < time() - $this->autoUpdateInterval) {
                 $this->lastUpdate = time();
-                $this->updateActiveClients();
+                $this->userService->handleUpdateAll();
             }
         }
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Listeners;
+namespace App\Services\Listeners;
 
 class TeamspeakListenerRegistry
 {

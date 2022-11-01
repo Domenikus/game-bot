@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Listeners;
+namespace App\Services;
 
 use App\Assignment;
 use App\Game;
@@ -14,8 +14,18 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 
-abstract class AbstractListener implements TeamspeakListener
+class UserService implements UserServiceInterface
 {
+    public function handleRegister(string $identityId, array $params): void
+    {
+        $game = Game::where('name', $params[1])->first();
+        if (isset($params[1]) && $game) {
+            $registry = App::make(GameGatewayRegistry::class);
+            $interface = $registry->get($game->name);
+            $this->registerUser($params, $identityId, $interface);
+        }
+    }
+
     public function handleUpdate(User $user): void
     {
         if (! $user->isBlocked()) {
@@ -31,21 +41,11 @@ abstract class AbstractListener implements TeamspeakListener
         }
     }
 
-    public function handleRegister(string $identityId, array $params): void
+    public function handleUpdateAll(): void
     {
-        $game = Game::where('name', $params[1])->first();
-        if (isset($params[1]) && $game) {
-            $registry = App::make(GameGatewayRegistry::class);
-            $interface = $registry->get($game->name);
-            $this->registerUser($params, $identityId, $interface);
-        }
+        $this->updateActiveClients();
     }
 
-    /**
-     * @param  User  $user
-     * @param  array  $params
-     * @return void
-     */
     public function handleUnregister(User $user, array $params = []): void
     {
         $user->loadMissing('games');
@@ -58,7 +58,7 @@ abstract class AbstractListener implements TeamspeakListener
 
                         $this->removeServerGroups($game->game_user, $assignments);
                         $user->games()->detach($game->getKey());
-                        Log::info('User successfully unregistered',
+                        Log::info('UserService successfully unregistered',
                             ['user' => $user->identity_id, 'game' => $game->name]);
                     }
                 }
@@ -67,7 +67,7 @@ abstract class AbstractListener implements TeamspeakListener
                     $assignments = $game->assignments()->get();
 
                     $this->removeServerGroups($game->game_user, $assignments);
-                    Log::info('User successfully unregistered', ['user' => $user->identity_id, 'game' => $game->name]);
+                    Log::info('UserService successfully unregistered', ['user' => $user->identity_id, 'game' => $game->name]);
                 }
 
                 $user->delete();
@@ -90,8 +90,8 @@ abstract class AbstractListener implements TeamspeakListener
                         if ($userToBlock->save()) {
                             if ($client = TeamspeakGateway::getClient($user->identity_id)) {
                                 TeamspeakGateway::sendMessageToClient($client,
-                                    'User '.$user->identity_id.' successfully blocked');
-                                Log::info('User successfully blocked', ['user' => $user->identity_id]);
+                                    'UserService '.$user->identity_id.' successfully blocked');
+                                Log::info('UserService successfully blocked', ['user' => $user->identity_id]);
                             }
                         }
                     }
@@ -102,8 +102,8 @@ abstract class AbstractListener implements TeamspeakListener
                         if ($userToUnblock->save()) {
                             if ($client = TeamspeakGateway::getClient($user->identity_id)) {
                                 TeamspeakGateway::sendMessageToClient($client,
-                                    'User '.$user->identity_id.' successfully unblocked');
-                                Log::info('User successfully unblocked', ['user' => $user->identity_id]);
+                                    'UserService '.$user->identity_id.' successfully unblocked');
+                                Log::info('UserService successfully unblocked', ['user' => $user->identity_id]);
                             }
                         }
                     }
@@ -197,7 +197,7 @@ abstract class AbstractListener implements TeamspeakListener
             $user->games()->attach($game->getKey(), ['options' => $options]);
         }
 
-        Log::info('User successfully registered', ['identityId' => $identityId, 'game' => $game->name]);
+        Log::info('UserService successfully registered', ['identityId' => $identityId, 'game' => $game->name]);
         $this->handleUpdate($user->refresh());
     }
 

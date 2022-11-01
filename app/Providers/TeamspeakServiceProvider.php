@@ -22,7 +22,7 @@ class TeamspeakServiceProvider extends ServiceProvider implements DeferrableProv
                 .config('teamspeak.ip').':'
                 .config('teamspeak.query_port').'/?server_port='
                 .config('teamspeak.port').'&blocking=0&nickname='
-                .config('teamspeak.bot_name').rand(1, 100);
+                .config('teamspeak.bot_name');
 
             return TeamSpeak3::factory($uri);
         });

@@ -3,7 +3,7 @@
 namespace App\Commands;
 
 use App\Facades\TeamSpeak3;
-use App\Listeners\TeamspeakListenerRegistry;
+use App\Services\Listeners\TeamspeakListenerRegistry;
 use LaravelZero\Framework\Commands\Command;
 
 class Run extends Command
