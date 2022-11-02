@@ -26,8 +26,8 @@ class TeamspeakListenerServiceProvider extends ServiceProvider implements Deferr
                 ->register(new EnterViewListener($service));
 
             $autoUpdateInterval = config('teamspeak.auto_update_interval');
-            if (is_int($autoUpdateInterval)) {
-                $registry->register(new TimeoutListener($service, $autoUpdateInterval));
+            if (is_numeric($autoUpdateInterval)) {
+                $registry->register(new TimeoutListener($service, (int) $autoUpdateInterval));
             }
         }
     }

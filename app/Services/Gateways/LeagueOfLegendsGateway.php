@@ -55,7 +55,7 @@ class LeagueOfLegendsGateway implements GameGateway
                 $matchIds = $decodedBody;
             }
         } else {
-            Log::error('Could not get match id\'s from Riot API for League of Legends',
+            Log::warning('Could not get match id\'s from Riot API for League of Legends',
                 ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $matchIdsResponse]);
         }
 
@@ -67,7 +67,7 @@ class LeagueOfLegendsGateway implements GameGateway
             if ($matchResponse->successful()) {
                 $matches[] = json_decode(($matchResponse->body()), true);
             } else {
-                Log::error('Could not get matches from Riot API for League of Legends',
+                Log::warning('Could not get matches from Riot API for League of Legends',
                     ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $matchResponse]);
             }
         }
@@ -87,7 +87,7 @@ class LeagueOfLegendsGateway implements GameGateway
                 $leagues = $decodedBody;
             }
         } else {
-            Log::error('Could not get leagues from Riot API for League of Legends',
+            Log::warning('Could not get leagues from Riot API for League of Legends',
                 ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $leagueResponse]);
         }
 
@@ -243,7 +243,7 @@ class LeagueOfLegendsGateway implements GameGateway
                 $result = $decodedBody;
             }
         } else {
-            Log::error('Could not get player identity from Riot API for League of Legends',
+            Log::warning('Could not get player identity from Riot API for League of Legends',
                 ['apiKey' => $this->apiKey, 'params' => $params, 'response' => $summonerResponse]);
         }
 

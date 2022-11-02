@@ -16,7 +16,8 @@ class TeamspeakGateway
         try {
             $result = TeamSpeak3::clientGetByUid($clientId);
         } catch (Exception $e) {
-            Log::error($e, ['clientId' => $clientId]);
+            Log::debug($e->getMessage(), ['clientId' => $clientId]);
+            report($e);
         }
 
         return $result;
@@ -54,7 +55,8 @@ class TeamspeakGateway
 
             return true;
         } catch (Exception $e) {
-            Log::error($e, ['client' => $client, 'serverGroupId' => $serverGroupId]);
+            Log::debug($e->getMessage(), ['client' => $client, 'serverGroupId' => $serverGroupId]);
+            report($e);
         }
 
         return false;
@@ -67,7 +69,8 @@ class TeamspeakGateway
 
             return true;
         } catch (Exception $e) {
-            Log::error($e, ['client' => $client, 'serverGroupId' => $serverGroupId]);
+            Log::debug($e->getMessage(), ['client' => $client, 'serverGroupId' => $serverGroupId]);
+            report($e);
         }
 
         return false;
@@ -80,7 +83,8 @@ class TeamspeakGateway
 
             return true;
         } catch (Exception $e) {
-            Log::error($e, ['client' => $client, 'message' => $message]);
+            Log::debug($e->getMessage(), ['client' => $client, 'message' => $message]);
+            report($e);
         }
 
         return false;

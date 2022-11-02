@@ -37,7 +37,7 @@ class ApexLegendsGateway implements GameGateway
                 $stats = $decodedBody;
             }
         } else {
-            Log::error('Could not get player data from TRN API for Apex Legends',
+            Log::warning('Could not get player data from TRN API for Apex Legends',
                 ['apiKey' => $this->apiKey, 'response' => $response]);
         }
 

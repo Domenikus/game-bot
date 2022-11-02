@@ -3,6 +3,7 @@
 namespace App\Services\Gateways;
 
 use App\Exceptions\InvalidGatewayException;
+use Illuminate\Support\Facades\Log;
 
 class GameGatewayRegistry
 {
@@ -11,6 +12,7 @@ class GameGatewayRegistry
     public function register(string $name, GameGateway $instance): static
     {
         $this->gateways[$name] = $instance;
+        LOG::debug('Game registered in game gateway registry', ['game' => $instance]);
 
         return $this;
     }

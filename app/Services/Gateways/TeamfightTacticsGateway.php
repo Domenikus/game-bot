@@ -30,7 +30,7 @@ class TeamfightTacticsGateway implements GameGateway
                 $stats['leagues'] = $decodedBody;
             }
         } else {
-            Log::error('Could not get player data from Riot API for Teamfight Tactics',
+            Log::warning('Could not get player data from Riot API for Teamfight Tactics',
                 ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $leagueResponse]);
         }
 
@@ -53,7 +53,7 @@ class TeamfightTacticsGateway implements GameGateway
                 $summoner = $decodedBody;
             }
         } else {
-            Log::error('Could not get player identity from Riot API for Teamfight Tactics',
+            Log::warning('Could not get player identity from Riot API for Teamfight Tactics',
                 ['apiKey' => $this->apiKey, 'params' => $params, 'response' => $summonerResponse]);
         }
 

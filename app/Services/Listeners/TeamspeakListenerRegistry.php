@@ -2,6 +2,8 @@
 
 namespace App\Services\Listeners;
 
+use Illuminate\Support\Facades\Log;
+
 class TeamspeakListenerRegistry
 {
     /**
@@ -12,6 +14,7 @@ class TeamspeakListenerRegistry
     public function register(TeamspeakListener $instance): static
     {
         $this->listeners[] = $instance;
+        LOG::debug('Listener registered in teamspeak listener registry', ['listener' => $instance]);
 
         return $this;
     }
