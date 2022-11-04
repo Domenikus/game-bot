@@ -14,7 +14,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $apex = Game::where('name', 'apex')->firstOrFail();
+        /** @var Game $apex */
+        $apex = Game::withInactive()->where('name', Game::GAME_NAME_APEX_LEGENDS)->first();
 
         if (! $apex->queues()->where('name', 'rankScore')->first()) {
             $rankGroup = Type::where('name', 'rank_solo')->first();
@@ -44,7 +45,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $apex = Game::where('name', 'apex')->firstOrFail();
+        /** @var Game $apex */
+        $apex = Game::withInactive()->where('name', Game::GAME_NAME_APEX_LEGENDS)->first();
 
         if ($solo = $apex->queues()->where('name', 'rankScore')->first()) {
             $solo->delete();

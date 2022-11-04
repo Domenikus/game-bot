@@ -14,7 +14,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $tft = Game::where('name', 'tft')->firstOrFail();
+        /** @var Game $tft */
+        $tft = Game::withInactive()->where('name', Game::GAME_NAME_TEAMFIGHT_TACTICS)->first();
 
         if (! $tft->queues()->where('name', 'RANKED_TFT')->first()) {
             $rankSolo = Type::where('name', 'rank_solo')->first();
@@ -34,7 +35,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $tft = Game::where('name', 'tft')->firstOrFail();
+        /** @var Game $tft */
+        $tft = Game::withInactive()->where('name', Game::GAME_NAME_TEAMFIGHT_TACTICS)->first();
 
         if ($solo = $tft->queues()->where('name', 'RANKED_TFT')->first()) {
             $solo->delete();

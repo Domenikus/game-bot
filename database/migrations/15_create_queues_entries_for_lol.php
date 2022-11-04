@@ -14,7 +14,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $lol = Game::where('name', 'lol')->firstOrFail();
+        /** @var Game $lol */
+        $lol = Game::withInactive()->where('name', Game::GAME_NAME_LEAGUE_OF_LEGENDS)->first();
 
         if (! $lol->queues()->where('name', 'RANKED_SOLO_5x5')->first()) {
             $rankSolo = Type::where('name', 'rank_solo')->first();
@@ -54,7 +55,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $lol = Game::where('name', 'lol')->firstOrFail();
+        /** @var Game $lol */
+        $lol = Game::withInactive()->where('name', Game::GAME_NAME_LEAGUE_OF_LEGENDS)->first();
 
         if ($solo = $lol->queues()->where('name', 'RANKED_SOLO_5x5')->first()) {
             $solo->delete();

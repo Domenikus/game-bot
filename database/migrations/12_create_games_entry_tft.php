@@ -7,12 +7,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Game::where('name', 'tft')->first()) {
+        if (Game::where('name', Game::GAME_NAME_TEAMFIGHT_TACTICS)->first()) {
             return;
         }
 
         $game = new Game();
-        $game->name = 'tft';
+        $game->name = Game::GAME_NAME_TEAMFIGHT_TACTICS;
+        $game->label = 'Teamfight Tactics';
         $game->saveOrFail();
     }
 
@@ -23,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if ($game = Game::where('name', 'tft')->first()) {
+        if ($game = Game::where('name', Game::GAME_NAME_TEAMFIGHT_TACTICS)->first()) {
             $game->delete();
         }
     }

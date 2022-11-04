@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Traits\Activatable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -10,13 +11,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property int $id
  * @property string $name
- * @property string $label // Todo remove
+ * @property string $label
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property GameUser $game_user
  */
 class Game extends Model
 {
+    use Activatable;
+
     const GAME_NAME_APEX_LEGENDS = 'apex';
 
     const GAME_NAME_LEAGUE_OF_LEGENDS = 'lol';

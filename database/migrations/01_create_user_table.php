@@ -6,11 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up(): void
     {
         if (Schema::hasTable('users')) {
@@ -19,16 +14,12 @@ return new class extends Migration
 
         Schema::create('users', function (Blueprint $table) {
             $table->string('identity_id')->primary();
+            $table->boolean('blocked')->default(false);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('users');
     }
