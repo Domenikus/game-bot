@@ -12,7 +12,7 @@ class GameGatewayRegistry
     public function register(string $name, GameGateway $instance): static
     {
         $this->gateways[$name] = $instance;
-        LOG::debug('Game registered in game gateway registry', ['game' => $instance]);
+        LOG::debug('Game registered in game gateway registry', ['name' => $name, 'game' => $instance]);
 
         return $this;
     }

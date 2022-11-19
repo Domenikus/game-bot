@@ -2,11 +2,20 @@
 
 namespace App\Providers;
 
+use App\Services\GameService;
+use App\Services\GameServiceInterface;
+use App\Services\UserService;
+use App\Services\UserServiceInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public array $bindings = [
+        GameServiceInterface::class => GameService::class,
+        UserServiceInterface::class => UserService::class,
+    ];
+
     /**
      * Bootstrap any application services.
      *

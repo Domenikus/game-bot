@@ -60,6 +60,42 @@ class TeamfightTacticsGateway implements GameGateway
         return $summoner;
     }
 
+    public function grabCharacterImage(string $characterName): ?string
+    {
+        // TODO: Implement grabCharacterImage() method.
+        return null;
+    }
+
+    public function grabCharacters(): ?array
+    {
+        // TODO: Implement grabCharacters() method.
+        return null;
+    }
+
+    public function grabPositionImage(string $positionName): ?string
+    {
+        // TODO: Implement grabPositionImage() method.
+        return null;
+    }
+
+    public function grabPositions(): ?array
+    {
+        // TODO: Implement grabPositions() method.
+        return null;
+    }
+
+    public function grabRankImage(string $rankName): ?string
+    {
+        // TODO: Implement grabRankImage() method.
+        return null;
+    }
+
+    public function grabRanks(): ?array
+    {
+        // TODO: Implement grabRanks() method.
+        return null;
+    }
+
     /**
      * @param  GameUser  $gameUser
      * @param  array  $stats

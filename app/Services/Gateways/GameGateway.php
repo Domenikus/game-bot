@@ -13,6 +13,18 @@ interface GameGateway
 
     public function getPlayerIdentity(array $params): ?array;
 
+    public function grabCharacterImage(string $characterName): ?string;
+
+    public function grabCharacters(): ?array;
+
+    public function grabPositionImage(string $positionName): ?string;
+
+    public function grabPositions(): ?array;
+
+    public function grabRankImage(string $rankName): ?string;
+
+    public function grabRanks(): ?array;
+
     /**
      * @param  GameUser  $gameUser
      * @param  array  $stats

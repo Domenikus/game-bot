@@ -13,6 +13,7 @@ return new class extends Migration
 
         $type = new Type();
         $type->name = 'position';
+        $type->label = 'Position';
         $type->saveOrFail();
     }
 

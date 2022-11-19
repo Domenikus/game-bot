@@ -56,13 +56,14 @@ return [
     'providers' => [
         App\Providers\AppServiceProvider::class,
         App\Providers\GameServiceProvider::class,
-        App\Providers\UserServiceProvider::class,
         App\Providers\TeamspeakServiceProvider::class,
         App\Providers\TeamspeakListenerServiceProvider::class,
+        ZanySoft\Zip\ZipServiceProvider::class,
     ],
 
     'aliases' => [
         TeamSpeak3::class => App\Facades\TeamSpeak3::class,
+        'Zip' => ZanySoft\Zip\Facades\Zip::class,
     ],
 
 ];

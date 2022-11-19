@@ -4,11 +4,115 @@ namespace App\Services\Gateways;
 
 use App\Facades\TeamSpeak3;
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use TeamSpeak3_Node_Client;
+use TeamSpeak3_Node_Servergroup;
 
 class TeamspeakGateway
 {
+    public static function assignIconToServerGroup(int $serverGroupId, int $iconId): ?bool
+    {
+        $iconPermissionId = TeamspeakGateway::getPermissionIdByName('i_icon_id');
+        if (! $iconPermissionId) {
+            Log::error('Icon permission not found');
+
+            return false;
+        }
+
+        return self::assignPermissionToServerGroup($serverGroupId, $iconPermissionId, $iconId);
+    }
+
+    public static function getPermissionIdByName(string $name): ?int
+    {
+        $permissionId = null;
+
+        try {
+            $permissionId = TeamSpeak3::permissionGetIdByName($name);
+        } catch (Exception $e) {
+        }
+
+        return $permissionId;
+    }
+
+    public static function assignPermissionToServerGroup(int $serverGroupId, int $permissionId, int $value): bool
+    {
+        $success = false;
+
+        try {
+            TeamSpeak3::serverGroupPermAssign($serverGroupId, $permissionId, $value);
+            $success = true;
+        } catch (Exception $e) {
+            Log::debug($e->getMessage(), ['serverGroupId' => $serverGroupId, 'permissionId' => $permissionId, 'value' => $value]);
+            report($e);
+        }
+
+        return $success;
+    }
+
+    public static function assignServerGroupToClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
+    {
+        try {
+            $client->addServerGroup($serverGroupId);
+
+            return true;
+        } catch (Exception $e) {
+            Log::debug($e->getMessage(), ['client' => $client, 'serverGroupId' => $serverGroupId]);
+            report($e);
+        }
+
+        return false;
+    }
+
+    public static function calculateIconId(string $data): int
+    {
+        return crc32($data);
+    }
+
+    public static function createServerGroup(string $name): ?int
+    {
+        $serverGroupId = null;
+
+        try {
+            $serverGroupId = TeamSpeak3::serverGroupCreate($name);
+        } catch (Exception $e) {
+            Log::debug($e->getMessage(), ['name' => $name]);
+            report($e);
+        }
+
+        return $serverGroupId;
+    }
+
+    /**
+     * @return TeamSpeak3_Node_Client[]
+     */
+    public static function getActiveClients(): array
+    {
+        $clientList = [];
+
+        try {
+            $clientList = TeamSpeak3::clientList();
+        } catch (Exception $e) {
+            report($e);
+        }
+
+        return $clientList;
+    }
+
+    public static function getAvailablePermissions(): array
+    {
+        $permissions = [];
+
+        try {
+            $permissionsList = TeamSpeak3::permissionList();
+            $permissions = Arr::pluck($permissionsList, 'permid', 'permname');
+        } catch (Exception $e) {
+            report($e);
+        }
+
+        return $permissions;
+    }
+
     public static function getClient(string $clientId): ?TeamSpeak3_Node_Client
     {
         $result = null;
@@ -23,12 +127,33 @@ class TeamspeakGateway
         return $result;
     }
 
-    /**
-     * @return TeamSpeak3_Node_Client[]
-     */
-    public static function getActiveClients(): array
+    public static function getServerGroupByName(string $name): ?TeamSpeak3_Node_Servergroup
     {
-        return TeamSpeak3::clientList();
+        $serverGroup = null;
+
+        try {
+            $serverGroup = TeamSpeak3::serverGroupGetByName($name);
+        } catch (Exception $e) {
+        }
+
+        return $serverGroup;
+    }
+
+    /**
+     * @return array<TeamSpeak3_Node_Servergroup>
+     */
+    public static function getServerGroups(): array
+    {
+        $serverGroups = [];
+
+        try {
+            $serverGroups = TeamSpeak3::serverGroupList();
+        } catch (Exception $e) {
+            Log::error('Could not get server groups from ts3 server');
+            report($e);
+        }
+
+        return $serverGroups;
     }
 
     /**
@@ -37,29 +162,46 @@ class TeamspeakGateway
      */
     public static function getServerGroupsAssignedToClient(TeamSpeak3_Node_Client $client): array
     {
-        $actualServerGroups = [];
-        $actualGroups = $client->memberOf();
-        foreach ($actualGroups as $group) {
-            if (isset($group['sgid'])) {
-                $actualServerGroups[] = $group['sgid'];
+        try {
+            $actualServerGroups = [];
+            $actualGroups = $client->memberOf();
+            foreach ($actualGroups as $group) {
+                if (isset($group['sgid'])) {
+                    $actualServerGroups[] = $group['sgid'];
+                }
             }
+        } catch (Exception $e) {
+            Log::debug($e->getMessage(), ['client' => $client]);
+            report($e);
         }
 
         return $actualServerGroups;
     }
 
-    public static function addServerGroupToClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
+    public static function iconExists(int $id): bool
     {
-        try {
-            $client->addServerGroup($serverGroupId);
+        $result = false;
 
-            return true;
+        foreach (self::getServerIcons() as $serverIcon) {
+            if ($serverIcon['name'] == 'icon_'.$id) {
+                $result = true;
+            }
+        }
+
+        return $result;
+    }
+
+    public static function getServerIcons(): array
+    {
+        $serverIcons = [];
+
+        try {
+            $serverIcons = TeamSpeak3::channelFileList(0, '', '/icons');
         } catch (Exception $e) {
-            Log::debug($e->getMessage(), ['client' => $client, 'serverGroupId' => $serverGroupId]);
             report($e);
         }
 
-        return false;
+        return $serverIcons;
     }
 
     public static function removeServerGroupFromClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
@@ -88,5 +230,18 @@ class TeamspeakGateway
         }
 
         return false;
+    }
+
+    public static function uploadIcon(string $data): ?int
+    {
+        $iconId = null;
+
+        try {
+            $iconId = TeamSpeak3::iconUpload($data);
+        } catch (Exception $e) {
+            report($e);
+        }
+
+        return $iconId;
     }
 }

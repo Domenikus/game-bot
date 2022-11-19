@@ -13,6 +13,7 @@ return new class extends Migration
 
         $type = new Type();
         $type->name = 'rank_group';
+        $type->label = 'Rank group';
         $type->saveOrFail();
     }
 

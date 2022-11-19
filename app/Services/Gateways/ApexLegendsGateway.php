@@ -24,6 +24,42 @@ class ApexLegendsGateway implements GameGateway
         $this->apiKey = $apiKey;
     }
 
+    public function grabCharacterImage(string $characterName): ?string
+    {
+        // TODO: Implement grabCharacterImage() method.
+        return null;
+    }
+
+    public function grabCharacters(): ?array
+    {
+        // TODO: Implement grabCharacters() method.
+        return null;
+    }
+
+    public function grabPositionImage(string $positionName): ?string
+    {
+        // TODO: Implement grabPositionImage() method.
+        return null;
+    }
+
+    public function grabPositions(): ?array
+    {
+        // TODO: Implement grabPositions() method.
+        return null;
+    }
+
+    public function grabRankImage(string $rankName): ?string
+    {
+        // TODO: Implement grabRankImage() method.
+        return null;
+    }
+
+    public function grabRanks(): ?array
+    {
+        // TODO: Implement grabRanks() method.
+        return null;
+    }
+
     public function getPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
@@ -60,9 +96,9 @@ class ApexLegendsGateway implements GameGateway
         }
 
         if ($characterAssignment = $this->mapLegend($stats, $assignments->filter(function ($value) {
-            return $value->type?->name == Type::TYPE_CHARACTER;
+            return $value->type?->name == Type::NAME_CHARACTER;
         }))) {
-            $ts3ServerGroups[Type::TYPE_CHARACTER] = $characterAssignment->ts3_server_group_id;
+            $ts3ServerGroups[Type::NAME_CHARACTER] = $characterAssignment->ts3_server_group_id;
         }
 
         return $ts3ServerGroups;

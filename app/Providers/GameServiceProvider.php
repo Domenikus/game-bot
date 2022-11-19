@@ -25,9 +25,11 @@ class GameServiceProvider extends ServiceProvider
             }
 
             $lolApiKey = config('league-of-legends.apiKey');
-            if (is_string($lolApiKey)) {
+            $lolGameVersion = config('league-of-legends.gameVersion');
+            $lolLanguageCode = config('league-of-legends.languageCode');
+            if (is_string($lolApiKey) && is_string($lolGameVersion) && is_string($lolLanguageCode)) {
                 $registry->register(Game::GAME_NAME_LEAGUE_OF_LEGENDS,
-                    new LeagueOfLegendsGateway($lolApiKey));
+                    new LeagueOfLegendsGateway($lolApiKey, $lolGameVersion, $lolLanguageCode));
             }
 
             $tftApiKey = config('teamfight-tactics.apiKey');
