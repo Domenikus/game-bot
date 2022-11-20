@@ -17,6 +17,10 @@ class ApexLegendsGateway implements GameGateway
         'psn',
     ];
 
+    const QUEUE_TYPE_RANKED = 'rankScore';
+
+    const QUEUE_TYPE_ARENA = 'arenaRankScore';
+
     protected string $apiKey;
 
     public function __construct(string $apiKey)
@@ -80,18 +84,23 @@ class ApexLegendsGateway implements GameGateway
         return $stats;
     }
 
-    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
+    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
     {
         $ts3ServerGroups = [];
 
         if (isset($stats['data']['segments'][0]['stats'])) {
-            foreach ($queues as $queue) {
-                if ($rankAssignment = $this->mapRank($stats['data']['segments'][0]['stats'],
-                    $assignments->filter(function ($value) use ($queue) {
-                        return $value->type?->name == $queue->type?->name;
-                    }), $queue->name)) {
-                    $ts3ServerGroups[$queue->type?->name] = $rankAssignment->ts3_server_group_id;
-                }
+            if ($rankAssignment = $this->mapRank($stats['data']['segments'][0]['stats'],
+                $assignments->filter(function ($value) {
+                    return $value->type?->name == TYPE::NAME_RANK_SOLO;
+                }), self::QUEUE_TYPE_RANKED)) {
+                $ts3ServerGroups[TYPE::NAME_RANK_SOLO] = $rankAssignment->ts3_server_group_id;
+            }
+
+            if ($rankAssignment = $this->mapRank($stats['data']['segments'][0]['stats'],
+                $assignments->filter(function ($value) {
+                    return $value->type?->name == Type::NAME_RANK_GROUP;
+                }), self::QUEUE_TYPE_ARENA)) {
+                $ts3ServerGroups[Type::NAME_RANK_GROUP] = $rankAssignment->ts3_server_group_id;
             }
         }
 

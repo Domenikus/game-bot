@@ -6,25 +6,25 @@ use App\User;
 
 interface UserServiceInterface
 {
-    public function handleAdmin(User $user, array $options): void;
+    public function handleAdmin(User $user, array $params = []): void;
 
     /**
      * Handels !register command in teamspeak chat
      *
      * @param  string  $identityId
-     * @param  array  $options
+     * @param  array  $params
      * @return void
      */
-    public function handleRegister(string $identityId, array $options): void;
+    public function handleRegister(string $identityId, array $params = []): void;
 
     /**
      * Handels !unregister command in teamspeak chat
      *
      * @param  User  $user
-     * @param  array  $options
+     * @param  array  $params
      * @return void
      */
-    public function handleUnregister(User $user, array $options = []): void;
+    public function handleUnregister(User $user, array $params = []): void;
 
     /**
      * Handels !update command in teamspeak chat

@@ -4,7 +4,6 @@ namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
-use App\Queue;
 use App\Type;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,6 +16,13 @@ use ZanySoft\Zip\Facades\Zip;
 class LeagueOfLegendsGateway implements GameGateway
 {
     const MATCH_TYPE_RANKED = 'ranked';
+
+    const QUEUE_TYPE_RANKED_SOLO = 'RANKED_SOLO_5x5';
+
+    const QUEUE_TYPE_NAME_RANKED_GROUP = 'RANKED_FLEX_SR';
+
+    // Riot put tft double up into lol league endpoint. This is a workaround until they fix this issue
+    const QUEUE_TYPE_NAME_RANKED_TFT_DOUBLE_UP = 'RANKED_TFT_DOUBLE_UP';
 
     const NUMBER_OF_MATCHES = 20;
 
@@ -291,22 +297,33 @@ class LeagueOfLegendsGateway implements GameGateway
      * @param  GameUser  $gameUser
      * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @param  Collection<int, Queue>  $queues
      * @return array
      */
-    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
+    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
     {
         $ts3ServerGroups = [];
         $matchData = [];
 
         if (isset($stats['leagues'])) {
-            foreach ($queues as $queue) {
-                if ($rankAssignment = $this->mapRank($stats['leagues'],
-                    $assignments->filter(function ($value) use ($queue) {
-                        return $value->type?->name == $queue->type?->name;
-                    }), $queue->name)) {
-                    $ts3ServerGroups[$queue->type?->name] = $rankAssignment->ts3_server_group_id;
-                }
+            if ($rankAssignment = $this->mapRank($stats['leagues'],
+                $assignments->filter(function ($value) {
+                    return $value->type?->name == Type::NAME_RANK_SOLO;
+                }), self::QUEUE_TYPE_RANKED_SOLO)) {
+                $ts3ServerGroups[Type::NAME_RANK_SOLO] = $rankAssignment->ts3_server_group_id;
+            }
+
+            if ($rankAssignment = $this->mapRank($stats['leagues'],
+                $assignments->filter(function ($value) {
+                    return $value->type?->name == Type::NAME_RANK_GROUP;
+                }), self::QUEUE_TYPE_NAME_RANKED_GROUP)) {
+                $ts3ServerGroups[Type::NAME_RANK_GROUP] = $rankAssignment->ts3_server_group_id;
+            }
+
+            if ($rankAssignment = $this->mapRank($stats['leagues'],
+                $assignments->filter(function ($value) {
+                    return $value->type?->name == Type::NAME_RANK_DUO;
+                }), self::QUEUE_TYPE_NAME_RANKED_TFT_DOUBLE_UP)) {
+                $ts3ServerGroups[Type::NAME_RANK_DUO] = $rankAssignment->ts3_server_group_id;
             }
         }
 

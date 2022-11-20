@@ -4,7 +4,6 @@ namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
-use App\Queue;
 use Illuminate\Database\Eloquent\Collection;
 
 interface GameGateway
@@ -29,13 +28,11 @@ interface GameGateway
      * @param  GameUser  $gameUser
      * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @param  Collection<int, Queue>  $queues
      * @return array
      */
     public function mapStats(
         GameUser $gameUser,
         array $stats,
-        Collection $assignments,
-        Collection $queues
+        Collection $assignments
     ): array;
 }

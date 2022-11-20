@@ -29,15 +29,15 @@ class ChatListener implements TeamspeakListener
                 $identityId = $data['invokeruid']->toString();
                 $user = User::where('identity_id', $identityId)->first();
 
-                $options = explode('|', $data['msg']->toString());
+                $params = explode('|', $data['msg']->toString());
                 if ($data['msg']->startsWith('!register')) {
-                    $this->userService->handleRegister($identityId, $options);
+                    $this->userService->handleRegister($identityId, $params);
                 } elseif ($data['msg']->startsWith('!update') && $user) {
                     $this->userService->handleUpdate($user);
                 } elseif ($data['msg']->startsWith('!unregister') && $user) {
-                    $this->userService->handleUnregister($user, $options);
+                    $this->userService->handleUnregister($user, $params);
                 } elseif ($data['msg']->startsWith('!admin') && $user) {
-                    $this->userService->handleAdmin($user, $options);
+                    $this->userService->handleAdmin($user, $params);
                 }
             });
     }

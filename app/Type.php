@@ -32,12 +32,4 @@ class Type extends Model
     {
         return $this->hasMany(Assignment::class);
     }
-
-    /**
-     * @return HasMany<Queue>
-     */
-    public function queues(): HasMany
-    {
-        return $this->hasMany(Queue::class);
-    }
 }

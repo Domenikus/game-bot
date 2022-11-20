@@ -4,13 +4,15 @@ namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
-use App\Queue;
+use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class TeamfightTacticsGateway implements GameGateway
 {
+    const QUEUE_TYPE_RANKED = 'RANKED_TFT';
+
     protected string $apiKey;
 
     public function __construct(string $apiKey)
@@ -100,21 +102,18 @@ class TeamfightTacticsGateway implements GameGateway
      * @param  GameUser  $gameUser
      * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @param  Collection<int, Queue>  $queues
      * @return array
      */
-    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments, Collection $queues): array
+    public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
     {
         $ts3ServerGroups = [];
 
         if (isset($stats['leagues'])) {
-            foreach ($queues as $queue) {
-                if ($rankAssignment = $this->mapRank($stats['leagues'],
-                    $assignments->filter(function ($value) use ($queue) {
-                        return $value->type?->name == $queue->type?->name;
-                    }), $queue->name)) {
-                    $ts3ServerGroups[$queue->type?->name] = $rankAssignment->ts3_server_group_id;
-                }
+            if ($rankAssignment = $this->mapRank($stats['leagues'],
+                $assignments->filter(function ($value) {
+                    return $value->type?->name == Type::NAME_RANK_SOLO;
+                }), self::QUEUE_TYPE_RANKED)) {
+                $ts3ServerGroups[Type::NAME_RANK_SOLO] = $rankAssignment->ts3_server_group_id;
             }
         }
 

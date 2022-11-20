@@ -26,6 +26,10 @@ class Game extends Model
 
     const GAME_NAME_TEAMFIGHT_TACTICS = 'tft';
 
+    protected $casts = [
+        'blocked' => 'bool',
+    ];
+
     /**
      * @return HasMany<Assignment>
      */
@@ -40,13 +44,5 @@ class Game extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
-    }
-
-    /**
-     * @return HasMany<Queue>
-     */
-    public function queues(): HasMany
-    {
-        return $this->hasMany(Queue::class);
     }
 }

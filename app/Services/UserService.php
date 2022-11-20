@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Assignment;
 use App\Game;
 use App\GameUser;
-use App\Queue;
 use App\Services\Gateways\GameGateway;
 use App\Services\Gateways\GameGatewayRegistry;
 use App\Services\Gateways\TeamspeakGateway;
@@ -16,17 +15,17 @@ use Illuminate\Support\Facades\Log;
 
 class UserService implements UserServiceInterface
 {
-    public function handleAdmin(User $user, array $options): void
+    public function handleAdmin(User $user, array $params = []): void
     {
-        if ($user->isAdmin() && isset($options[1])) {
-            switch ($options[1]) {
+        if ($user->isAdmin() && isset($params[1])) {
+            switch ($params[1]) {
                 case 'unregister':
-                    if ($userToUnregister = User::where('identity_id', $options[2])->first()) {
+                    if ($userToUnregister = User::where('identity_id', $params[2])->first()) {
                         $this->handleUnregister($userToUnregister, []);
                     }
                     break;
                 case 'block':
-                    if ($userToBlock = User::where('identity_id', $options[2])->first()) {
+                    if ($userToBlock = User::where('identity_id', $params[2])->first()) {
                         $userToBlock->blocked = true;
                         if ($userToBlock->save()) {
                             if ($client = TeamspeakGateway::getClient($user->identity_id)) {
@@ -38,7 +37,7 @@ class UserService implements UserServiceInterface
                     }
                     break;
                 case 'unblock':
-                    if ($userToUnblock = User::where('identity_id', $options[2])->first()) {
+                    if ($userToUnblock = User::where('identity_id', $params[2])->first()) {
                         $userToUnblock->blocked = false;
                         if ($userToUnblock->save()) {
                             if ($client = TeamspeakGateway::getClient($user->identity_id)) {
@@ -57,14 +56,14 @@ class UserService implements UserServiceInterface
         }
     }
 
-    public function handleUnregister(User $user, array $options = []): void
+    public function handleUnregister(User $user, array $params = []): void
     {
         $user->loadMissing('games');
 
         if (! $user->isBlocked()) {
-            if (isset($options[1])) {
+            if (isset($params[1])) {
                 foreach ($user->games as $game) {
-                    if ($game->name == $options[1]) {
+                    if ($game->name == $params[1]) {
                         $assignments = $game->assignments()->get();
 
                         $this->removeServerGroups($game->game_user, $assignments);
@@ -105,19 +104,23 @@ class UserService implements UserServiceInterface
         }
     }
 
-    public function handleRegister(string $identityId, array $options): void
+    public function handleRegister(string $identityId, array $params = []): void
     {
-        $game = Game::where('name', $options[1])->first();
-        if (isset($options[1]) && $game) {
-            $registry = App::make(GameGatewayRegistry::class);
-            $interface = $registry->get($game->name);
-            $this->registerUser($options, $identityId, $interface);
+        if (! isset($params[1])) {
+            return;
+        }
+
+        if ($game = Game::where('name', $params[1])->first()) {
+            $this->registerUser($game, $identityId, $params);
         }
     }
 
-    protected function registerUser(array $options, string $identityId, GameGateway $interface): void
+    protected function registerUser(Game $game, string $identityId, array $params): void
     {
-        $options = $interface->getPlayerIdentity($options);
+        $registry = App::make(GameGatewayRegistry::class);
+        $interface = $registry->get($game->name);
+
+        $options = $interface->getPlayerIdentity($params);
         if (! $options) {
             if ($client = TeamspeakGateway::getClient($identityId)) {
                 TeamspeakGateway::sendMessageToClient($client, 'Registration failed, please check params');
@@ -144,15 +147,13 @@ class UserService implements UserServiceInterface
             return;
         }
 
-        $game = Game::where('name', $options[1])->firstOrFail();
-
         if (GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first()) {
             $user->games()->updateExistingPivot($game->getKey(), ['options' => $options]);
         } else {
             $user->games()->attach($game->getKey(), ['options' => $options]);
         }
 
-        Log::info('UserService successfully registered', ['identityId' => $identityId, 'game' => $game->name]);
+        Log::info('UserService successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
         $this->handleUpdate($user->refresh());
     }
 
@@ -163,24 +164,21 @@ class UserService implements UserServiceInterface
 
             foreach ($user->games as $game) {
                 $assignments = $game->assignments()->with(['type'])->get();
-                $queues = $game->queues()->with('type')->get();
                 $registry = App::make(GameGatewayRegistry::class);
                 $interface = $registry->get($game->name);
-                $this->updateServerGroups($game->game_user, $queues, $assignments, $interface);
+                $this->updateServerGroups($game->game_user, $assignments, $interface);
             }
         }
     }
 
     /**
      * @param  GameUser  $gameUser
-     * @param  Collection<int, Queue>  $queues
      * @param  Collection<int, Assignment>  $assignments
      * @param  GameGateway  $interface
      * @return void
      */
     protected function updateServerGroups(
         GameUser $gameUser,
-        Collection $queues,
         Collection $assignments,
         GameGateway $interface
     ): void {
@@ -189,7 +187,7 @@ class UserService implements UserServiceInterface
             return;
         }
 
-        $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments, $queues);
+        $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments);
 
         if ($client = TeamspeakGateway::getClient($gameUser->user_identity_id)) {
             $actualServerGroups = TeamspeakGateway::getServerGroupsAssignedToClient($client);
