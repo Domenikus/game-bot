@@ -5,14 +5,13 @@ namespace App\Traits;
 use App\Scopes\ActiveScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
  * @mixin Model
  *
- * @property bool $active
+ * @method static Builder<static> withInactive()
  *
- * @method static Builder|QueryBuilder withInactive()
+ * @property bool $active
  */
 trait Activatable
 {

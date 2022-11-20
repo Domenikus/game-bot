@@ -12,9 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $name
  * @property string $label
+ * @property GameUser $game_user
+ * @property GameType $game_type
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property GameUser $game_user
  */
 class Game extends Model
 {
@@ -44,5 +45,13 @@ class Game extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<Type>
+     */
+    public function types(): BelongsToMany
+    {
+        return $this->belongsToMany(Type::class)->using(GameType::class)->as('game_type')->withPivot('label')->withTimestamps();
     }
 }
