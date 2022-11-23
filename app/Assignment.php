@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $value
  * @property int $type_id
  * @property int $game_id
- * @property string $ts3_server_group_id
+ * @property int $ts3_server_group_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */

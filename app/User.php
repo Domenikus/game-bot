@@ -27,7 +27,11 @@ class User extends Model
     protected $keyType = 'string';
 
     protected $casts = [
-        'blocked' => 'bool',
+        'blocked' => 'boolean',
+    ];
+
+    protected $attributes = [
+        'blocked' => false,
     ];
 
     /**

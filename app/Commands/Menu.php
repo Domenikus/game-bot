@@ -117,7 +117,7 @@ class Menu extends Command
             $assignment->value = $value->fetch();
             $assignment->type()->associate($typeModel);
             $assignment->game()->associate($gameModel);
-            $assignment->ts3_server_group_id = $ts3_server_group_id->fetch();
+            $assignment->ts3_server_group_id = (int) $ts3_server_group_id->fetch();
 
             try {
                 $assignment->saveOrFail();

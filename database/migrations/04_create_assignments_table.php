@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('value');
             $table->unsignedBigInteger('type_id');
             $table->unsignedBigInteger('game_id');
-            $table->string('ts3_server_group_id');
+            $table->bigInteger('ts3_server_group_id');
             $table->timestamps();
 
             $table->unique(['value', 'ts3_server_group_id', 'game_id', 'type_id']);

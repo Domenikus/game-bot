@@ -70,7 +70,7 @@ class GameService implements GameServiceInterface
 
             $assignment = new Assignment();
             $assignment->value = $value;
-            $assignment->ts3_server_group_id = (string) $serverGroupId;
+            $assignment->ts3_server_group_id = $serverGroupId;
             $assignment->type()->associate($type);
             $assignment->game()->associate($this->game);
             $assignment->save();
