@@ -9,14 +9,6 @@ class GameGatewayRegistry
 {
     protected array $gateways = [];
 
-    public function register(string $name, GameGateway $instance): static
-    {
-        $this->gateways[$name] = $instance;
-        LOG::debug('Game registered in game gateway registry', ['name' => $name, 'game' => $instance]);
-
-        return $this;
-    }
-
     /**
      * @throws InvalidGatewayException
      */
@@ -27,5 +19,13 @@ class GameGatewayRegistry
         } else {
             throw new InvalidGatewayException($name);
         }
+    }
+
+    public function register(string $name, GameGateway $instance): static
+    {
+        $this->gateways[$name] = $instance;
+        LOG::debug('Game registered in game gateway registry', ['name' => $name, 'game' => $instance]);
+
+        return $this;
     }
 }

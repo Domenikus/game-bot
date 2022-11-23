@@ -11,19 +11,19 @@ class TeamspeakListenerRegistry
      */
     protected array $listeners = [];
 
-    public function register(TeamspeakListener $instance): static
-    {
-        $this->listeners[] = $instance;
-        LOG::debug('Listener registered in teamspeak listener registry', ['listener' => $instance]);
-
-        return $this;
-    }
-
     /**
      * @return array<TeamspeakListener>
      */
     public function getAll(): array
     {
         return $this->listeners;
+    }
+
+    public function register(TeamspeakListener $instance): static
+    {
+        $this->listeners[] = $instance;
+        LOG::debug('Listener registered in teamspeak listener registry', ['listener' => $instance]);
+
+        return $this;
     }
 }

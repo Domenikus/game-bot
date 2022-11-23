@@ -60,32 +60,6 @@ class Menu extends Command
             ->open();
     }
 
-    private function buildDeleteAssignment(): Closure
-    {
-        return function (CliMenuBuilder $b) {
-            $b->setTitle('Select assignment to delete');
-            $assignments = Assignment::with('game')->get();
-            foreach ($assignments as $assignment) {
-                if ($assignment->game) {
-                    $b->addItem($assignment->value.'('.$assignment->game->name.')',
-                        function (CliMenu $menu) use ($assignment) {
-                            if ($assignment->delete()) {
-                                $flash = $menu->flash('Assignment successfully deleted');
-                                $flash->getStyle()->setBg('green');
-                                $menu->removeItem($menu->getSelectedItem());
-                                $menu->redraw();
-                            } else {
-                                $flash = $menu->flash('Error while deleting assignment');
-                                $flash->getStyle()->setBg('red');
-                            }
-
-                            $flash->display();
-                        });
-                }
-            }
-        };
-    }
-
     private function buildCreateAssignment(): Closure
     {
         return function (CliMenu $menu) {
@@ -155,6 +129,32 @@ class Menu extends Command
             }
 
             $flash->display();
+        };
+    }
+
+    private function buildDeleteAssignment(): Closure
+    {
+        return function (CliMenuBuilder $b) {
+            $b->setTitle('Select assignment to delete');
+            $assignments = Assignment::with('game')->get();
+            foreach ($assignments as $assignment) {
+                if ($assignment->game) {
+                    $b->addItem($assignment->value.'('.$assignment->game->name.')',
+                        function (CliMenu $menu) use ($assignment) {
+                            if ($assignment->delete()) {
+                                $flash = $menu->flash('Assignment successfully deleted');
+                                $flash->getStyle()->setBg('green');
+                                $menu->removeItem($menu->getSelectedItem());
+                                $menu->redraw();
+                            } else {
+                                $flash = $menu->flash('Error while deleting assignment');
+                                $flash->getStyle()->setBg('red');
+                            }
+
+                            $flash->display();
+                        });
+                }
+            }
         };
     }
 }

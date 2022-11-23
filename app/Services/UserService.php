@@ -104,57 +104,13 @@ class UserService implements UserServiceInterface
         }
     }
 
-    public function handleRegister(string $identityId, array $params = []): void
+    protected function updateActiveClients(): void
     {
-        if (! isset($params[1])) {
-            return;
-        }
-
-        if ($game = Game::where('name', $params[1])->first()) {
-            $this->registerUser($game, $identityId, $params);
-        }
-    }
-
-    protected function registerUser(Game $game, string $identityId, array $params): void
-    {
-        $registry = App::make(GameGatewayRegistry::class);
-        $interface = $registry->get($game->name);
-
-        $options = $interface->getPlayerIdentity($params);
-        if (! $options) {
-            if ($client = TeamspeakGateway::getClient($identityId)) {
-                TeamspeakGateway::sendMessageToClient($client, 'Registration failed, please check params');
+        foreach (TeamspeakGateway::getActiveClients() as $client) {
+            if ($user = User::where('identity_id', $client->getInfo()['client_unique_identifier'])->first()) {
+                $this->handleUpdate($user);
             }
-
-            Log::info('Registration failed', ['identityId' => $identityId]);
-
-            return;
         }
-
-        $user = User::with('games')->find($identityId);
-        if (! $user) {
-            $user = new User();
-            $user->identity_id = $identityId;
-            $user->save();
-        }
-
-        if ($user->isBlocked()) {
-            if ($client = TeamspeakGateway::getClient($identityId)) {
-                TeamspeakGateway::sendMessageToClient($client, 'Registration failed, you are blocked by an admin.');
-                Log::info('Blocked user tried to register', ['user' => $user->identity_id]);
-            }
-
-            return;
-        }
-
-        if (GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first()) {
-            $user->games()->updateExistingPivot($game->getKey(), ['options' => $options]);
-        } else {
-            $user->games()->attach($game->getKey(), ['options' => $options]);
-        }
-
-        Log::info('UserService successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
-        $this->handleUpdate($user->refresh());
     }
 
     public function handleUpdate(User $user): void
@@ -213,17 +169,61 @@ class UserService implements UserServiceInterface
         }
     }
 
+    public function handleRegister(string $identityId, array $params = []): void
+    {
+        if (! isset($params[1])) {
+            return;
+        }
+
+        if ($game = Game::where('name', $params[1])->first()) {
+            $this->registerUser($game, $identityId, $params);
+        }
+    }
+
+    protected function registerUser(Game $game, string $identityId, array $params): void
+    {
+        $registry = App::make(GameGatewayRegistry::class);
+        $interface = $registry->get($game->name);
+
+        $options = $interface->getPlayerIdentity($params);
+        if (! $options) {
+            if ($client = TeamspeakGateway::getClient($identityId)) {
+                TeamspeakGateway::sendMessageToClient($client, 'Registration failed, please check params');
+            }
+
+            Log::info('Registration failed', ['identityId' => $identityId]);
+
+            return;
+        }
+
+        $user = User::with('games')->find($identityId);
+        if (! $user) {
+            $user = new User();
+            $user->identity_id = $identityId;
+            $user->save();
+        }
+
+        if ($user->isBlocked()) {
+            if ($client = TeamspeakGateway::getClient($identityId)) {
+                TeamspeakGateway::sendMessageToClient($client, 'Registration failed, you are blocked by an admin.');
+                Log::info('Blocked user tried to register', ['user' => $user->identity_id]);
+            }
+
+            return;
+        }
+
+        if (GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first()) {
+            $user->games()->updateExistingPivot($game->getKey(), ['options' => $options]);
+        } else {
+            $user->games()->attach($game->getKey(), ['options' => $options]);
+        }
+
+        Log::info('UserService successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
+        $this->handleUpdate($user->refresh());
+    }
+
     public function handleUpdateAll(): void
     {
         $this->updateActiveClients();
-    }
-
-    protected function updateActiveClients(): void
-    {
-        foreach (TeamspeakGateway::getActiveClients() as $client) {
-            if ($user = User::where('identity_id', $client->getInfo()['client_unique_identifier'])->first()) {
-                $this->handleUpdate($user);
-            }
-        }
     }
 }

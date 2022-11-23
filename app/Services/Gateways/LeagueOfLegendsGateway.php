@@ -17,14 +17,14 @@ class LeagueOfLegendsGateway implements GameGateway
 {
     const MATCH_TYPE_RANKED = 'ranked';
 
-    const QUEUE_TYPE_RANKED_SOLO = 'RANKED_SOLO_5x5';
+    const NUMBER_OF_MATCHES = 20;
 
     const QUEUE_TYPE_NAME_RANKED_GROUP = 'RANKED_FLEX_SR';
 
     // Riot put tft double up into lol league endpoint. This is a workaround until they fix this issue
     const QUEUE_TYPE_NAME_RANKED_TFT_DOUBLE_UP = 'RANKED_TFT_DOUBLE_UP';
 
-    const NUMBER_OF_MATCHES = 20;
+    const QUEUE_TYPE_RANKED_SOLO = 'RANKED_SOLO_5x5';
 
     protected string $apiKey;
 

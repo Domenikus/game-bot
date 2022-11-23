@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class User extends Model
 {
+    public $incrementing = false;
+
     /**
      * @var string
      */
@@ -28,7 +30,13 @@ class User extends Model
         'blocked' => 'bool',
     ];
 
-    public $incrementing = false;
+    /**
+     * @return BelongsToMany<Game>
+     */
+    public function games(): BelongsToMany
+    {
+        return $this->belongsToMany(Game::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
+    }
 
     public function isAdmin(): bool
     {
@@ -43,13 +51,5 @@ class User extends Model
     public function isBlocked(): bool
     {
         return $this->blocked;
-    }
-
-    /**
-     * @return BelongsToMany<Game>
-     */
-    public function games(): BelongsToMany
-    {
-        return $this->belongsToMany(Game::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
     }
 }

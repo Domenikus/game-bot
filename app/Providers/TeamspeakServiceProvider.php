@@ -13,6 +13,11 @@ class TeamspeakServiceProvider extends ServiceProvider implements DeferrableProv
     {
     }
 
+    public function provides(): array
+    {
+        return [TeamSpeak3::class];
+    }
+
     public function register(): void
     {
         $this->app->singleton(TeamSpeak3::class, function ($app): TeamSpeak3_Node_Abstract {
@@ -26,10 +31,5 @@ class TeamspeakServiceProvider extends ServiceProvider implements DeferrableProv
 
             return TeamSpeak3::factory($uri);
         });
-    }
-
-    public function provides(): array
-    {
-        return [TeamSpeak3::class];
     }
 }

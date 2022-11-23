@@ -19,17 +19,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Assignment extends Model
 {
     /**
-     * @return Attribute<string, string>
-     */
-    protected function value(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => $value,
-            set: fn ($value) => strtolower($value)
-        );
-    }
-
-    /**
      * @return BelongsTo<Game, Assignment>
      */
     public function game(): BelongsTo
@@ -43,5 +32,16 @@ class Assignment extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(Type::class);
+    }
+
+    /**
+     * @return Attribute<string, string>
+     */
+    protected function value(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value,
+            set: fn ($value) => strtolower($value)
+        );
     }
 }

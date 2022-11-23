@@ -17,9 +17,9 @@ class ApexLegendsGateway implements GameGateway
         'psn',
     ];
 
-    const QUEUE_TYPE_RANKED = 'rankScore';
-
     const QUEUE_TYPE_ARENA = 'arenaRankScore';
+
+    const QUEUE_TYPE_RANKED = 'rankScore';
 
     protected string $apiKey;
 

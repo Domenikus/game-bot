@@ -15,11 +15,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait Activatable
 {
-    public static function getActiveColumn(): string
-    {
-        return 'active';
-    }
-
     protected static function bootActivatable(): void
     {
         static::addGlobalScope(new ActiveScope);
@@ -34,6 +29,11 @@ trait Activatable
         if (! isset($this->attributes[self::getActiveColumn()])) {
             $this->attributes[self::getActiveColumn()] = false;
         }
+    }
+
+    public static function getActiveColumn(): string
+    {
+        return 'active';
     }
 
     public function isActive(): bool
