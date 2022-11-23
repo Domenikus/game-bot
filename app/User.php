@@ -24,6 +24,10 @@ class User extends Model
      */
     protected $keyType = 'string';
 
+    protected $casts = [
+        'blocked' => 'bool',
+    ];
+
     public $incrementing = false;
 
     public function isAdmin(): bool

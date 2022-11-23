@@ -27,7 +27,7 @@ class Setup extends Command
         }
 
         $this->gatewayRegistry = $gatewayRegistry;
-        $availableGames = Game::withInactive()->get();
+        $availableGames = Game::withInactive()->with('types')->get();
 
         /** @var string $selectedGame */
         $selectedGame = $this->choice(
@@ -43,14 +43,13 @@ class Setup extends Command
     protected function setupGame(Game $game): void
     {
         $permissions = $this->askForServerGroupPermissions();
-        $types = Type::all();
-
+        $types = $game->types;
         $progressBar = $this->output->createProgressBar();
         $gameService = $this->app->make(GameServiceInterface::class, ['game' => $game]);
         if ($gameService instanceof GameServiceInterface) {
             foreach ($types as $type) {
-                $this->task('Setup '.$type->label, function () use ($gameService, $progressBar, $permissions, $type) {
-                    $typeSuffix = $this->askForServerGroupSuffix($type);
+                $this->task('Setup '.$type->game_type->label, function () use ($game, $gameService, $progressBar, $permissions, $type) {
+                    $typeSuffix = $this->askForServerGroupSuffix($type, $game);
 
                     return $gameService->setup($type, $permissions, $progressBar, $typeSuffix);
                 });
@@ -84,18 +83,18 @@ class Setup extends Command
         return $permissions;
     }
 
-    protected function askForServerGroupSuffix(Type $type): string
+    protected function askForServerGroupSuffix(Type $type, Game $game): string
     {
         $suffix = '';
-
-        if ($this->confirm('Do you want to add a custom suffix to the server groups which will be created for type <options=bold>'.$type->label.'.</> For example: {rank_name} (suffix) ==> Platinum I (Flex). <fg=yellow> In case you want to remove the suffix completely, type</> 0!')) {
+        $this->newLine();
+        if ($this->confirm('Do you want to change default naming of server groups for Type: <options=bold>'.$type->game_type->label.'.</>? Template: {Value} (<Game>-<type>). Example: Aatrox (LoL-Champion). <fg=yellow>If you want to remove the suffix completely, enter 0!</>')) {
             $answer = $this->ask('Which suffix do you want to add?');
 
             if (! is_numeric($answer) && $answer != 0) {
                 $suffix = ' ('.$answer.')';
             }
         } else {
-            $suffix = ' ('.$type->label.')';
+            $suffix = ' ('.ucfirst($game->name).'-'.$type->game_type->label.')';
         }
 
         return $suffix;

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $name;
  * @property string $label;
- * @property array<GameType> $game_type
+ * @property GameType $game_type
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
