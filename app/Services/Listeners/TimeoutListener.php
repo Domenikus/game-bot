@@ -9,7 +9,7 @@ use TeamSpeak3_Helper_Signal;
 
 class TimeoutListener implements TeamspeakListener
 {
-    protected ?int $lastUpdate = null;
+    protected int $lastUpdate;
 
     protected int $autoUpdateInterval;
 
@@ -19,6 +19,7 @@ class TimeoutListener implements TeamspeakListener
     {
         $this->autoUpdateInterval = $autoUpdateInterval;
         $this->userService = $userService;
+        $this->lastUpdate = time();
     }
 
     public function init(): void
@@ -36,7 +37,8 @@ class TimeoutListener implements TeamspeakListener
 
     protected function handleAutoUpdate(): void
     {
-        if (! $this->lastUpdate || $this->lastUpdate < time() - $this->autoUpdateInterval) {
+        if ($this->lastUpdate < time() - $this->autoUpdateInterval) {
+            Log::info('Auto update of server groups started');
             $this->lastUpdate = time();
             $this->userService->handleUpdateAll();
         }

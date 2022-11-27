@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface GameGateway
 {
-    public function getPlayerData(GameUser $gameUser): ?array;
+    public function grabPlayerData(GameUser $gameUser): ?array;
 
-    public function getPlayerIdentity(array $params): ?array;
+    public function grabPlayerIdentity(array $params): ?array;
 
     public function grabCharacterImage(string $characterName): ?string;
 

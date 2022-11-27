@@ -64,7 +64,7 @@ class ApexLegendsGateway implements GameGateway
         return null;
     }
 
-    public function getPlayerData(GameUser $gameUser): ?array
+    public function grabPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
 
@@ -157,7 +157,7 @@ class ApexLegendsGateway implements GameGateway
         return $assignments->where('value', strtolower($characterWithMostKills['name']))->first();
     }
 
-    public function getPlayerIdentity(array $params): ?array
+    public function grabPlayerIdentity(array $params): ?array
     {
         if (! isset($params[2], $params[3]) || ! in_array($params[3], self::PLATFORMS)) {
             return null;
@@ -170,7 +170,7 @@ class ApexLegendsGateway implements GameGateway
 
         $gameUser = new GameUser();
         $gameUser->options = $options;
-        if ($this->getPlayerData($gameUser)) {
+        if ($this->grabPlayerData($gameUser)) {
             return $options;
         }
 

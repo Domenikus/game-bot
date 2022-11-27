@@ -25,11 +25,10 @@ class GameServiceProvider extends ServiceProvider
             }
 
             $lolApiKey = config('league-of-legends.apiKey');
-            $lolGameVersion = config('league-of-legends.gameVersion');
-            $lolLanguageCode = config('league-of-legends.languageCode');
-            if (is_string($lolApiKey) && is_string($lolGameVersion) && is_string($lolLanguageCode)) {
+            $regionRouting = config('static-data.lol.regionRouting.'.config('league-of-legends.region'));
+            if (is_string($lolApiKey) && is_array($regionRouting)) {
                 $registry->register(Game::GAME_NAME_LEAGUE_OF_LEGENDS,
-                    new LeagueOfLegendsGateway($lolApiKey, $lolGameVersion, $lolLanguageCode));
+                    new LeagueOfLegendsGateway($lolApiKey, $regionRouting['plattformBaseUrl'], $regionRouting['regionBaseUrl'], $regionRouting['realmUrl']));
             }
 
             $tftApiKey = config('teamfight-tactics.apiKey');

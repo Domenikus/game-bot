@@ -133,12 +133,9 @@ class UserService implements UserServiceInterface
      * @param  GameGateway  $interface
      * @return void
      */
-    protected function updateServerGroups(
-        GameUser $gameUser,
-        Collection $assignments,
-        GameGateway $interface
-    ): void {
-        $stats = $interface->getPlayerData($gameUser);
+    protected function updateServerGroups(GameUser $gameUser, Collection $assignments, GameGateway $interface): void
+    {
+        $stats = $interface->grabPlayerData($gameUser);
         if (! $stats) {
             return;
         }
@@ -184,8 +181,7 @@ class UserService implements UserServiceInterface
     {
         $registry = App::make(GameGatewayRegistry::class);
         $interface = $registry->get($game->name);
-
-        $options = $interface->getPlayerIdentity($params);
+        $options = $interface->grabPlayerIdentity($params);
         if (! $options) {
             if ($client = TeamspeakGateway::getClient($identityId)) {
                 TeamspeakGateway::sendMessageToClient($client, 'Registration failed, please check params');

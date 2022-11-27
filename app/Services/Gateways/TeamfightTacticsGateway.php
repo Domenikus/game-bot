@@ -20,7 +20,7 @@ class TeamfightTacticsGateway implements GameGateway
         $this->apiKey = $apiKey;
     }
 
-    public function getPlayerData(GameUser $gameUser): ?array
+    public function grabPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
@@ -39,7 +39,7 @@ class TeamfightTacticsGateway implements GameGateway
         return $stats;
     }
 
-    public function getPlayerIdentity(array $params): ?array
+    public function grabPlayerIdentity(array $params): ?array
     {
         if (! isset($params[2])) {
             return null;

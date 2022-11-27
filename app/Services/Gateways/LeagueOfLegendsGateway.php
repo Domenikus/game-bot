@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use ZanySoft\Zip\Facades\Zip;
 
 class LeagueOfLegendsGateway implements GameGateway
@@ -28,21 +29,37 @@ class LeagueOfLegendsGateway implements GameGateway
 
     protected string $apiKey;
 
-    protected string $gameVersion;
+    protected string $championVersion;
+
+    protected string $dataDragonBaseUrl;
 
     protected string $languageCode;
 
-    protected string $rankImageFolderPath = '';
+    protected string $plattformBaseUrl;
 
     protected string $positionImageFolderPath = '';
 
-    protected array $rankImages = [];
+    protected string $rankImageFolderPath = '';
 
-    public function __construct(string $apiKey, string $gameVersion, string $languageCode)
+    protected string $regionBaseUrl;
+
+    public function __construct(string $apiKey, string $plattformBaseUrl, string $regionBaseUrl, string $realmUrl)
     {
-        $this->apiKey = $apiKey;
-        $this->gameVersion = $gameVersion;
-        $this->languageCode = $languageCode;
+        $this->setApiKey($apiKey);
+        $this->setPlattformBaseUrl($plattformBaseUrl);
+        $this->setRegionBaseUrl($regionBaseUrl);
+
+        $realmResponse = Http::get($realmUrl);
+        if ($realmResponse->successful()) {
+            $realm = $realmResponse->json();
+            if (is_array($realm)) {
+                $this->setLanguageCode($realm['l']);
+                $this->setChampionVersion($realm['n']['champion']);
+                $this->setDataDragonBaseUrl($realm['cdn']);
+            }
+        } else {
+            throw new InvalidArgumentException('Could not get realm file');
+        }
     }
 
     public function __destruct()
@@ -51,110 +68,97 @@ class LeagueOfLegendsGateway implements GameGateway
         File::deleteDirectory($this->positionImageFolderPath);
     }
 
-    public function getPlayerData(GameUser $gameUser): ?array
+    public function getApiKey(): string
     {
-        $stats = null;
-        if ($matches = $this->getMatches($gameUser, 0, self::NUMBER_OF_MATCHES, self::MATCH_TYPE_RANKED)) {
-            $stats['matches'] = $matches;
-        }
-
-        if ($leagues = $this->getLeagues($gameUser)) {
-            $stats['leagues'] = $leagues;
-        }
-
-        return $stats;
+        return $this->apiKey;
     }
 
-    protected function getMatches(GameUser $gameUser, int $offset, int $count, string $type): array
+    public function setApiKey(string $apiKey): void
     {
-        $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/'.$gameUser->options['puuid'].'/ids',
-                [
-                    'start' => $offset,
-                    'count' => $count,
-                    'type' => $type,
-                ]
-            );
-
-        $matchIds = [];
-        if ($matchIdsResponse->successful()) {
-            $decodedBody = json_decode($matchIdsResponse->body(), true);
-            if (is_array($decodedBody)) {
-                $matchIds = $decodedBody;
-            }
-        } else {
-            Log::warning('Could not get match id\'s from Riot API for League of Legends',
-                ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $matchIdsResponse]);
-        }
-
-        $matches = [];
-        foreach ($matchIds as $matchId) {
-            $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-                ->get('https://europe.api.riotgames.com/lol/match/v5/matches/'.$matchId);
-
-            if ($matchResponse->successful()) {
-                $matches[] = json_decode(($matchResponse->body()), true);
-            } else {
-                Log::warning('Could not get matches from Riot API for League of Legends',
-                    ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $matchResponse]);
-            }
-        }
-
-        return $matches;
+        $this->apiKey = $apiKey;
     }
 
-    protected function getLeagues(GameUser $gameUser): array
+    public function getChampionVersion(): string
     {
-        $leagues = [];
-        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'.$gameUser->options['id']);
-
-        if ($leagueResponse->successful()) {
-            $decodedBody = json_decode($leagueResponse->body(), true);
-            if (is_array($decodedBody)) {
-                $leagues = $decodedBody;
-            }
-        } else {
-            Log::warning('Could not get leagues from Riot API for League of Legends',
-                ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $leagueResponse]);
-        }
-
-        return $leagues;
+        return $this->championVersion;
     }
 
-    public function getPlayerIdentity(array $params): ?array
+    public function setChampionVersion(string $championVersion): void
     {
-        if (! isset($params[2])) {
-            return null;
-        }
+        $this->championVersion = $championVersion;
+    }
 
-        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'.$params[2]);
+    public function getDataDragonBaseUrl(): string
+    {
+        return $this->dataDragonBaseUrl;
+    }
 
-        $result = null;
-        if ($summonerResponse->successful()) {
-            $decodedBody = json_decode($summonerResponse->body(), true);
-            if (is_array($decodedBody)) {
-                $result = $decodedBody;
-            }
-        } else {
-            Log::warning('Could not get player identity from Riot API for League of Legends',
-                ['apiKey' => $this->apiKey, 'params' => $params, 'response' => $summonerResponse]);
-        }
+    public function setDataDragonBaseUrl(string $dataDragonBaseUrl): void
+    {
+        $this->dataDragonBaseUrl = $dataDragonBaseUrl;
+    }
 
-        return $result;
+    public function getLanguageCode(): string
+    {
+        return $this->languageCode;
+    }
+
+    public function setLanguageCode(string $languageCode): void
+    {
+        $this->languageCode = $languageCode;
+    }
+
+    public function getPlattformBaseUrl(): string
+    {
+        return $this->plattformBaseUrl;
+    }
+
+    public function setPlattformBaseUrl(string $plattformBaseUrl): void
+    {
+        $this->plattformBaseUrl = $plattformBaseUrl;
+    }
+
+    public function getPositionImageFolderPath(): string
+    {
+        return $this->positionImageFolderPath;
+    }
+
+    public function setPositionImageFolderPath(string $positionImageFolderPath): void
+    {
+        $this->positionImageFolderPath = $positionImageFolderPath;
+    }
+
+    public function getRankImageFolderPath(): string
+    {
+        return $this->rankImageFolderPath;
+    }
+
+    public function setRankImageFolderPath(string $rankImageFolderPath): void
+    {
+        $this->rankImageFolderPath = $rankImageFolderPath;
+    }
+
+    public function getRegionBaseUrl(): string
+    {
+        return $this->regionBaseUrl;
+    }
+
+    public function setRegionBaseUrl(string $regionBaseUrl): void
+    {
+        $this->regionBaseUrl = $regionBaseUrl;
     }
 
     public function grabCharacterImage(string $characterName): ?string
     {
         $characterImage = null;
 
-        $characterImageResponse = Http::get('http://ddragon.leagueoflegends.com/cdn/'.$this->gameVersion.'/img/champion/'.$characterName.'.png');
+        $url = $this->getDataDragonBaseUrl().'/'.$this->getChampionVersion().'/img/champion/'.$characterName.'.png';
+        $characterImageResponse = Http::get($url);
 
         if ($characterImageResponse->successful()) {
             $characterImage = $characterImageResponse->body();
         } else {
-            Log::error('Could not get character image', ['characterName' => $characterName]);
+            Log::error('Could not get character image', ['characterName' => $characterName, 'responseStatus' => $characterImageResponse->status(), 'url' => $url]);
         }
 
         return $characterImage;
@@ -164,32 +168,72 @@ class LeagueOfLegendsGateway implements GameGateway
     {
         $result = [];
 
-        $championsResponse = Http::get('https://ddragon.leagueoflegends.com/cdn/'.$this->gameVersion.'/data/'.$this->languageCode.'/champion.json');
+        $url = $this->getDataDragonBaseUrl().'/'.$this->getChampionVersion().'/data/'.$this->getLanguageCode().'/champion.json';
+        $championsResponse = Http::get($url);
         if ($championsResponse->successful()) {
-            $decodedBody = json_decode($championsResponse->body(), true);
-            if (is_array($decodedBody)) {
-                $result = Arr::pluck($decodedBody['data'], 'id');
+            $characters = $championsResponse->json();
+            if (is_array($characters)) {
+                $result = Arr::pluck($characters['data'], 'id');
             }
         } else {
             Log::error('Could not get champions from Riot\'s Data-Dragon CDN',
                 [
-                    'gameVersion' => $this->gameVersion,
-                    'languageCode' => $this->languageCode,
-                    'response' => $championsResponse,
+                    'gameVersion' => $this->getChampionVersion(),
+                    'languageCode' => $this->getLanguageCode(),
+                    'responseStatus' => $championsResponse->status(),
+                    'url' => $url,
                 ]);
         }
 
         return $result;
     }
 
+    public function grabPlayerData(GameUser $gameUser): ?array
+    {
+        $stats = null;
+        if ($matches = $this->grabMatches($gameUser, 0, self::NUMBER_OF_MATCHES, self::MATCH_TYPE_RANKED)) {
+            $stats['matches'] = $matches;
+        }
+
+        if ($leagues = $this->grabLeagues($gameUser)) {
+            $stats['leagues'] = $leagues;
+        }
+
+        return $stats;
+    }
+
+    public function grabPlayerIdentity(array $params): ?array
+    {
+        if (! isset($params[2])) {
+            return null;
+        }
+
+        $url = $this->getPlattformBaseUrl().'/lol/summoner/v4/summoners/by-name/'.$params[2];
+        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->get($url);
+
+        $identity = null;
+        if ($summonerResponse->successful()) {
+            $result = $summonerResponse->json();
+            if (is_array($result)) {
+                $identity = $result;
+            }
+        } else {
+            Log::warning('Could not get player identity from Riot API for League of Legends',
+                ['apiKey' => $this->getApiKey(), 'params' => $params, 'responseStatus' => $summonerResponse->status(), 'url' => $url]);
+        }
+
+        return $identity;
+    }
+
     public function grabPositionImage(string $positionName): ?string
     {
         $positionImage = null;
-        if (! $this->positionImageFolderPath) {
+        if (! $this->getPositionImageFolderPath()) {
             if ($archiveFilePath = $this->downloadArchive('https://static.developer.riotgames.com/docs/lol/ranked-positions.zip', 'positions-icons')) {
                 $positionImageFolderFilePathPath = getcwd().'/storage/positions-icons';
                 if ($this->extractArchive($archiveFilePath, $positionImageFolderFilePathPath)) {
-                    $this->positionImageFolderPath = $positionImageFolderFilePathPath;
+                    $this->setPositionImageFolderPath($positionImageFolderFilePathPath);
                     File::delete($archiveFilePath);
                 }
             }
@@ -198,50 +242,15 @@ class LeagueOfLegendsGateway implements GameGateway
         /** @var array $positionMapping */
         $positionMapping = config('static-data.lol.positionMapping');
         $positionName = $positionMapping[$positionName] ?? $positionName;
-        $fileName =
-            'Position_Challenger-'.$positionName.'.png';
+        $fileName = 'Position_Challenger-'.$positionName.'.png';
 
-        if (File::exists($this->positionImageFolderPath.'/'.$fileName)) {
-            $positionImage = File::get($this->positionImageFolderPath.'/'.$fileName, true);
+        if (File::exists($this->getPositionImageFolderPath().'/'.$fileName)) {
+            $positionImage = File::get($this->getPositionImageFolderPath().'/'.$fileName, true);
         } else {
             Log::error('No position image found', ['rankName' => $positionName, 'fileName' => $fileName]);
         }
 
         return $positionImage;
-    }
-
-    protected function downloadArchive(string $url, string $fileName): ?string
-    {
-        $result = null;
-
-        $rankImagesResponse = Http::get($url);
-        if ($rankImagesResponse->successful()) {
-            $savePath = getcwd().'/storage/'.$fileName.'.zip';
-            if (File::put($savePath, $rankImagesResponse->body())) {
-                if (Zip::check($savePath)) {
-                    $result = $savePath;
-                }
-            }
-        } else {
-            Log::error('Error while downloading archive', ['url' => $url, 'fileName' => $fileName]);
-        }
-
-        return $result;
-    }
-
-    protected function extractArchive(string $filePath, string $extractPath): bool
-    {
-        $result = false;
-
-        try {
-            $zip = Zip::open($filePath);
-            $result = $zip->extract($extractPath);
-        } catch (Exception $e) {
-            Log::error('Could not extract zip archive', ['filePath' => $filePath, 'extractPath' => $extractPath]);
-            report($e);
-        }
-
-        return $result;
     }
 
     public function grabPositions(): ?array
@@ -258,23 +267,20 @@ class LeagueOfLegendsGateway implements GameGateway
     public function grabRankImage(string $rankName): ?string
     {
         $rankImage = null;
-        if (! $this->rankImageFolderPath) {
+        if (! $this->getRankImageFolderPath()) {
             if ($archiveFilePath = $this->downloadArchive('https://static.developer.riotgames.com/docs/lol/ranked-emblems.zip', 'rank-icons')) {
                 $rankImageFolderPath = getcwd().'/storage/rank-icons';
                 if ($this->extractArchive($archiveFilePath, $rankImageFolderPath)) {
-                    $this->rankImageFolderPath = $rankImageFolderPath;
+                    $this->setRankImageFolderPath($rankImageFolderPath);
                     File::delete($archiveFilePath);
                 }
             }
         }
 
-        $fileName =
-            'Emblem_'.
-            substr($rankName, 0, strpos($rankName, ' ') ?: strlen($rankName)).
-            '.png';
+        $fileName = 'Emblem_'.substr($rankName, 0, strpos($rankName, ' ') ?: strlen($rankName)).'.png';
 
-        if (File::exists($this->rankImageFolderPath.'/'.$fileName)) {
-            $rankImage = File::get($this->rankImageFolderPath.'/'.$fileName, true);
+        if (File::exists($this->getRankImageFolderPath().'/'.$fileName)) {
+            $rankImage = File::get($this->getRankImageFolderPath().'/'.$fileName, true);
         } else {
             Log::error('No rank image found', ['rankName' => $rankName, 'fileName' => $fileName]);
         }
@@ -334,22 +340,135 @@ class LeagueOfLegendsGateway implements GameGateway
         return array_merge($ts3ServerGroups, $matchData);
     }
 
-    /**
-     * @param  array  $leagues
-     * @param  Collection<int, Assignment>  $assignments
-     * @param  string  $queueType
-     * @return Assignment|null
-     */
-    protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
+    protected function downloadArchive(string $url, string $fileName): ?string
     {
-        $newRankName = '';
-        foreach ($leagues as $league) {
-            if ($league['queueType'] == $queueType) {
-                $newRankName = $league['tier'].' '.$league['rank'];
+        $result = null;
+
+        $rankImagesResponse = Http::get($url);
+        if ($rankImagesResponse->successful()) {
+            $savePath = getcwd().'/storage/'.$fileName.'.zip';
+            if (File::put($savePath, $rankImagesResponse->body())) {
+                if (Zip::check($savePath)) {
+                    $result = $savePath;
+                }
+            }
+        } else {
+            Log::error('Error while downloading archive', ['url' => $url, 'fileName' => $fileName]);
+        }
+
+        return $result;
+    }
+
+    protected function extractArchive(string $filePath, string $extractPath): bool
+    {
+        $result = false;
+
+        try {
+            $zip = Zip::open($filePath);
+            $result = $zip->extract($extractPath);
+        } catch (Exception $e) {
+            Log::error('Could not extract zip archive', ['filePath' => $filePath, 'extractPath' => $extractPath]);
+            report($e);
+        }
+
+        return $result;
+    }
+
+    protected function grabLeagues(GameUser $gameUser): array
+    {
+        $leagues = [];
+        $url = $this->getPlattformBaseUrl().'/lol/league/v4/entries/by-summoner/'.$gameUser->options['id'];
+        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->get($url);
+
+        if ($leagueResponse->successful()) {
+            $result = $leagueResponse->json();
+            if (is_array($result)) {
+                $leagues = $result;
+            }
+        } else {
+            Log::warning('Could not get leagues from Riot API for League of Legends',
+                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'responseStatus' => $leagueResponse->status(), 'url' => $url]);
+        }
+
+        return $leagues;
+    }
+
+    protected function grabMatches(GameUser $gameUser, int $offset, int $count, string $type): array
+    {
+        $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/by-puuid/'.$gameUser->options['puuid'].'/ids';
+        $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->get($url,
+                [
+                    'start' => $offset,
+                    'count' => $count,
+                    'type' => $type,
+                ]
+            );
+
+        $matchIds = [];
+        if ($matchIdsResponse->successful()) {
+            $result = $matchIdsResponse->json();
+            if (is_array($result)) {
+                $matchIds = $result;
+            }
+        } else {
+            Log::warning('Could not get match id\'s from Riot API for League of Legends',
+                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'status' => $matchIdsResponse->status(), 'url' => $url]);
+        }
+
+        $matches = [];
+        foreach ($matchIds as $matchId) {
+            $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/'.$matchId;
+            $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+                ->get($url);
+            if ($matchResponse->successful()) {
+                $matches[] = $matchResponse->json();
+            } else {
+                Log::warning('Could not get matches from Riot API for League of Legends',
+                    ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'status' => $matchResponse->status(), 'url' => $url]);
             }
         }
 
-        return $assignments->where('value', strtolower($newRankName))->first();
+        return $matches;
+    }
+
+    /**
+     * @param  GameUser  $gameUser
+     * @param  array  $match
+     * @param  Collection<int, Assignment>  $assignments
+     * @return Assignment|null
+     */
+    protected function mapChampion(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
+    {
+        foreach ($match['info']['participants'] as $participant) {
+            if ($participant['puuid'] !== $gameUser->options['puuid']) {
+                continue;
+            }
+
+            return $assignments->where('value', strtolower($participant['championName']))->first();
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  GameUser  $gameUser
+     * @param  array  $match
+     * @param  Collection<int, Assignment>  $assignments
+     * @return Assignment|null
+     */
+    protected function mapLane(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
+    {
+        foreach ($match['info']['participants'] as $participant) {
+            if ($participant['puuid'] !== $gameUser->options['puuid']) {
+                continue;
+            }
+
+            return $assignments->where('value', strtolower($participant['individualPosition']))->first();
+        }
+
+        return null;
     }
 
     /**
@@ -400,40 +519,20 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param  GameUser  $gameUser
-     * @param  array  $match
+     * @param  array  $leagues
      * @param  Collection<int, Assignment>  $assignments
+     * @param  string  $queueType
      * @return Assignment|null
      */
-    protected function mapChampion(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
+    protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
     {
-        foreach ($match['info']['participants'] as $participant) {
-            if ($participant['puuid'] !== $gameUser->options['puuid']) {
-                continue;
+        $newRankName = '';
+        foreach ($leagues as $league) {
+            if ($league['queueType'] == $queueType) {
+                $newRankName = $league['tier'].' '.$league['rank'];
             }
-
-            return $assignments->where('value', strtolower($participant['championName']))->first();
         }
 
-        return null;
-    }
-
-    /**
-     * @param  GameUser  $gameUser
-     * @param  array  $match
-     * @param  Collection<int, Assignment>  $assignments
-     * @return Assignment|null
-     */
-    protected function mapLane(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
-    {
-        foreach ($match['info']['participants'] as $participant) {
-            if ($participant['puuid'] !== $gameUser->options['puuid']) {
-                continue;
-            }
-
-            return $assignments->where('value', strtolower($participant['individualPosition']))->first();
-        }
-
-        return null;
+        return $assignments->where('value', strtolower($newRankName))->first();
     }
 }
