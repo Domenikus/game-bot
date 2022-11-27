@@ -9,31 +9,35 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class TeamfightTacticsGateway implements GameGateway
+class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGateway
 {
     const QUEUE_TYPE_RANKED = 'RANKED_TFT';
 
-    protected string $apiKey;
-
-    public function __construct(string $apiKey)
+    public function grabCharacterImage(string $characterName): ?string
     {
-        $this->apiKey = $apiKey;
+        return null;
+    }
+
+    public function grabCharacters(): array
+    {
+        return [];
     }
 
     public function grabPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
-        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://euw1.api.riotgames.com/tft/league/v1/entries/by-summoner/'.$gameUser->options['id']);
+        $url = $this->getPlattformBaseUrl().'/tft/league/v1/entries/by-summoner/'.$gameUser->options['id'];
+        $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->get($url);
 
         if ($leagueResponse->successful()) {
-            $decodedBody = json_decode($leagueResponse->body(), true);
-            if (is_array($decodedBody)) {
-                $stats['leagues'] = $decodedBody;
+            $result = $leagueResponse->json();
+            if (is_array($result)) {
+                $stats['leagues'] = $result;
             }
         } else {
             Log::warning('Could not get player data from Riot API for Teamfight Tactics',
-                ['apiKey' => $this->apiKey, 'gameUser' => $gameUser, 'response' => $leagueResponse]);
+                ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'responseStatus' => $leagueResponse->status(), 'url' => $url]);
         }
 
         return $stats;
@@ -45,56 +49,31 @@ class TeamfightTacticsGateway implements GameGateway
             return null;
         }
 
-        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->apiKey])
-            ->get('https://euw1.api.riotgames.com/tft/summoner/v1/summoners/by-name/'.$params[2]);
+        $url = $this->getPlattformBaseUrl().'/tft/summoner/v1/summoners/by-name/'.$params[2];
+        $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->get($url);
 
         $summoner = null;
         if ($summonerResponse->successful()) {
-            $decodedBody = json_decode($summonerResponse->body(), true);
-            if (is_array($decodedBody)) {
-                $summoner = $decodedBody;
+            $result = $summonerResponse->json();
+            if (is_array($result)) {
+                $summoner = $result;
             }
         } else {
             Log::warning('Could not get player identity from Riot API for Teamfight Tactics',
-                ['apiKey' => $this->apiKey, 'params' => $params, 'response' => $summonerResponse]);
+                ['apiKey' => $this->getApiKey(), 'params' => $params, 'responseStatus' => $summonerResponse->status(), 'url' => $url]);
         }
 
         return $summoner;
     }
 
-    public function grabCharacterImage(string $characterName): ?string
-    {
-        // TODO: Implement grabCharacterImage() method.
-        return null;
-    }
-
-    public function grabCharacters(): ?array
-    {
-        // TODO: Implement grabCharacters() method.
-        return null;
-    }
-
     public function grabPositionImage(string $positionName): ?string
     {
-        // TODO: Implement grabPositionImage() method.
         return null;
     }
 
     public function grabPositions(): ?array
     {
-        // TODO: Implement grabPositions() method.
-        return null;
-    }
-
-    public function grabRankImage(string $rankName): ?string
-    {
-        // TODO: Implement grabRankImage() method.
-        return null;
-    }
-
-    public function grabRanks(): ?array
-    {
-        // TODO: Implement grabRanks() method.
         return null;
     }
 

@@ -398,6 +398,7 @@ class LeagueOfLegendsGateway implements GameGateway
     {
         $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/by-puuid/'.$gameUser->options['puuid'].'/ids';
         $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->timeout(10)
             ->get($url,
                 [
                     'start' => $offset,
@@ -421,6 +422,7 @@ class LeagueOfLegendsGateway implements GameGateway
         foreach ($matchIds as $matchId) {
             $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/'.$matchId;
             $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+                ->timeout(10)
                 ->get($url);
             if ($matchResponse->successful()) {
                 $matches[] = $matchResponse->json();

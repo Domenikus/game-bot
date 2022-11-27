@@ -121,8 +121,8 @@ class UserService implements UserServiceInterface
             foreach ($user->games as $game) {
                 $assignments = $game->assignments()->with(['type'])->get();
                 $registry = App::make(GameGatewayRegistry::class);
-                $interface = $registry->get($game->name);
-                $this->updateServerGroups($game->game_user, $assignments, $interface);
+                $gateway = $registry->get($game->name);
+                $this->updateServerGroups($game->game_user, $assignments, $gateway);
             }
         }
     }
@@ -180,8 +180,8 @@ class UserService implements UserServiceInterface
     protected function registerUser(Game $game, string $identityId, array $params): void
     {
         $registry = App::make(GameGatewayRegistry::class);
-        $interface = $registry->get($game->name);
-        $options = $interface->grabPlayerIdentity($params);
+        $gateway = $registry->get($game->name);
+        $options = $gateway->grabPlayerIdentity($params);
         if (! $options) {
             if ($client = TeamspeakGateway::getClient($identityId)) {
                 TeamspeakGateway::sendMessageToClient($client, 'Registration failed, please check params');
@@ -215,7 +215,18 @@ class UserService implements UserServiceInterface
         }
 
         Log::info('UserService successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
-        $this->handleUpdate($user->refresh());
+
+//        $user = $user->refresh();
+        $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
+
+        if (! $gameUser instanceof GameUser) {
+            return;
+        }
+
+        $assignments = $game->assignments()->with(['type'])->get();
+        $registry = App::make(GameGatewayRegistry::class);
+        $gateway = $registry->get($game->name);
+        $this->updateServerGroups($gameUser, $assignments, $gateway);
     }
 
     public function handleUpdateAll(): void

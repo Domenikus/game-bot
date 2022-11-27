@@ -26,7 +26,12 @@ class GameServiceProvider extends ServiceProvider
 
             $lolApiKey = config('league-of-legends.apiKey');
             $regionRouting = config('static-data.lol.regionRouting.'.config('league-of-legends.region'));
-            if (is_string($lolApiKey) && is_array($regionRouting)) {
+
+            if (! is_array($regionRouting)) {
+                return;
+            }
+
+            if (is_string($lolApiKey)) {
                 $registry->register(Game::GAME_NAME_LEAGUE_OF_LEGENDS,
                     new LeagueOfLegendsGateway($lolApiKey, $regionRouting['plattformBaseUrl'], $regionRouting['regionBaseUrl'], $regionRouting['realmUrl']));
             }
@@ -34,7 +39,7 @@ class GameServiceProvider extends ServiceProvider
             $tftApiKey = config('teamfight-tactics.apiKey');
             if (is_string($tftApiKey)) {
                 $registry->register(Game::GAME_NAME_TEAMFIGHT_TACTICS,
-                    new TeamfightTacticsGateway($tftApiKey));
+                    new TeamfightTacticsGateway($tftApiKey, $regionRouting['plattformBaseUrl'], $regionRouting['regionBaseUrl'], $regionRouting['realmUrl']));
             }
         }
     }
