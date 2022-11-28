@@ -210,6 +210,7 @@ class LeagueOfLegendsGateway implements GameGateway
 
         $url = $this->getPlattformBaseUrl().'/lol/summoner/v4/summoners/by-name/'.$params[2];
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->retry(10, 10000)
             ->get($url);
 
         $identity = null;
@@ -379,6 +380,7 @@ class LeagueOfLegendsGateway implements GameGateway
         $leagues = [];
         $url = $this->getPlattformBaseUrl().'/lol/league/v4/entries/by-summoner/'.$gameUser->options['id'];
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->retry(10, 10000)
             ->get($url);
 
         if ($leagueResponse->successful()) {
@@ -398,7 +400,7 @@ class LeagueOfLegendsGateway implements GameGateway
     {
         $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/by-puuid/'.$gameUser->options['puuid'].'/ids';
         $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->timeout(10)
+            ->retry(10, 10000)
             ->get($url,
                 [
                     'start' => $offset,
@@ -422,7 +424,7 @@ class LeagueOfLegendsGateway implements GameGateway
         foreach ($matchIds as $matchId) {
             $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/'.$matchId;
             $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-                ->timeout(10)
+                ->retry(10, 10000)
                 ->get($url);
             if ($matchResponse->successful()) {
                 $matches[] = $matchResponse->json();

@@ -18,39 +18,37 @@ class UserService implements UserServiceInterface
     public function handleAdmin(User $user, array $params = []): void
     {
         if ($user->isAdmin() && isset($params[1])) {
+            $managedUser = User::where('identity_id', $params[2])->first();
+            if (! $managedUser) {
+                return;
+            }
+
             switch ($params[1]) {
                 case 'unregister':
-                    if ($userToUnregister = User::where('identity_id', $params[2])->first()) {
-                        $this->handleUnregister($userToUnregister, []);
-                    }
+                    $this->handleUnregister($managedUser, []);
                     break;
                 case 'block':
-                    if ($userToBlock = User::where('identity_id', $params[2])->first()) {
-                        $userToBlock->blocked = true;
-                        if ($userToBlock->save()) {
-                            if ($client = TeamspeakGateway::getClient($user->identity_id)) {
-                                TeamspeakGateway::sendMessageToClient($client,
-                                    'UserService '.$user->identity_id.' successfully blocked');
-                                Log::info('UserService successfully blocked', ['user' => $user->identity_id]);
-                            }
+                    $managedUser->blocked = true;
+                    if ($managedUser->save()) {
+                        if ($client = TeamspeakGateway::getClient($user->identity_id)) {
+                            TeamspeakGateway::sendMessageToClient($client,
+                                'UserService '.$user->identity_id.' successfully blocked');
+                            Log::info('UserService successfully blocked', ['user' => $user->identity_id]);
                         }
                     }
                     break;
                 case 'unblock':
-                    if ($userToUnblock = User::where('identity_id', $params[2])->first()) {
-                        $userToUnblock->blocked = false;
-                        if ($userToUnblock->save()) {
-                            if ($client = TeamspeakGateway::getClient($user->identity_id)) {
-                                TeamspeakGateway::sendMessageToClient($client,
-                                    'UserService '.$user->identity_id.' successfully unblocked');
-                                Log::info('UserService successfully unblocked', ['user' => $user->identity_id]);
-                            }
+                    $managedUser->blocked = false;
+                    if ($managedUser->save()) {
+                        if ($client = TeamspeakGateway::getClient($user->identity_id)) {
+                            TeamspeakGateway::sendMessageToClient($client,
+                                'UserService '.$user->identity_id.' successfully unblocked');
+                            Log::info('UserService successfully unblocked', ['user' => $user->identity_id]);
                         }
                     }
                     break;
                 case 'update':
-                    $this->updateActiveClients();
-                    break;
+                    $this->handleUpdate($managedUser);
                 default:
             }
         }
@@ -107,7 +105,7 @@ class UserService implements UserServiceInterface
     protected function updateActiveClients(): void
     {
         foreach (TeamspeakGateway::getActiveClients() as $client) {
-            if ($user = User::where('identity_id', $client->getInfo()['client_unique_identifier'])->first()) {
+            if ($user = User::where('identity_id', $client['client_unique_identifier'])->first()) {
                 $this->handleUpdate($user);
             }
         }
@@ -216,13 +214,14 @@ class UserService implements UserServiceInterface
 
         Log::info('UserService successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
 
-//        $user = $user->refresh();
+        $user = $user->refresh();
         $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
 
         if (! $gameUser instanceof GameUser) {
             return;
         }
 
+        $user->refresh();
         $assignments = $game->assignments()->with(['type'])->get();
         $registry = App::make(GameGatewayRegistry::class);
         $gateway = $registry->get($game->name);

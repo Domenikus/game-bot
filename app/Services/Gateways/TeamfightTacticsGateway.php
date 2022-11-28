@@ -51,6 +51,7 @@ class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGate
 
         $url = $this->getPlattformBaseUrl().'/tft/summoner/v1/summoners/by-name/'.$params[2];
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->retry(10, 10000)
             ->get($url);
 
         $summoner = null;
