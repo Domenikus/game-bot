@@ -23,18 +23,6 @@ class TeamspeakGateway
         return self::assignPermissionToServerGroup($serverGroupId, $iconPermissionId, $iconId);
     }
 
-    public static function getPermissionIdByName(string $name): ?int
-    {
-        $permissionId = null;
-
-        try {
-            $permissionId = TeamSpeak3::permissionGetIdByName($name);
-        } catch (Exception $e) {
-        }
-
-        return $permissionId;
-    }
-
     public static function assignPermissionToServerGroup(int $serverGroupId, int $permissionId, int $value): bool
     {
         $success = false;
@@ -83,6 +71,21 @@ class TeamspeakGateway
         return $serverGroupId;
     }
 
+    public static function deleteServerGroup(int $id): bool
+    {
+        $result = false;
+
+        try {
+            TeamSpeak3::serverGroupDelete($id, true);
+            $result = true;
+        } catch (Exception $e) {
+            Log::error('Could not delete server group', ['id' => $id]);
+            report($e);
+        }
+
+        return $result;
+    }
+
     /**
      * @return TeamSpeak3_Node_Client[]
      */
@@ -125,6 +128,18 @@ class TeamspeakGateway
         }
 
         return $result;
+    }
+
+    public static function getPermissionIdByName(string $name): ?int
+    {
+        $permissionId = null;
+
+        try {
+            $permissionId = TeamSpeak3::permissionGetIdByName($name);
+        } catch (Exception $e) {
+        }
+
+        return $permissionId;
     }
 
     public static function getServerGroupByName(string $name): ?TeamSpeak3_Node_Servergroup
@@ -178,19 +193,6 @@ class TeamspeakGateway
         return $actualServerGroups;
     }
 
-    public static function iconExists(int $id): bool
-    {
-        $result = false;
-
-        foreach (self::getServerIcons() as $serverIcon) {
-            if ($serverIcon['name'] == 'icon_'.$id) {
-                $result = true;
-            }
-        }
-
-        return $result;
-    }
-
     public static function getServerIcons(): array
     {
         $serverIcons = [];
@@ -202,6 +204,19 @@ class TeamspeakGateway
         }
 
         return $serverIcons;
+    }
+
+    public static function iconExists(int $id): bool
+    {
+        $result = false;
+
+        foreach (self::getServerIcons() as $serverIcon) {
+            if ($serverIcon['name'] == 'icon_'.$id) {
+                $result = true;
+            }
+        }
+
+        return $result;
     }
 
     public static function removeServerGroupFromClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
