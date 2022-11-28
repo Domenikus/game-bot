@@ -9,6 +9,7 @@ use LaravelZero\Framework\Commands\Command;
 class Clean extends Command
 {
     protected $description = 'Removes all teamspeak server groups the bot has assignments for.';
+
     protected $signature = 'ts3:clean';
 
     public function handle(): void
