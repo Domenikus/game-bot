@@ -25,50 +25,39 @@ class ApexLegendsGateway implements GameGateway
 
     public function __construct(string $apiKey)
     {
+        $this->setApiKey($apiKey);
+    }
+
+    public function getApiKey(): string
+    {
+        return $this->apiKey;
+    }
+
+    public function setApiKey(string $apiKey): void
+    {
         $this->apiKey = $apiKey;
     }
 
     public function grabCharacterImage(string $characterName): ?string
     {
-        // TODO: Implement grabCharacterImage() method.
         return null;
     }
 
     public function grabCharacters(): ?array
     {
-        // TODO: Implement grabCharacters() method.
-        return null;
-    }
+        $legends = config('static-data.apex.characters');
+        if (! is_array($legends)) {
+            return null;
+        }
 
-    public function grabPositionImage(string $positionName): ?string
-    {
-        // TODO: Implement grabPositionImage() method.
-        return null;
-    }
-
-    public function grabPositions(): ?array
-    {
-        // TODO: Implement grabPositions() method.
-        return null;
-    }
-
-    public function grabRankImage(string $rankName): ?string
-    {
-        // TODO: Implement grabRankImage() method.
-        return null;
-    }
-
-    public function grabRanks(): ?array
-    {
-        // TODO: Implement grabRanks() method.
-        return null;
+        return $legends;
     }
 
     public function grabPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
 
-        $response = Http::withHeaders(['TRN-Api-Key' => $this->apiKey])
+        $response = Http::withHeaders(['TRN-Api-Key' => $this->getApiKey()])
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/'.$gameUser->options['platform'].'/'.$gameUser->options['name']);
 
         if ($response->successful()) {
@@ -78,10 +67,55 @@ class ApexLegendsGateway implements GameGateway
             }
         } else {
             Log::warning('Could not get player data from TRN API for Apex Legends',
-                ['apiKey' => $this->apiKey, 'response' => $response]);
+                ['apiKey' => $this->getApiKey(), 'response' => $response]);
         }
 
         return $stats;
+    }
+
+    public function grabPlayerIdentity(array $params): ?array
+    {
+        if (! isset($params[2], $params[3]) || ! in_array($params[3], self::PLATFORMS)) {
+            return null;
+        }
+
+        $options = [
+            'name' => $params[2],
+            'platform' => $params[3],
+        ];
+
+        $gameUser = new GameUser();
+        $gameUser->options = $options;
+        if ($this->grabPlayerData($gameUser)) {
+            return $options;
+        }
+
+        return null;
+    }
+
+    public function grabPositionImage(string $positionName): ?string
+    {
+        return null;
+    }
+
+    public function grabPositions(): ?array
+    {
+        return null;
+    }
+
+    public function grabRankImage(string $rankName): ?string
+    {
+        return null;
+    }
+
+    public function grabRanks(): ?array
+    {
+        $ranks = config('static-data.apex.ranks');
+        if (! is_array($ranks)) {
+            return null;
+        }
+
+        return $ranks;
     }
 
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
@@ -116,24 +150,6 @@ class ApexLegendsGateway implements GameGateway
     /**
      * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @param  string  $queueType
-     * @return Assignment|null
-     */
-    protected function mapRank(array $stats, Collection $assignments, string $queueType): ?Assignment
-    {
-        $newRankName = '';
-        foreach ($stats as $key => $stat) {
-            if ($key == $queueType) {
-                $newRankName = $stat['metadata']['rankName'];
-            }
-        }
-
-        return $assignments->where('value', strtolower($newRankName))->first();
-    }
-
-    /**
-     * @param  array  $stats
-     * @param  Collection<int, Assignment>  $assignments
      * @return Assignment|null
      */
     protected function mapLegend(array $stats, Collection $assignments): ?Assignment
@@ -157,23 +173,21 @@ class ApexLegendsGateway implements GameGateway
         return $assignments->where('value', strtolower($characterWithMostKills['name']))->first();
     }
 
-    public function grabPlayerIdentity(array $params): ?array
+    /**
+     * @param  array  $stats
+     * @param  Collection<int, Assignment>  $assignments
+     * @param  string  $queueType
+     * @return Assignment|null
+     */
+    protected function mapRank(array $stats, Collection $assignments, string $queueType): ?Assignment
     {
-        if (! isset($params[2], $params[3]) || ! in_array($params[3], self::PLATFORMS)) {
-            return null;
+        $newRankName = '';
+        foreach ($stats as $key => $stat) {
+            if ($key == $queueType) {
+                $newRankName = $stat['metadata']['rankName'];
+            }
         }
 
-        $options = [
-            'name' => $params[2],
-            'platform' => $params[3],
-        ];
-
-        $gameUser = new GameUser();
-        $gameUser->options = $options;
-        if ($this->grabPlayerData($gameUser)) {
-            return $options;
-        }
-
-        return null;
+        return $assignments->where('value', strtolower($newRankName))->first();
     }
 }
