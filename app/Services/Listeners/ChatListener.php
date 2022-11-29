@@ -38,8 +38,10 @@ class ChatListener implements TeamspeakListener
                 } elseif ($data['msg']->startsWith('!unregister') && $user) {
                     $this->userService->handleUnregister($user, $params);
                 } elseif ($data['msg']->startsWith('!admin') && $user) {
-                    $this->userService->handleUpdate($user);
+                    $host->getAdapter()->request('clientupdate');
                     $this->userService->handleAdmin($user, $params);
+                } elseif ($data['msg']->startsWith('!help')) {
+                    $this->userService->handleHelp($identityId);
                 }
             });
     }

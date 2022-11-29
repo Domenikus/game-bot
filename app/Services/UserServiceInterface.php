@@ -9,6 +9,14 @@ interface UserServiceInterface
     public function handleAdmin(User $user, array $params = []): void;
 
     /**
+     * Shows all available commands
+     *
+     * @param  string  $identityId
+     * @return void
+     */
+    public function handleHelp(string $identityId): void;
+
+    /**
      * Handels !register command in teamspeak chat
      *
      * @param  string  $identityId
