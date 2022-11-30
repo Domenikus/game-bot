@@ -1,7 +1,7 @@
 FROM php:8.1-cli-alpine
 
-RUN docker-php-ext-install mysqli pdo pdo_mysql posix && docker-php-ext-enable mysqli pdo pdo_mysql posix
-RUN apk add ncurses composer zlib
+RUN apk add ncurses composer libzip-dev
+RUN docker-php-ext-install mysqli pdo pdo_mysql posix zip && docker-php-ext-enable mysqli pdo pdo_mysql posix zip
 RUN mkdir -p /usr/src/game-bot
 
 COPY . /usr/src/game-bot/
