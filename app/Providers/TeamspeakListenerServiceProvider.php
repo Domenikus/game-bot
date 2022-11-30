@@ -7,38 +7,24 @@ use App\Services\Listeners\EnterViewListener;
 use App\Services\Listeners\TeamspeakListenerRegistry;
 use App\Services\Listeners\TimeoutListener;
 use App\Services\UserServiceInterface;
-use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
-class TeamspeakListenerServiceProvider extends ServiceProvider implements DeferrableProvider
+class TeamspeakListenerServiceProvider extends ServiceProvider
 {
-    /**
-     * @throws BindingResolutionException
-     */
-    public function boot(): void
+    public function boot(TeamspeakListenerRegistry $registry, UserServiceInterface $service): void
     {
-        $registry = $this->app->make(TeamspeakListenerRegistry::class);
-        $service = $this->app->make(UserServiceInterface::class);
-        if ($registry instanceof TeamspeakListenerRegistry && $service instanceof UserServiceInterface) {
-            $registry
-                ->register(new ChatListener($service))
-                ->register(new EnterViewListener($service));
+        $registry
+            ->register(new ChatListener($service))
+            ->register(new EnterViewListener($service));
 
-            $autoUpdateInterval = config('teamspeak.auto_update_interval');
-            if (is_numeric($autoUpdateInterval)) {
-                $registry->register(new TimeoutListener($service, (int) $autoUpdateInterval));
-            }
+        $autoUpdateInterval = config('teamspeak.auto_update_interval');
+        if (is_numeric($autoUpdateInterval)) {
+            $registry->register(new TimeoutListener($service, (int) $autoUpdateInterval));
         }
     }
 
     public function register(): void
     {
         $this->app->singleton(TeamspeakListenerRegistry::class);
-    }
-
-    public function provides(): array
-    {
-        return [TeamspeakListenerRegistry::class];
     }
 }
