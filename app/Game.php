@@ -2,29 +2,56 @@
 
 namespace App;
 
+use App\Traits\Activatable;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
 /**
- * @method static where(string $col, string $value)
+ * @property int $id
  * @property string $name
+ * @property string $label
+ * @property GameUser $game_user
+ * @property GameType $game_type
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class Game extends Model
 {
+    use Activatable;
+
+    const GAME_NAME_APEX_LEGENDS = 'apex';
+
+    const GAME_NAME_LEAGUE_OF_LEGENDS = 'lol';
+
+    const GAME_NAME_TEAMFIGHT_TACTICS = 'tft';
+
+    protected $casts = [
+        'blocked' => 'bool',
+    ];
+
+    /**
+     * @return HasMany<Assignment>
+     */
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
     }
 
+    /**
+     * @return BelongsToMany<User>
+     */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
     }
 
-    public function queues(): HasMany
+    /**
+     * @return BelongsToMany<Type>
+     */
+    public function types(): BelongsToMany
     {
-        return $this->hasMany(Queue::class);
+        return $this->belongsToMany(Type::class)->using(GameType::class)->as('game_type')->withPivot('label')->withTimestamps();
     }
 }

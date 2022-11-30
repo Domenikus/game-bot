@@ -2,27 +2,44 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
 /**
- * @method static where(string $col, string $value)
- * @property string $name
+ * @property int $id
+ * @property string $name;
+ * @property string $label;
+ * @property GameType $game_type
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class Type extends Model
 {
-    const TYPE_RANK_SOLO = 'rank_solo';
-    const TYPE_CHARACTER = 'character';
-    const TYPE_POSITION = 'position';
+    const NAME_CHARACTER = 'character';
 
+    const NAME_POSITION = 'position';
+
+    const NAME_RANK_DUO = 'rank_duo';
+
+    const NAME_RANK_GROUP = 'rank_group';
+
+    const NAME_RANK_SOLO = 'rank_solo';
+
+    /**
+     * @return HasMany<Assignment>
+     */
     public function assignments(): HasMany
     {
         return $this->hasMany(Assignment::class);
     }
 
-    public function queues(): HasMany
+    /**
+     * @return BelongsToMany<Game>
+     */
+    public function games(): BelongsToMany
     {
-        return $this->hasMany(Queue::class);
+        return $this->belongsToMany(Game::class)->using(GameType::class)->as('game_type')->withPivot('label')->withTimestamps();
     }
 }

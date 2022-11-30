@@ -3,16 +3,17 @@
 use App\Game;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration {
-
+return new class extends Migration
+{
     public function up(): void
     {
-        if (Game::where('name', 'apex')->first()) {
+        if (Game::where('name', Game::GAME_NAME_APEX_LEGENDS)->first()) {
             return;
         }
 
         $game = new Game();
-        $game->name = 'apex';
+        $game->name = Game::GAME_NAME_APEX_LEGENDS;
+        $game->label = 'Apex Legends';
         $game->saveOrFail();
     }
 
@@ -23,7 +24,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        if ($game = Game::where('name', 'apex')->first()) {
+        if ($game = Game::where('name', Game::GAME_NAME_APEX_LEGENDS)->first()) {
             $game->delete();
         }
     }

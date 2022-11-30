@@ -3,8 +3,8 @@
 use App\Type;
 use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration {
-
+return new class extends Migration
+{
     public function up(): void
     {
         if (Type::where('name', 'character')->first()) {
@@ -13,6 +13,7 @@ return new class extends Migration {
 
         $type = new Type();
         $type->name = 'character';
+        $type->label = 'Character';
         $type->saveOrFail();
     }
 
