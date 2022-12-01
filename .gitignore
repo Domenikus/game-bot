@@ -11,3 +11,4 @@
 /builds/
 /storage/logs/
 /storage/rank-icons/
+/.env.docker

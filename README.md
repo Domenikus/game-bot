@@ -68,36 +68,102 @@ php game-bot menu
     - League of Legends: [Riot developers](https://developer.riotgames.com/apis) (optional)
     - Teamfight Tactics: [Riot developers](https://developer.riotgames.com/apis) (optional)
 - Create a bot admin by copying ts3 client identity to admins env variable (optional)
-- Run bot menu to map game stats with ts3 server groups
-- Setup docker-compose file
+- Run bot setup
 
 ### Docker-compose example
 
 ```
-game-bot:
+version: "3.1"
+
+services:
+  game-bot:
     container_name: game-bot
     image: domenikus/game-bot
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/usr/src/game-bot/builds/logs
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb
     restart: unless-stopped
     environment:
-        TEAMSPEAK_IP=127.0.0.1
-        TEAMSPEAK_PORT=9987
-        TEAMSPEAK_QUERY_USER=
-        TEAMSPEAK_QUERY_PASSWORD=
-        TEAMSPEAK_QUERY_PORT=10011
-        DB_CONNECTION=mysql
-        DB_HOST=127.0.0.1
-        DB_DATABASE=
-        DB_USERNAME=
-        DB_PASSWORD=
-        DB_PORT=3307
-        APEX_API_KEY=
-        LOL_API_KEY=
-        LOL_REGION=euw1
-        TFT_API_KEY=
-        AUTO_UPDATE_INTERVAL=1800
-        ADMINS=
-        LOG_CHANNEL=stack
-        LOG_LEVEL=info
+      MYSQL_ROOT_PASSWORD: "super-secret-password"
+    volumes:
+      - ./data/mariadb/db:/var/lib/mysql
+      - ./data/mariadb/sql:/docker-entrypoint-initdb.d    
+```
+
+### Example .env file
+
+```
+# IP of the teamspeak server
+TEAMSPEAK_IP=
+
+# Teampspeak port, default is 9987
+TEAMSPEAK_PORT=9987
+
+# Query username
+TEAMSPEAK_QUERY_USER=
+
+# Query user password
+TEAMSPEAK_QUERY_PASSWORD=
+
+# Query user port, default is 10011
+TEAMSPEAK_QUERY_PORT=10011
+
+# Database type, you can choose between mysql and pgsql
+DB_CONNECTION=mysql
+
+# Database Host
+DB_HOST=
+
+# Database name
+DB_DATABASE=
+
+# Database username
+DB_USERNAME=
+
+# Database password
+DB_PASSWORD=
+
+# Database port
+DB_PORT=3306
+
+# Apex Legends API key
+APEX_API_KEY=
+
+# League of Legends API key
+LOL_API_KEY=
+
+# Teamfight Tactics API key
+TFT_API_KEY=
+
+# Specifies the region in which you are playing.
+LOL_REGION=euw1
+
+#Auto update period in seconds 1800 = 30m
+AUTO_UPDATE_INTERVAL=1800 
+
+#Comma seperared list of teamsepak identity id's which should be able to use !admin commands
+ADMINS=
+
+#Specify how the application will log messages like erros. Default will be stack. 
+LOG_CHANNEL=stack
+
+# Default is 'info' if you want to debug the application may you want to change this to 'debug' 
+LOG_LEVEL=info
+
+```
+
+### Interacting with the bot in the container
+
+```
+docker exec -it game-bot php game-bot
 ```
 
 ### Necessary bot permissions in ts3 server
