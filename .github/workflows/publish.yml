@@ -1,8 +1,11 @@
-name: Publish release
+name: Publish to Dockerhub
 
 on:
   release:
     types: [ published ]
+  push:
+    branches:
+      - master
 
 jobs:
   push_to_registry:
