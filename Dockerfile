@@ -6,6 +6,7 @@ RUN mkdir -p /usr/src/game-bot
 
 COPY . /usr/src/game-bot/
 
+WORKDIR /usr/src/game-bot
 RUN php /usr/bin/composer.phar install --no-scripts
 RUN chmod 755 vendor/laravel-zero/framework/bin/box
 RUN php game-bot app:build --build-version=$version
