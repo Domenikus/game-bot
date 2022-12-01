@@ -5,7 +5,7 @@ on:
     types: [ published ]
   push:
     branches:
-      - master
+      - development
 
 jobs:
   push_to_registry:
