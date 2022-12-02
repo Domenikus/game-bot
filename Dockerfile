@@ -8,14 +8,13 @@ RUN mkdir -p /usr/src/game-bot
 
 COPY . /usr/src/game-bot/
 
-WORKDIR /usr/src/game-bot
-RUN php /usr/bin/composer.phar install --no-scripts
-RUN chmod 755 vendor/laravel-zero/framework/bin/box
-RUN php game-bot app:build --build-version=${version}
-RUN php /usr/bin/composer.phar dump-autoload --classmap-authoritative --no-dev -vvv --optimize
+RUN php /usr/bin/composer.phar install --working-dir=/usr/src/game-bot --no-scripts
+RUN chmod 755 /usr/src/game-bot/vendor/laravel-zero/framework/bin/box
+RUN php /usr/src/game-bot/game-bot app:build --build-version=${version}
+RUN php /usr/bin/composer.phar dump-autoload --working-dir=/usr/src/game-bot --classmap-authoritative --no-dev -vvv --optimize
 
-COPY entrypoint.sh /usr/src/game-bot/entrypoint.sh
-RUN chmod +x /usr/src/game-bot/entrypoint.sh
+RUN mkdir -p /app && cp -R /usr/src/game-bot/builds /app && cp /usr/src/game-bot/entrypoint.sh /app && rm -R /usr/src/game-bot
+RUN chmod +x /app/entrypoint.sh
 
-WORKDIR /usr/src/game-bot/builds
-ENTRYPOINT ["/bin/sh", "/usr/src/game-bot/entrypoint.sh"]
+WORKDIR /app
+ENTRYPOINT ["/bin/sh", "/app/entrypoint.sh"]
