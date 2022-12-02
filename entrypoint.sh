@@ -1,4 +1,4 @@
 #!/bin/sh
 
-php /usr/src/game-bot/builds/game-bot migrate --force
-php /usr/src/game-bot/builds/game-bot run
+php /app/game-bot migrate --force
+php /app/game-bot run
