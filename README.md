@@ -85,7 +85,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./logs:/usr/src/game-bot/builds/logs
+      - ./logs:/app/logs
 
   mariadb:
     container_name: mariadb
