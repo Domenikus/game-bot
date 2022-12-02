@@ -2,11 +2,12 @@
 
 namespace App\Providers;
 
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 use TeamSpeak3;
 use TeamSpeak3_Node_Abstract;
 
-class TeamspeakServiceProvider extends ServiceProvider
+class TeamspeakServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     public function boot(): void
     {
@@ -25,5 +26,10 @@ class TeamspeakServiceProvider extends ServiceProvider
 
             return TeamSpeak3::factory($uri);
         });
+    }
+
+    public function provides(): array
+    {
+        return [TeamSpeak3::class];
     }
 }
