@@ -170,22 +170,22 @@ docker exec -it game-bot php game-bot
 
 ```
 b_serverinstance_permission_list
+b_virtualserver_servergroup_permission_list
 b_virtualserver_client_list
 b_virtualserver_notify_register
 b_virtualserver_notify_unregister
 b_virtualserver_servergroup_list
 b_virtualserver_channelgroup_list
 b_virtualserver_servergroup_create
+b_virtualserver_servergroup_delete
+i_permission_modify_power
+b_icon_manage
+i_icon_id (Grant)
+i_group_sort_id (Grant)
+i_max_icon_filesize
+b_client_ignore_antiflood
 i_group_modify_power
 i_group_member_add_power
-i_group_needed_member_add_power
-b_permission_modify_power_ignore
-b_virtualserver_servergroup_delete
-i_max_icon_filesize
-b_icon_manage
-b_group_is_permanent
-i_client_permission_modify_power
-b_client_ignore_antiflood
 ```
 
 ## Usage

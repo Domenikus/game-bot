@@ -11,19 +11,19 @@ use TeamSpeak3_Node_Servergroup;
 
 class TeamspeakGateway
 {
-    public static function assignIconToServerGroup(int $serverGroupId, int $iconId): ?bool
+    public static function assignServerGroupIcon(int $serverGroupId, int $iconId): bool
     {
-        $iconPermissionId = TeamspeakGateway::getPermissionIdByName('i_icon_id');
+        $iconPermissionId = self::getPermissionIdByName('i_icon_id');
         if (! $iconPermissionId) {
             Log::error('Icon permission not found');
 
             return false;
         }
 
-        return self::assignPermissionToServerGroup($serverGroupId, $iconPermissionId, $iconId);
+        return self::assignServerGroupPermission($serverGroupId, $iconPermissionId, $iconId);
     }
 
-    public static function assignPermissionToServerGroup(int $serverGroupId, int $permissionId, int $value): bool
+    public static function assignServerGroupPermission(int $serverGroupId, int $permissionId, int $value): bool
     {
         $success = false;
 
@@ -36,6 +36,18 @@ class TeamspeakGateway
         }
 
         return $success;
+    }
+
+    public static function assignServerGroupSortId(int $serverGroupId, int $sortIdValue): bool
+    {
+        $sortIdPermissionId = self::getPermissionIdByName('i_group_sort_id');
+        if (! $sortIdPermissionId) {
+            Log::error('Sort id permission not found');
+
+            return false;
+        }
+
+        return self::assignServerGroupPermission($serverGroupId, $sortIdPermissionId, $sortIdValue);
     }
 
     public static function assignServerGroupToClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool
@@ -152,6 +164,41 @@ class TeamspeakGateway
         }
 
         return $serverGroup;
+    }
+
+    public static function getServerGroupHighestSortId(): int
+    {
+        $highestServerGroupId = 10;
+        foreach (self::getServerGroups() as $serverGroup) {
+            $serverGroupId = $serverGroup->getId();
+            $sortId = self::getServerGroupSortId($serverGroupId);
+
+            if ($sortId && $sortId > $highestServerGroupId) {
+                $highestServerGroupId = $sortId;
+            }
+        }
+
+        return $highestServerGroupId;
+    }
+
+    public static function getServerGroupSortId(int $serverGroupId): ?int
+    {
+        $sortId = null;
+
+        $sortIdPermissionId = self::getPermissionIdByName('i_group_sort_id');
+        try {
+            $permissionList = TeamSpeak3::serverGroupPermList($serverGroupId);
+            foreach ($permissionList as $permission) {
+                if ($permission['permid'] == $sortIdPermissionId) {
+                    $sortId = $permission['permvalue'];
+                }
+            }
+        } catch (Exception $e) {
+            Log::error('Could not get server group permission list', ['serverGroupId' => $serverGroupId]);
+            report($e);
+        }
+
+        return $sortId;
     }
 
     /**

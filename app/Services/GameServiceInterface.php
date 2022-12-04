@@ -32,5 +32,5 @@ interface GameServiceInterface
      * @param  ProgressBar|null  $progressBar Optional progressbar which shows the current progress
      * @return bool Return setup result
      */
-    public function setup(Type $type, array $permissions, ProgressBar $progressBar = null, string $suffix = null): bool;
+    public function setup(Type $type, array $permissions, int $sortIndex, ProgressBar $progressBar = null, string $suffix = null): bool;
 }

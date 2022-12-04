@@ -11,11 +11,11 @@ use LaravelZero\Framework\Commands\Command;
 
 class Setup extends Command
 {
-    protected $signature = 'setup';
-
     protected $description = 'Setup games';
 
     protected GameGatewayRegistry $gatewayRegistry;
+
+    protected $signature = 'setup';
 
     public function handle(GameGatewayRegistry $gatewayRegistry): void
     {
@@ -38,23 +38,6 @@ class Setup extends Command
         /** @var Game $selectedGameModel */
         $selectedGameModel = $availableGames->where('label', $selectedGame)->first();
         $this->setupGame($selectedGameModel);
-    }
-
-    protected function setupGame(Game $game): void
-    {
-        $permissions = $this->askForServerGroupPermissions();
-        $types = $game->types;
-        $progressBar = $this->output->createProgressBar();
-        $gameService = $this->app->make(GameServiceInterface::class, ['game' => $game]);
-        if ($gameService instanceof GameServiceInterface) {
-            foreach ($types as $type) {
-                $this->task('Setup '.$type->game_type->label, function () use ($game, $gameService, $progressBar, $permissions, $type) {
-                    $typeSuffix = $this->askForServerGroupSuffix($type, $game);
-
-                    return $gameService->setup($type, $permissions, $progressBar, $typeSuffix);
-                });
-            }
-        }
     }
 
     /**
@@ -85,8 +68,8 @@ class Setup extends Command
 
     protected function askForServerGroupSuffix(Type $type, Game $game): string
     {
-        $suffix = '';
         $this->newLine();
+        $suffix = '';
         if ($this->confirm('Do you want to change default naming of server groups for Type: <options=bold>'.$type->game_type->label.'.</>? Template: {Value} (<Game>-<type>). Example: Aatrox (LoL-Champion). <fg=yellow>If you want to remove the suffix completely, enter 0!</>')) {
             $answer = $this->ask('Which suffix do you want to add?');
 
@@ -98,5 +81,29 @@ class Setup extends Command
         }
 
         return $suffix;
+    }
+
+    protected function roundUpByThousand(int|float $value): int
+    {
+        return (int) ceil($value / 1000) * 1000;
+    }
+
+    protected function setupGame(Game $game): void
+    {
+        $permissions = $this->askForServerGroupPermissions();
+
+        $types = $game->types;
+        $progressBar = $this->output->createProgressBar();
+        $gameService = $this->app->make(GameServiceInterface::class, ['game' => $game]);
+        if ($gameService instanceof GameServiceInterface) {
+            foreach ($types as $type) {
+                $this->task('Setup '.$type->game_type->label, function () use ($game, $gameService, $progressBar, $permissions, $type) {
+                    $typeSuffix = $this->askForServerGroupSuffix($type, $game);
+                    $sortIndex = $this->roundUpByThousand(TeamspeakGateway::getServerGroupHighestSortId());
+
+                    return $gameService->setup($type, $permissions, $sortIndex, $progressBar, $typeSuffix);
+                });
+            }
+        }
     }
 }

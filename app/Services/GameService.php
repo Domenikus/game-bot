@@ -24,7 +24,49 @@ class GameService implements GameServiceInterface
         $this->gameGateway = $gatewayRegistry->get($game->name);
     }
 
-    public function setup(Type $type, array $permissions, ProgressBar $progressBar = null, string $suffix = null): bool
+    public function grabImage(Type $type, string $value): ?string
+    {
+        $result = null;
+
+        switch ($type->name) {
+            case Type::NAME_CHARACTER:
+                $result = $this->gameGateway->grabCharacterImage($value);
+                break;
+            case Type::NAME_POSITION:
+                $result = $this->gameGateway->grabPositionImage($value);
+                break;
+            case Type::NAME_RANK_SOLO:
+            case Type::NAME_RANK_DUO:
+            case Type::NAME_RANK_GROUP:
+                $result = $this->gameGateway->grabRankImage($value);
+                break;
+        }
+
+        return $result;
+    }
+
+    public function grabValues(Type $type): ?array
+    {
+        $values = null;
+
+        switch ($type->name) {
+            case Type::NAME_CHARACTER:
+                $values = $this->gameGateway->grabCharacters();
+                break;
+            case Type::NAME_POSITION:
+                $values = $this->gameGateway->grabPositions();
+                break;
+            case Type::NAME_RANK_SOLO:
+            case Type::NAME_RANK_DUO:
+            case Type::NAME_RANK_GROUP:
+                $values = $this->gameGateway->grabRanks();
+                break;
+        }
+
+        return $values;
+    }
+
+    public function setup(Type $type, array $permissions, int $sortIndex, ProgressBar $progressBar = null, string $suffix = null): bool
     {
         $values = $this->grabValues($type);
         if (! $values) {
@@ -56,12 +98,15 @@ class GameService implements GameServiceInterface
                     $calculatedIconId = TeamspeakGateway::calculateIconId($imageData);
                     $iconId = TeamspeakGateway::iconExists($calculatedIconId) ? $calculatedIconId : TeamspeakGateway::uploadIcon($imageData);
                     if ($iconId) {
-                        TeamspeakGateway::assignIconToServerGroup($serverGroupId, $iconId);
+                        TeamspeakGateway::assignServerGroupIcon($serverGroupId, $iconId);
                     }
                 }
 
+                TeamspeakGateway::assignServerGroupSortId($serverGroupId, $sortIndex);
+                $sortIndex++;
+
                 foreach ($permissions as $permission) {
-                    TeamspeakGateway::assignPermissionToServerGroup($serverGroupId, $permission['id'],
+                    TeamspeakGateway::assignServerGroupPermission($serverGroupId, $permission['id'],
                         $permission['value']);
                 }
             } else {
@@ -82,47 +127,5 @@ class GameService implements GameServiceInterface
         $progressBar?->finish();
 
         return true;
-    }
-
-    public function grabValues(Type $type): ?array
-    {
-        $values = null;
-
-        switch ($type->name) {
-            case Type::NAME_CHARACTER:
-                $values = $this->gameGateway->grabCharacters();
-                break;
-            case Type::NAME_POSITION:
-                $values = $this->gameGateway->grabPositions();
-                break;
-            case Type::NAME_RANK_SOLO:
-            case Type::NAME_RANK_DUO:
-            case Type::NAME_RANK_GROUP:
-                $values = $this->gameGateway->grabRanks();
-                break;
-        }
-
-        return $values;
-    }
-
-    public function grabImage(Type $type, string $value): ?string
-    {
-        $result = null;
-
-        switch ($type->name) {
-            case Type::NAME_CHARACTER:
-                $result = $this->gameGateway->grabCharacterImage($value);
-                break;
-            case Type::NAME_POSITION:
-                $result = $this->gameGateway->grabPositionImage($value);
-                break;
-            case Type::NAME_RANK_SOLO:
-            case Type::NAME_RANK_DUO:
-            case Type::NAME_RANK_GROUP:
-                $result = $this->gameGateway->grabRankImage($value);
-                break;
-        }
-
-        return $result;
     }
 }

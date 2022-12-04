@@ -20,18 +20,21 @@ class Clean extends Command
             return;
         }
 
+        $this->newLine();
         $this->info('Delete Teamspeak server groups');
         $this->withProgressBar(Assignment::all(), function (Assignment $assignment) {
             TeamspeakGateway::deleteServerGroup($assignment->ts3_server_group_id);
             $assignment->delete();
         });
 
+        $this->newLine();
         $this->info('Set games to inactive');
         $this->withProgressBar(Game::all(), function (Game $game) {
             $game->active = false;
             $game->save();
         });
 
+        $this->newLine();
         $this->info('Delete registered users');
         $this->withProgressBar(GameUser::all(), function (GameUser $gameUser) {
             $gameUser->delete();
