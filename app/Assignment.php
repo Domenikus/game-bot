@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Assignment extends Model
 {
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     /**
      * @return BelongsTo<Game, Assignment>
      */

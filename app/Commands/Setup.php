@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Assignment;
 use App\Game;
 use App\Services\GameServiceInterface;
 use App\Services\Gateways\GameGatewayRegistry;
@@ -88,6 +89,17 @@ class Setup extends Command
         return (int) ceil($value / 1000) * 1000;
     }
 
+    protected function calcNextSortId(Game $game, Type $type): int
+    {
+        if ($lastCreatedAssignment = Assignment::where('game_id', $game->id)->where('type_id', $type->id)->latest()->first()) {
+            if ($sortId = TeamspeakGateway::getServerGroupSortId($lastCreatedAssignment->ts3_server_group_id)) {
+                return ++$sortId;
+            }
+        }
+
+        return $this->roundUpByThousand(TeamspeakGateway::getServerGroupHighestSortId());
+    }
+
     protected function setupGame(Game $game): void
     {
         $permissions = $this->askForServerGroupPermissions();
@@ -99,7 +111,7 @@ class Setup extends Command
             foreach ($types as $type) {
                 $this->task('Setup '.$type->game_type->label, function () use ($game, $gameService, $progressBar, $permissions, $type) {
                     $typeSuffix = $this->askForServerGroupSuffix($type, $game);
-                    $sortIndex = $this->roundUpByThousand(TeamspeakGateway::getServerGroupHighestSortId());
+                    $sortIndex = $this->calcNextSortId($game, $type);
 
                     return $gameService->setup($type, $permissions, $sortIndex, $progressBar, $typeSuffix);
                 });
