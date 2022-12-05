@@ -39,5 +39,7 @@ class Clean extends Command
         $this->withProgressBar(GameUser::all(), function (GameUser $gameUser) {
             $gameUser->delete();
         });
+
+        $this->newLine();
     }
 }
