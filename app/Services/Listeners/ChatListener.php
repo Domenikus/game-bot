@@ -13,9 +13,12 @@ class ChatListener implements TeamspeakListener
 {
     protected UserServiceInterface $userService;
 
-    public function __construct(UserServiceInterface $userService)
+    protected string $chatCommandPrefix;
+
+    public function __construct(UserServiceInterface $userService, string $chatCommandPrefix)
     {
         $this->userService = $userService;
+        $this->chatCommandPrefix = $chatCommandPrefix;
     }
 
     public function init(): void
@@ -30,18 +33,21 @@ class ChatListener implements TeamspeakListener
                 $user = User::where('identity_id', $identityId)->first();
 
                 $params = explode('|', $data['msg']->toString());
-                if ($data['msg']->startsWith('!register')) {
-                    $this->userService->handleRegister($identityId, $params);
-                } elseif ($data['msg']->startsWith('!update') && $user) {
-                    $host->getAdapter()->request('clientupdate');
-                    $this->userService->handleUpdate($user);
-                } elseif ($data['msg']->startsWith('!unregister') && $user) {
-                    $this->userService->handleUnregister($user, $params);
-                } elseif ($data['msg']->startsWith('!admin') && $user) {
-                    $host->getAdapter()->request('clientupdate');
-                    $this->userService->handleAdmin($user, $params);
-                } elseif ($data['msg']->startsWith('!help')) {
-                    $this->userService->handleHelp($identityId);
+
+                if (mb_substr($params[0], 0, 1) == $this->chatCommandPrefix) {
+                    if (mb_strpos($params[0], 'register')) {
+                        $this->userService->handleRegister($identityId, $params);
+                    } elseif (mb_strpos($params[0], 'update') && $user) {
+                        $host->getAdapter()->request('clientupdate');
+                        $this->userService->handleUpdate($user);
+                    } elseif (mb_strpos($params[0], 'unregister') && $user) {
+                        $this->userService->handleUnregister($user, $params);
+                    } elseif (mb_strpos($params[0], 'admin') && $user) {
+                        $host->getAdapter()->request('clientupdate');
+                        $this->userService->handleAdmin($user, $params);
+                    } elseif (mb_strpos($params[0], 'help')) {
+                        $this->userService->handleHelp($identityId);
+                    }
                 }
             });
     }

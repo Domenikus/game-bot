@@ -117,6 +117,9 @@ TEAMSPEAK_QUERY_PASSWORD=
 # Query user port, default is 10011
 TEAMSPEAK_QUERY_PORT=10011
 
+# Chat command prefix, default is !
+TEAMSPEAK_CHAT_COMMAND_PREFIX=!
+
 # Database type, you can choose between mysql and pgsql
 DB_CONNECTION=mysql
 

@@ -13,9 +13,12 @@ class TeamspeakListenerServiceProvider extends ServiceProvider
 {
     public function boot(TeamspeakListenerRegistry $registry, UserServiceInterface $service): void
     {
-        $registry
-            ->register(new ChatListener($service))
-            ->register(new EnterViewListener($service));
+        $chatCommandPrefix = config('teamspeak.chat_command_prefix');
+        if (is_string($chatCommandPrefix)) {
+            $registry
+                ->register(new ChatListener($service, $chatCommandPrefix))
+                ->register(new EnterViewListener($service));
+        }
 
         $autoUpdateInterval = config('teamspeak.auto_update_interval');
         if (is_numeric($autoUpdateInterval)) {

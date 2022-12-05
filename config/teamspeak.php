@@ -9,6 +9,7 @@ return [
     'query_password' => env('TEAMSPEAK_QUERY_PASSWORD', ''),
     'query_port' => env('TEAMSPEAK_QUERY_PORT', 10011),
     'bot_name' => 'game-bot_'.Str::random(4),
+    'chat_command_prefix' => env('TEAMSPEAK_CHAT_COMMAND_PREFIX', '!'),
 
     'auto_update_interval' => env('AUTO_UPDATE_INTERVAL', 1800),
 ];
