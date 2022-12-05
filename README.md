@@ -67,6 +67,7 @@ php game-bot menu
     - Apex Legends: [Tracker.gg](https://tracker.gg/developers) (optional)
     - League of Legends: [Riot developers](https://developer.riotgames.com/apis) (optional)
     - Teamfight Tactics: [Riot developers](https://developer.riotgames.com/apis) (optional)
+- Create database, i recommend using "utf8mb4_general_ci" (same as ts3 uses)
 - Create a bot admin by copying ts3 client identity to admins env variable (optional)
 - Run bot setup
 
