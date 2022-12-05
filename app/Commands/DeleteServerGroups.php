@@ -32,5 +32,7 @@ class DeleteServerGroups extends Command
                 $serverGroup->delete(true);
             }
         });
+
+        $this->newLine();
     }
 }
