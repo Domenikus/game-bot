@@ -69,6 +69,11 @@ class TeamspeakGateway
         return crc32($data);
     }
 
+    public static function clearClientCache(): void
+    {
+        TeamSpeak3::clientListReset();
+    }
+
     public static function createServerGroup(string $name): ?int
     {
         $serverGroupId = null;
@@ -264,6 +269,11 @@ class TeamspeakGateway
         }
 
         return $result;
+    }
+
+    public static function refreshConnection(array $properties = []): void
+    {
+        TeamSpeak3::selfUpdate($properties);
     }
 
     public static function removeServerGroupFromClient(TeamSpeak3_Node_Client $client, int $serverGroupId): bool

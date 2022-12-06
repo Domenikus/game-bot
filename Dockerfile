@@ -13,7 +13,12 @@ RUN chmod 755 /usr/src/game-bot/vendor/laravel-zero/framework/bin/box
 RUN php /usr/src/game-bot/game-bot app:build --build-version=${version}
 RUN php /usr/bin/composer.phar dump-autoload --working-dir=/usr/src/game-bot --classmap-authoritative --no-dev -vvv --optimize
 
-RUN mkdir -p /app && mkdir -p /app/storage && cp /usr/src/game-bot/builds/game-bot /app && cp /usr/src/game-bot/entrypoint.sh /app && rm -R /usr/src/game-bot
+RUN mkdir -p /app  \
+    && mkdir -p /app/storage  \
+    && mkdir -p /app/views  \
+    && cp /usr/src/game-bot/builds/game-bot /app  \
+    && cp /usr/src/game-bot/entrypoint.sh /app  \
+    && rm -R /usr/src/game-bot
 RUN chmod +x /app/entrypoint.sh
 
 WORKDIR /app

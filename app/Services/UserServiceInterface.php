@@ -48,4 +48,13 @@ interface UserServiceInterface
      * @return void
      */
     public function handleUpdateAll(): void;
+
+    /**
+     * Handels invalid commands
+     *
+     * @param  string  $identityId
+     * @param  array  $params
+     * @return void
+     */
+    public function handleInvalid(string $identityId, array $params = []): void;
 }

@@ -32,6 +32,12 @@ class AppServiceProvider extends ServiceProvider
                 ? dirname(\Phar::running(false)).'/logs/game-bot.log'
                 : storage_path('logs/game-bot.log'),
         ]);
+
+        config([
+            'view.compiled' => \Phar::running()
+                ? dirname(\Phar::running(false)).'/views'
+                : realpath(storage_path('framework/views')),
+        ]);
     }
 
     /**

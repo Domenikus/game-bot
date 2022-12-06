@@ -27,6 +27,10 @@ return [
             'Catalyst',
         ],
         'ranks' => [
+            'Rookie 1',
+            'Rookie 2',
+            'Rookie 3',
+            'Rookie 4',
             'Bronze 1',
             'Bronze 2',
             'Bronze 3',

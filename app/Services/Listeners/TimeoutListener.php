@@ -2,6 +2,7 @@
 
 namespace App\Services\Listeners;
 
+use App\Services\Gateways\TeamspeakGateway;
 use App\Services\UserServiceInterface;
 use Illuminate\Support\Facades\Log;
 use TeamSpeak3_Adapter_ServerQuery;
@@ -9,9 +10,9 @@ use TeamSpeak3_Helper_Signal;
 
 class TimeoutListener implements TeamspeakListener
 {
-    protected int $lastUpdate;
-
     protected int $autoUpdateInterval;
+
+    protected int $lastUpdate;
 
     protected UserServiceInterface $userService;
 
@@ -28,7 +29,7 @@ class TimeoutListener implements TeamspeakListener
             function ($seconds, TeamSpeak3_Adapter_ServerQuery $adapter) {
                 if ($adapter->getQueryLastTimestamp() < time() - 180) {
                     Log::info('No reply from the server for '.$seconds.' seconds. Sending keep alive command.');
-                    $adapter->request('clientupdate');
+                    TeamspeakGateway::refreshConnection();
                 }
 
                 $this->handleAutoUpdate();
