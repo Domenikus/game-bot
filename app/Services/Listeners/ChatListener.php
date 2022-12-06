@@ -3,6 +3,7 @@
 namespace App\Services\Listeners;
 
 use App\Facades\TeamSpeak3;
+use App\Services\Gateways\TeamspeakGateway;
 use App\Services\UserServiceInterface;
 use App\User;
 use TeamSpeak3_Adapter_ServerQuery_Event;
@@ -33,20 +34,34 @@ class ChatListener implements TeamspeakListener
                 $user = User::where('identity_id', $identityId)->first();
 
                 $params = explode('|', $data['msg']->toString());
-
                 if (mb_substr($params[0], 0, 1) == $this->chatCommandPrefix) {
-                    if (mb_strpos($params[0], 'register')) {
-                        $this->userService->handleRegister($identityId, $params);
-                    } elseif (mb_strpos($params[0], 'update') && $user) {
-                        $host->getAdapter()->request('clientupdate');
-                        $this->userService->handleUpdate($user);
-                    } elseif (mb_strpos($params[0], 'unregister') && $user) {
-                        $this->userService->handleUnregister($user, $params);
-                    } elseif (mb_strpos($params[0], 'admin') && $user) {
-                        $host->getAdapter()->request('clientupdate');
-                        $this->userService->handleAdmin($user, $params);
-                    } elseif (mb_strpos($params[0], 'help')) {
-                        $this->userService->handleHelp($identityId);
+                    TeamspeakGateway::clearClientCache();
+
+                    $command = mb_substr($params[0], 1);
+                    switch ($command) {
+                        case 'register':
+                            $this->userService->handleRegister($identityId, $params);
+                            break;
+                        case 'update':
+                            if ($user) {
+                                $this->userService->handleUpdate($user);
+                            }
+                            break;
+                        case 'unregister':
+                            if ($user) {
+                                $this->userService->handleUnregister($user, $params);
+                            }
+                            break;
+                        case 'admin':
+                            if ($user) {
+                                $this->userService->handleAdmin($user, $params);
+                            }
+                            break;
+                        case 'help':
+                            $this->userService->handleHelp($identityId);
+                            break;
+                        default:
+                            $this->userService->handleInvalid($identityId, $params);
                     }
                 }
             });

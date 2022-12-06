@@ -11,7 +11,6 @@ use App\Services\Gateways\TeamspeakGateway;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class UserService implements UserServiceInterface
@@ -56,8 +55,8 @@ class UserService implements UserServiceInterface
                     break;
                 case 'help':
                     if ($client = TeamspeakGateway::getClient($user->identity_id)) {
-                        $file = File::get(getcwd().'/app/Views/AdminHelp.bbcode');
-                        $client->message($file);
+                        $view = view('adminHelp', ['commandPrefix' => config('teamspeak.chat_command_prefix')]);
+                        $client->message($view);
                     }
             }
         }
@@ -66,8 +65,15 @@ class UserService implements UserServiceInterface
     public function handleHelp(string $identityId): void
     {
         if ($client = TeamspeakGateway::getClient($identityId)) {
-            $file = File::get(getcwd().'/app/Views/Help.bbcode');
-            $client->message($file);
+            $view = view('help', ['commandPrefix' => config('teamspeak.chat_command_prefix')]);
+            $client->message($view);
+        }
+    }
+
+    public function handleInvalid(string $identityId, array $params = []): void
+    {
+        if ($client = TeamspeakGateway::getClient($identityId)) {
+            TeamspeakGateway::sendMessageToClient($client, 'Invalid command, check out help to list all available commands');
         }
     }
 

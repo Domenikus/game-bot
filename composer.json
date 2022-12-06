@@ -32,6 +32,7 @@
     "illuminate/database": "^9.0",
     "illuminate/http": "^9.0",
     "illuminate/log": "^9.0",
+    "illuminate/view": "^9.0",
     "laminas/laminas-text": "^2.9",
     "laravel-zero/framework": "^9.0",
     "nunomaduro/laravel-console-menu": "^3.3",
