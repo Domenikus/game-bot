@@ -3,6 +3,7 @@
 namespace App\Services\Listeners;
 
 use App\Facades\TeamSpeak3;
+use App\Services\Gateways\TeamspeakGateway;
 use App\Services\UserServiceInterface;
 use App\User;
 use TeamSpeak3_Adapter_ServerQuery_Event;
@@ -28,6 +29,7 @@ class EnterViewListener implements TeamspeakListener
                 $identityId = $data['client_unique_identifier']->toString();
                 $user = User::where('identity_id', $identityId)->first();
                 if ($user) {
+                    TeamspeakGateway::clearClientCache();
                     $this->userService->handleUpdate($user);
                 }
             });
