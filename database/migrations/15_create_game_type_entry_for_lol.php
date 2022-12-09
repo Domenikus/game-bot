@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $game = Game::withInactive()->where('name', Game::GAME_NAME_LEAGUE_OF_LEGENDS)->firstOrFail();
+        $game = Game::where('name', Game::GAME_NAME_LEAGUE_OF_LEGENDS)->firstOrFail();
 
         $rankSolo = Type::where('name', Type::NAME_RANK_SOLO)->firstOrFail();
         $game->types()->attach($rankSolo->getKey(), ['label' => 'Solo/Duo']);
@@ -28,7 +28,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $game = Game::withInactive()->with('types')->where('name', Game::GAME_NAME_LEAGUE_OF_LEGENDS)->firstOrFail();
+        $game = Game::with('types')->where('name', Game::GAME_NAME_LEAGUE_OF_LEGENDS)->firstOrFail();
         $game->types()->sync([]);
     }
 };

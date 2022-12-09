@@ -53,8 +53,6 @@ class Menu extends Command
         $this->menu('Game bot menu')
             ->addItem('Create Assignment', $this->buildCreateAssignment())
             ->addSubMenu('Delete assignment', $this->buildDeleteAssignment())
-            ->addSubMenu('Activate Game', $this->buildActivateGame())
-            ->addSubMenu('Deactivate Game', $this->buildDeactivateGame())
             ->addItem('Refresh', function (CliMenu $menu) {
                 $menu->close();
                 $this->buildMenu();
@@ -157,18 +155,6 @@ class Menu extends Command
                         });
                 }
             }
-        };
-    }
-
-    private function buildActivateGame(): Closure
-    {
-        return function (CliMenuBuilder $b) {
-        };
-    }
-
-    private function buildDeactivateGame(): Closure
-    {
-        return function (CliMenuBuilder $b) {
         };
     }
 }

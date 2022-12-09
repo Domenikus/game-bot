@@ -83,7 +83,7 @@ class UserService implements UserServiceInterface
             return;
         }
 
-        if ($game = Game::where('name', $params[1])->first()) {
+        if ($game = Game::active()->where('name', $params[1])->first()) {
             $this->registerUser($game, $identityId, $params);
         }
     }

@@ -2,8 +2,8 @@
 
 namespace App;
 
-use App\Traits\Activatable;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,11 +16,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property GameType $game_type
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ *
+ * @method static Builder<static> active()
+ * @method static Builder<static> inactive()
  */
 class Game extends Model
 {
-    use Activatable;
-
     const GAME_NAME_APEX_LEGENDS = 'apex';
 
     const GAME_NAME_LEAGUE_OF_LEGENDS = 'lol';
@@ -40,11 +41,21 @@ class Game extends Model
     }
 
     /**
-     * @return BelongsToMany<User>
+     * @param  Builder<Game>  $query
+     * @return Builder<Game>
      */
-    public function users(): BelongsToMany
+    public function scopeActive(Builder $query): Builder
     {
-        return $this->belongsToMany(User::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
+        return $query->has('assignments');
+    }
+
+    /**
+     * @param  Builder<Game>  $query
+     * @return Builder<Game>
+     */
+    public function scopeInactive(Builder $query): Builder
+    {
+        return $query->doesntHave('assignments');
     }
 
     /**
@@ -53,5 +64,13 @@ class Game extends Model
     public function types(): BelongsToMany
     {
         return $this->belongsToMany(Type::class)->using(GameType::class)->as('game_type')->withPivot('label')->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<User>
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
     }
 }
