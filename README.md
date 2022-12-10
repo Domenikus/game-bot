@@ -156,8 +156,8 @@ AUTO_UPDATE_INTERVAL=1800
 #Comma seperared list of teamsepak identity id's which should be able to use !admin commands
 ADMINS=
 
-#Specify how the application will log messages like erros. Default will be stack. 
-LOG_CHANNEL=stack
+#Specify how the application will log messages like erros. Default will be daily. 
+LOG_CHANNEL=daily
 
 # Default is 'info' if you want to debug the application may you want to change this to 'debug' 
 LOG_LEVEL=info
