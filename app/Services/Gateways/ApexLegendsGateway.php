@@ -4,10 +4,12 @@ namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
+use App\Stores\ApexRateLimiterStore;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Spatie\GuzzleRateLimiterMiddleware\RateLimiterMiddleware;
 
 class ApexLegendsGateway implements GameGateway
 {
@@ -23,9 +25,12 @@ class ApexLegendsGateway implements GameGateway
 
     protected string $apiKey;
 
-    public function __construct(string $apiKey)
+    protected int $rateLimit;
+
+    public function __construct(string $apiKey, int $rateLimit)
     {
-        $this->setApiKey($apiKey);
+        $this->setApiKey($apiKey)
+            ->setRateLimit($rateLimit);
     }
 
     public function getApiKey(): string
@@ -33,9 +38,23 @@ class ApexLegendsGateway implements GameGateway
         return $this->apiKey;
     }
 
-    public function setApiKey(string $apiKey): void
+    public function setApiKey(string $apiKey): ApexLegendsGateway
     {
         $this->apiKey = $apiKey;
+
+        return $this;
+    }
+
+    public function getRateLimit(): int
+    {
+        return $this->rateLimit;
+    }
+
+    public function setRateLimit(int $rateLimit): ApexLegendsGateway
+    {
+        $this->rateLimit = $rateLimit;
+
+        return $this;
     }
 
     public function grabCharacterImage(string $characterName): ?string
@@ -58,6 +77,8 @@ class ApexLegendsGateway implements GameGateway
         $stats = null;
 
         $response = Http::withHeaders(['TRN-Api-Key' => $this->getApiKey()])
+            ->withMiddleware(RateLimiterMiddleware::perMinute($this->rateLimit, new ApexRateLimiterStore()))
+            ->retry(3, 1000)
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/'.$gameUser->options['platform'].'/'.$gameUser->options['name']);
 
         if ($response->successful()) {

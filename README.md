@@ -141,11 +141,20 @@ DB_PORT=3306
 # Apex Legends API key
 APEX_API_KEY=
 
+# Allowed requests per minute for Apex Legends API, default is 30. Adjust it as needed for a production API key
+APEX_RATE_LIMIT=30
+
 # League of Legends API key
 LOL_API_KEY=
 
+# Allowed requests per second for League of Legends API, default is 1. Default value will fit for personal API key, for production you can enter 5
+LOL_RATE_LIMIT=1
+
 # Teamfight Tactics API key
 TFT_API_KEY=
+
+# Allowed requests per second for Teamfight Tactics API, default is 1. Default value will fit for personal API key, for production you can enter 5
+TFT_RATE_LIMIT=1
 
 # Specifies the region in which you are playing.
 LOL_REGION=euw1
@@ -156,8 +165,8 @@ AUTO_UPDATE_INTERVAL=1800
 #Comma seperared list of teamsepak identity id's which should be able to use !admin commands
 ADMINS=
 
-#Specify how the application will log messages like erros. Default will be stack. 
-LOG_CHANNEL=stack
+#Specify how the application will log messages like erros. Default will be daily. 
+LOG_CHANNEL=daily
 
 # Default is 'info' if you want to debug the application may you want to change this to 'debug' 
 LOG_LEVEL=info

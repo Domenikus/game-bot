@@ -119,9 +119,6 @@ class GameService implements GameServiceInterface
             $assignment->type()->associate($type);
             $assignment->game()->associate($this->game);
             $assignment->save();
-
-            $this->game->active = true;
-            $this->game->save();
         }
 
         $progressBar?->finish();

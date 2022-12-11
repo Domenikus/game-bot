@@ -28,7 +28,7 @@ class Setup extends Command
         }
 
         $this->gatewayRegistry = $gatewayRegistry;
-        $availableGames = Game::withInactive()->with('types')->get();
+        $availableGames = Game::with('types')->get();
 
         /** @var string $selectedGame */
         $selectedGame = $this->choice(
