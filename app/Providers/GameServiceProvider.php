@@ -16,7 +16,7 @@ class GameServiceProvider extends ServiceProvider
         $apexApiKey = config('apex-legends.apiKey');
         $apexRateLimit = config('apex-legends.rate_limit');
 
-        if (is_string($apexApiKey) || is_numeric($apexRateLimit)) {
+        if (is_string($apexApiKey) && is_numeric($apexRateLimit)) {
             $registry->register(Game::GAME_NAME_APEX_LEGENDS, new ApexLegendsGateway($apexApiKey, (int) $apexRateLimit));
         }
 
