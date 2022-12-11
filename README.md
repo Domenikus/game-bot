@@ -141,11 +141,20 @@ DB_PORT=3306
 # Apex Legends API key
 APEX_API_KEY=
 
+# Allowed requests per minute for Apex Legends API, default is 30. Adjust it as needed for a production API key
+APEX_RATE_LIMIT=30
+
 # League of Legends API key
 LOL_API_KEY=
 
+# Allowed requests per second for League of Legends API, default is 1. Default value will fit for personal API key, for production you can enter 5
+LOL_RATE_LIMIT=1
+
 # Teamfight Tactics API key
 TFT_API_KEY=
+
+# Allowed requests per second for Teamfight Tactics API, default is 1. Default value will fit for personal API key, for production you can enter 5
+TFT_RATE_LIMIT=1
 
 # Specifies the region in which you are playing.
 LOL_REGION=euw1

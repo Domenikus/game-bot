@@ -4,10 +4,12 @@ namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
+use App\Stores\TftRateLimiterStore;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Spatie\GuzzleRateLimiterMiddleware\RateLimiterMiddleware;
 
 class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGateway
 {
@@ -28,6 +30,8 @@ class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGate
         $stats = null;
         $url = $this->getPlattformBaseUrl().'/tft/league/v1/entries/by-summoner/'.$gameUser->options['id'];
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->withMiddleware(RateLimiterMiddleware::perSecond($this->rateLimit, new TftRateLimiterStore()))
+            ->retry(3, 1000)
             ->get($url);
 
         if ($leagueResponse->successful()) {
@@ -51,7 +55,8 @@ class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGate
 
         $url = $this->getPlattformBaseUrl().'/tft/summoner/v1/summoners/by-name/'.$params[2];
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->retry(10, 10000)
+            ->withMiddleware(RateLimiterMiddleware::perSecond($this->rateLimit, new TftRateLimiterStore()))
+            ->retry(3, 1000)
             ->get($url);
 
         $summoner = null;

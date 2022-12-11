@@ -4,6 +4,7 @@ namespace App\Services\Gateways;
 
 use App\Assignment;
 use App\GameUser;
+use App\Stores\LolRateLimiterStore;
 use App\Type;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Spatie\GuzzleRateLimiterMiddleware\RateLimiterMiddleware;
 use ZanySoft\Zip\Facades\Zip;
 
 class LeagueOfLegendsGateway implements GameGateway
@@ -41,21 +43,24 @@ class LeagueOfLegendsGateway implements GameGateway
 
     protected string $rankImageFolderPath = '';
 
+    protected int $rateLimit;
+
     protected string $regionBaseUrl;
 
-    public function __construct(string $apiKey, string $plattformBaseUrl, string $regionBaseUrl, string $realmUrl)
+    public function __construct(string $apiKey, string $plattformBaseUrl, string $regionBaseUrl, string $realmUrl, int $rateLimit)
     {
-        $this->setApiKey($apiKey);
-        $this->setPlattformBaseUrl($plattformBaseUrl);
-        $this->setRegionBaseUrl($regionBaseUrl);
+        $this->setApiKey($apiKey)
+            ->setPlattformBaseUrl($plattformBaseUrl)
+            ->setRegionBaseUrl($regionBaseUrl)
+            ->setRateLimit($rateLimit);
 
         $realmResponse = Http::get($realmUrl);
         if ($realmResponse->successful()) {
             $realm = $realmResponse->json();
             if (is_array($realm)) {
-                $this->setLanguageCode($realm['l']);
-                $this->setChampionVersion($realm['n']['champion']);
-                $this->setDataDragonBaseUrl($realm['cdn']);
+                $this->setLanguageCode($realm['l'])
+                    ->setChampionVersion($realm['n']['champion'])
+                    ->setDataDragonBaseUrl($realm['cdn']);
             }
         } else {
             throw new InvalidArgumentException('Could not get realm file');
@@ -73,9 +78,11 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this->apiKey;
     }
 
-    public function setApiKey(string $apiKey): void
+    public function setApiKey(string $apiKey): LeagueOfLegendsGateway
     {
         $this->apiKey = $apiKey;
+
+        return $this;
     }
 
     public function getChampionVersion(): string
@@ -83,9 +90,11 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this->championVersion;
     }
 
-    public function setChampionVersion(string $championVersion): void
+    public function setChampionVersion(string $championVersion): LeagueOfLegendsGateway
     {
         $this->championVersion = $championVersion;
+
+        return $this;
     }
 
     public function getDataDragonBaseUrl(): string
@@ -93,9 +102,11 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this->dataDragonBaseUrl;
     }
 
-    public function setDataDragonBaseUrl(string $dataDragonBaseUrl): void
+    public function setDataDragonBaseUrl(string $dataDragonBaseUrl): LeagueOfLegendsGateway
     {
         $this->dataDragonBaseUrl = $dataDragonBaseUrl;
+
+        return $this;
     }
 
     public function getLanguageCode(): string
@@ -103,9 +114,11 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this->languageCode;
     }
 
-    public function setLanguageCode(string $languageCode): void
+    public function setLanguageCode(string $languageCode): LeagueOfLegendsGateway
     {
         $this->languageCode = $languageCode;
+
+        return $this;
     }
 
     public function getPlattformBaseUrl(): string
@@ -113,9 +126,11 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this->plattformBaseUrl;
     }
 
-    public function setPlattformBaseUrl(string $plattformBaseUrl): void
+    public function setPlattformBaseUrl(string $plattformBaseUrl): LeagueOfLegendsGateway
     {
         $this->plattformBaseUrl = $plattformBaseUrl;
+
+        return $this;
     }
 
     public function getPositionImageFolderPath(): string
@@ -123,9 +138,11 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this->positionImageFolderPath;
     }
 
-    public function setPositionImageFolderPath(string $positionImageFolderPath): void
+    public function setPositionImageFolderPath(string $positionImageFolderPath): LeagueOfLegendsGateway
     {
         $this->positionImageFolderPath = $positionImageFolderPath;
+
+        return $this;
     }
 
     public function getRankImageFolderPath(): string
@@ -133,9 +150,23 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this->rankImageFolderPath;
     }
 
-    public function setRankImageFolderPath(string $rankImageFolderPath): void
+    public function setRankImageFolderPath(string $rankImageFolderPath): LeagueOfLegendsGateway
     {
         $this->rankImageFolderPath = $rankImageFolderPath;
+
+        return $this;
+    }
+
+    public function getRateLimit(): int
+    {
+        return $this->rateLimit;
+    }
+
+    public function setRateLimit(int $rateLimit): LeagueOfLegendsGateway
+    {
+        $this->rateLimit = $rateLimit;
+
+        return $this;
     }
 
     public function getRegionBaseUrl(): string
@@ -143,9 +174,11 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this->regionBaseUrl;
     }
 
-    public function setRegionBaseUrl(string $regionBaseUrl): void
+    public function setRegionBaseUrl(string $regionBaseUrl): LeagueOfLegendsGateway
     {
         $this->regionBaseUrl = $regionBaseUrl;
+
+        return $this;
     }
 
     public function grabCharacterImage(string $characterName): ?string
@@ -210,7 +243,8 @@ class LeagueOfLegendsGateway implements GameGateway
 
         $url = $this->getPlattformBaseUrl().'/lol/summoner/v4/summoners/by-name/'.$params[2];
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->retry(10, 10000)
+            ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
+            ->retry(3, 1000)
             ->get($url);
 
         $identity = null;
@@ -380,7 +414,8 @@ class LeagueOfLegendsGateway implements GameGateway
         $leagues = [];
         $url = $this->getPlattformBaseUrl().'/lol/league/v4/entries/by-summoner/'.$gameUser->options['id'];
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->retry(10, 10000)
+            ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
+            ->retry(3, 1000)
             ->get($url);
 
         if ($leagueResponse->successful()) {
@@ -400,7 +435,8 @@ class LeagueOfLegendsGateway implements GameGateway
     {
         $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/by-puuid/'.$gameUser->options['puuid'].'/ids';
         $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->retry(10, 10000)
+            ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
+            ->retry(3, 1000)
             ->get($url,
                 [
                     'start' => $offset,
@@ -424,12 +460,13 @@ class LeagueOfLegendsGateway implements GameGateway
         foreach ($matchIds as $matchId) {
             $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/'.$matchId;
             $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-                ->retry(10, 10000)
+                ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore()))
+                ->retry(3, 1000)
                 ->get($url);
             if ($matchResponse->successful()) {
                 $matches[] = $matchResponse->json();
             } else {
-                Log::warning('Could not get matches from Riot API for League of Legends',
+                Log::warning('Could not get match from Riot API for League of Legends',
                     ['apiKey' => $this->getApiKey(), 'gameUser' => $gameUser, 'status' => $matchResponse->status(), 'url' => $url]);
             }
         }

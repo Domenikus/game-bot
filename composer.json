@@ -26,8 +26,8 @@
     "ext-curl": "*",
     "ext-json": "*",
     "ext-pdo": "*",
-    "ext-zip": "*",
     "ext-posix": "*",
+    "ext-zip": "*",
     "doctrine/dbal": "^3.5",
     "guzzlehttp/guzzle": "^7.4",
     "illuminate/database": "^9.0",
@@ -38,6 +38,7 @@
     "laravel-zero/framework": "^9.0",
     "nunomaduro/laravel-console-menu": "^3.3",
     "planetteamspeak/ts3-php-framework": "dev-master",
+    "spatie/guzzle-rate-limiter-middleware": "^2.0",
     "zanysoft/laravel-zip": "^2.0"
   },
   "require-dev": {
