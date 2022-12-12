@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Assignment;
 use App\Game;
 use App\Services\Gateways\GameGateway;
-use App\Services\Gateways\GameGatewayRegistry;
+use App\Services\Gateways\GameGatewayFactoryInterface;
 use App\Services\Gateways\TeamspeakGateway;
 use App\Type;
 use Illuminate\Support\Facades\App;
@@ -20,8 +20,8 @@ class GameService implements GameServiceInterface
     public function __construct(Game $game)
     {
         $this->game = $game;
-        $gatewayRegistry = App::make(GameGatewayRegistry::class);
-        $this->gameGateway = $gatewayRegistry->get($game->name);
+        $gameGatewayFactory = App::make(GameGatewayFactoryInterface::class);
+        $this->gameGateway = $gameGatewayFactory->create($game->name);
     }
 
     public function grabImage(Type $type, string $value): ?string
