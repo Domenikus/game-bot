@@ -138,6 +138,11 @@ class UserService implements UserServiceInterface
 
     protected function registerUser(Game $game, string $identityId, array $params): void
     {
+        $client = TeamspeakGateway::getClient($identityId);
+        if ($client) {
+            TeamspeakGateway::sendMessageToClient($client, 'Registration in progress, please wait...');
+        }
+
         $gameGatewayFactory = App::make(GameGatewayFactoryInterface::class);
         $gateway = $gameGatewayFactory->create($game->name);
         $options = $gateway->grabPlayerIdentity($params);
@@ -159,7 +164,7 @@ class UserService implements UserServiceInterface
         }
 
         if ($user->isBlocked()) {
-            if ($client = TeamspeakGateway::getClient($identityId)) {
+            if ($client) {
                 TeamspeakGateway::sendMessageToClient($client, 'Registration failed, you are blocked by an admin.');
                 Log::info('Blocked user tried to register', ['user' => $user->identity_id]);
             }
