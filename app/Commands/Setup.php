@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Assignment;
 use App\Game;
 use App\Services\GameServiceInterface;
-use App\Services\Gateways\GameGatewayRegistry;
 use App\Services\Gateways\TeamspeakGateway;
 use App\Type;
 use LaravelZero\Framework\Commands\Command;
@@ -14,11 +13,9 @@ class Setup extends Command
 {
     protected $description = 'Setup games';
 
-    protected GameGatewayRegistry $gatewayRegistry;
-
     protected $signature = 'setup';
 
-    public function handle(GameGatewayRegistry $gatewayRegistry): void
+    public function handle(): void
     {
         $this->newLine();
         $this->info('Setup will create Ts3 server groups for all types of stats the bot can synchronize for the given game. Server groups will then assigned to values from the game api\'s');
@@ -27,7 +24,6 @@ class Setup extends Command
             return;
         }
 
-        $this->gatewayRegistry = $gatewayRegistry;
         $availableGames = Game::with('types')->get();
 
         /** @var string $selectedGame */

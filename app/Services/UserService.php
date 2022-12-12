@@ -6,7 +6,7 @@ use App\Assignment;
 use App\Game;
 use App\GameUser;
 use App\Services\Gateways\GameGateway;
-use App\Services\Gateways\GameGatewayRegistry;
+use App\Services\Gateways\GameGatewayFactoryInterface;
 use App\Services\Gateways\TeamspeakGateway;
 use App\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -124,8 +124,8 @@ class UserService implements UserServiceInterface
 
             foreach ($user->games as $game) {
                 $assignments = $game->assignments()->with(['type'])->get();
-                $registry = App::make(GameGatewayRegistry::class);
-                $gateway = $registry->get($game->name);
+                $gameGatewayFactory = App::make(GameGatewayFactoryInterface::class);
+                $gateway = $gameGatewayFactory->create($game->name);
                 $this->updateServerGroups($game->game_user, $assignments, $gateway);
             }
         }
@@ -138,8 +138,8 @@ class UserService implements UserServiceInterface
 
     protected function registerUser(Game $game, string $identityId, array $params): void
     {
-        $registry = App::make(GameGatewayRegistry::class);
-        $gateway = $registry->get($game->name);
+        $gameGatewayFactory = App::make(GameGatewayFactoryInterface::class);
+        $gateway = $gameGatewayFactory->create($game->name);
         $options = $gateway->grabPlayerIdentity($params);
         if (! $options) {
             if ($client = TeamspeakGateway::getClient($identityId)) {
@@ -184,8 +184,8 @@ class UserService implements UserServiceInterface
 
         $user->refresh();
         $assignments = $game->assignments()->with(['type'])->get();
-        $registry = App::make(GameGatewayRegistry::class);
-        $gateway = $registry->get($game->name);
+        $gameGatewayFactory = App::make(GameGatewayFactoryInterface::class);
+        $gateway = $gameGatewayFactory->create($game->name);
         $this->updateServerGroups($gameUser, $assignments, $gateway);
     }
 

@@ -55,7 +55,7 @@ return [
 
     'providers' => [
         App\Providers\AppServiceProvider::class,
-        App\Providers\GameServiceProvider::class,
+        App\Providers\GameGatewayServiceProvider::class,
         App\Providers\TeamspeakServiceProvider::class,
         App\Providers\TeamspeakListenerServiceProvider::class,
         ZanySoft\Zip\ZipServiceProvider::class,

@@ -3,7 +3,7 @@
 namespace App\Commands;
 
 use App\Facades\TeamSpeak3;
-use App\Services\Listeners\TeamspeakListenerRegistry;
+use App\Providers\TeamspeakListenerServiceProvider;
 use LaravelZero\Framework\Commands\Command;
 
 class Run extends Command
@@ -20,16 +20,16 @@ class Run extends Command
      */
     protected $description = 'Run the bot';
 
-    public function handle(TeamspeakListenerRegistry $listenerRegistry): void
+    public function handle(): void
     {
         $this->task('Connect to teamspeak server', function () {
             $this->newLine();
         });
 
-        $this->task('Initialize event listeners', function () use (&$listenerRegistry) {
+        $this->task('Initialize event listeners', function () {
             $this->newLine();
 
-            foreach ($listenerRegistry->getAll() as $listener) {
+            foreach ($this->app->tagged(TeamspeakListenerServiceProvider::TAG_NAME) as $listener) {
                 $listener->init();
             }
         });
