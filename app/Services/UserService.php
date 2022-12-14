@@ -30,8 +30,8 @@ class UserService implements UserServiceInterface
                         if ($managedUser->save()) {
                             if ($client = TeamspeakGateway::getClient($user->identity_id)) {
                                 TeamspeakGateway::sendMessageToClient($client,
-                                    'UserService '.$user->identity_id.' successfully blocked');
-                                Log::info('UserService successfully blocked', ['user' => $user->identity_id]);
+                                    'User '.$user->identity_id.' successfully blocked');
+                                Log::info('User successfully blocked', ['user' => $user->identity_id]);
                             }
                         }
                     }
@@ -42,8 +42,8 @@ class UserService implements UserServiceInterface
                         if ($managedUser->save()) {
                             if ($client = TeamspeakGateway::getClient($user->identity_id)) {
                                 TeamspeakGateway::sendMessageToClient($client,
-                                    'UserService '.$user->identity_id.' successfully unblocked');
-                                Log::info('UserService successfully unblocked', ['user' => $user->identity_id]);
+                                    'User '.$user->identity_id.' successfully unblocked');
+                                Log::info('User successfully unblocked', ['user' => $user->identity_id]);
                             }
                         }
                     }
@@ -100,7 +100,7 @@ class UserService implements UserServiceInterface
 
                         $this->removeServerGroups($game->game_user, $assignments);
                         $user->games()->detach($game->getKey());
-                        Log::info('UserService successfully unregistered',
+                        Log::info('User successfully unregistered',
                             ['user' => $user->identity_id, 'game' => $game->name]);
                     }
                 }
@@ -109,7 +109,7 @@ class UserService implements UserServiceInterface
                     $assignments = $game->assignments()->get();
 
                     $this->removeServerGroups($game->game_user, $assignments);
-                    Log::info('UserService successfully unregistered', ['user' => $user->identity_id, 'game' => $game->name]);
+                    Log::info('User successfully unregistered', ['user' => $user->identity_id, 'game' => $game->name]);
                 }
 
                 $user->delete();
@@ -172,13 +172,8 @@ class UserService implements UserServiceInterface
             return;
         }
 
-        if (GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first()) {
-            $user->games()->updateExistingPivot($game->getKey(), ['options' => $options]);
-        } else {
-            $user->games()->attach($game->getKey(), ['options' => $options]);
-        }
-
-        Log::info('UserService successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
+        $user->games()->syncWithPivotValues([$game->getKey()], ['options' => $options], false);
+        Log::info('User successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
 
         $user = $user->refresh();
         $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
