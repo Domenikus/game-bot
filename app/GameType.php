@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * @property int $id
  * @property int $game_id
  * @property int $type_id
  * @property string $label
@@ -15,5 +14,4 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class GameType extends Pivot
 {
-    public $incrementing = true;
 }
