@@ -24,16 +24,11 @@ jobs:
       - name: Install dependencies
         uses: php-actions/composer@v6
         with:
-          version: 2
           php_version: 8.1
           args: --ignore-platform-reqs
 
       - name: PHPStan Static Analysis
-        uses: php-actions/phpstan@v3
-        with:
-          php_version: 8.1
-          configuration: phpstan.neon
-          memory_limit: 256M
+        run: composer analyse
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
