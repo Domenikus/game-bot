@@ -17,6 +17,24 @@ interface UserServiceInterface
     public function handleHelp(string $identityId): void;
 
     /**
+     * Hide type
+     *
+     * @param  User  $user
+     * @param  array  $params
+     * @return void
+     */
+    public function handleHide(User $user, array $params = []): void;
+
+    /**
+     * Handels invalid commands
+     *
+     * @param  string  $identityId
+     * @param  array  $params
+     * @return void
+     */
+    public function handleInvalid(string $identityId, array $params = []): void;
+
+    /**
      * Handels !register command in teamspeak chat
      *
      * @param  string  $identityId
@@ -24,6 +42,15 @@ interface UserServiceInterface
      * @return void
      */
     public function handleRegister(string $identityId, array $params = []): void;
+
+    /**
+     * Show type
+     *
+     * @param  User  $user
+     * @param  array  $params
+     * @return void
+     */
+    public function handleShow(User $user, array $params = []): void;
 
     /**
      * Handels !unregister command in teamspeak chat
@@ -48,13 +75,4 @@ interface UserServiceInterface
      * @return void
      */
     public function handleUpdateAll(): void;
-
-    /**
-     * Handels invalid commands
-     *
-     * @param  string  $identityId
-     * @param  array  $params
-     * @return void
-     */
-    public function handleInvalid(string $identityId, array $params = []): void;
 }

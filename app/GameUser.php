@@ -3,6 +3,7 @@
 namespace App;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
@@ -20,4 +21,12 @@ class GameUser extends Pivot
     protected $casts = [
         'options' => 'array',
     ];
+
+    /**
+     * @return BelongsToMany<Type>
+     */
+    public function types(): BelongsToMany
+    {
+        return $this->belongsToMany(Type::class, foreignPivotKey: 'game_user_id')->using(GameUserType::class)->as('game_user_type')->withTimestamps();
+    }
 }

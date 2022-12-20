@@ -42,4 +42,12 @@ class Type extends Model
     {
         return $this->belongsToMany(Game::class)->using(GameType::class)->as('game_type')->withPivot('label')->withTimestamps();
     }
+
+    /**
+     * @return BelongsToMany<GameUser>
+     */
+    public function gameUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(GameUser::class)->using(GameUserType::class)->as('game_type_type')->withTimestamps();
+    }
 }
