@@ -20,7 +20,7 @@ jobs:
         with:
           version: 2
           php_version: "8.1"
-          php_extensions: ext-zip
+          args: --ignore-platform-reqs
 
       - name: PHPStan Static Analysis
         uses: php-actions/phpstan@v3
