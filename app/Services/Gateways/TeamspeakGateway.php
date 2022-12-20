@@ -3,6 +3,7 @@
 namespace App\Services\Gateways;
 
 use App\Facades\TeamSpeak3;
+use App\User;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
@@ -302,6 +303,18 @@ class TeamspeakGateway
         }
 
         return false;
+    }
+
+    public static function sendMessageToUser(User $user, string $message): bool
+    {
+        $result = false;
+
+        $client = self::getClient($user->identity_id);
+        if ($client) {
+            $result = self::sendMessageToClient($client, $message);
+        }
+
+        return $result;
     }
 
     public static function uploadIcon(string $data): ?int

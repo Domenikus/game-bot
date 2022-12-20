@@ -60,6 +60,16 @@ class ChatListener implements TeamspeakListener
                         case 'help':
                             $this->userService->handleHelp($identityId);
                             break;
+                        case 'show':
+                            if ($user) {
+                                $this->userService->handleShow($user, $params);
+                            }
+                            break;
+                        case 'hide':
+                            if ($user) {
+                                $this->userService->handleHide($user, $params);
+                            }
+                            break;
                         default:
                             $this->userService->handleInvalid($identityId, $params);
                     }
