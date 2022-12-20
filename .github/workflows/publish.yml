@@ -15,11 +15,17 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+
       - name: Install dependencies
         uses: php-actions/composer@v6
         with:
           version: 2
-          php_version: "8.1"
+          php_version: 8.1
           args: --ignore-platform-reqs
 
       - name: PHPStan Static Analysis
