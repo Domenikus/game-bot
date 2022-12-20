@@ -25,10 +25,17 @@ jobs:
         uses: php-actions/composer@v6
         with:
           php_version: 8.1
+          php_extensions: mysqli pdo pdo_mysql posix zip
           args: --ignore-platform-reqs
 
-      - name: PHPStan Static Analysis
-        run: composer analyse
+      - uses: php-actions/phpstan@v3
+        php_extensions: mysqli pdo pdo_mysql posix zip
+        with:
+          configuration: phpstan.neon
+          memory_limit: 1G
+
+      - name: Laravel Pint code style analysis
+        run: composer sniff
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
