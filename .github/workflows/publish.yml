@@ -9,14 +9,8 @@ on:
 
 jobs:
   push_to_registry:
-    strategy:
-      matrix:
-        os: [ ubuntu-latest ]
-        php: [ '8.1' ]
-        dependency-version: [ prefer-stable ]
-
     name: Push Docker image to Docker Hub
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -24,12 +18,12 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: '8.1'
           tools: composer
           coverage: none
 
       - name: Install Dependencies
-        run: composer update --${{ matrix.dependency-version }} --no-interaction --prefer-dist --no-progress --ansi
+        run: composer update --prefer-stable --no-interaction --prefer-dist --no-progress --ansi
 
       - name: Run PHPStan
         run: composer analyse
