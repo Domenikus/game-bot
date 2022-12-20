@@ -20,8 +20,6 @@ jobs:
         with:
           version: 2
           php_version: "8.1"
-          interaction: "yes"
-          quiet: "yes"
 
       - name: PHPStan Static Analysis
         uses: php-actions/phpstan@v3
