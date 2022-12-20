@@ -8,6 +8,7 @@ use App\Stores\LolRateLimiterStore;
 use App\Type;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -55,6 +56,7 @@ class LeagueOfLegendsGateway implements GameGateway
             ->setRateLimit($rateLimit);
 
         $realmResponse = Http::get($realmUrl);
+        /** @var Response $realmResponse */
         if ($realmResponse->successful()) {
             $realm = $realmResponse->json();
             if (is_array($realm)) {
@@ -188,6 +190,7 @@ class LeagueOfLegendsGateway implements GameGateway
         $url = $this->getDataDragonBaseUrl().'/'.$this->getChampionVersion().'/img/champion/'.$characterName.'.png';
         $characterImageResponse = Http::get($url);
 
+        /** @var Response $characterImageResponse */
         if ($characterImageResponse->successful()) {
             $characterImage = $characterImageResponse->body();
         } else {
@@ -203,6 +206,7 @@ class LeagueOfLegendsGateway implements GameGateway
 
         $url = $this->getDataDragonBaseUrl().'/'.$this->getChampionVersion().'/data/'.$this->getLanguageCode().'/champion.json';
         $championsResponse = Http::get($url);
+        /** @var Response $championsResponse */
         if ($championsResponse->successful()) {
             $characters = $championsResponse->json();
             if (is_array($characters)) {
@@ -244,10 +248,11 @@ class LeagueOfLegendsGateway implements GameGateway
         $url = $this->getPlattformBaseUrl().'/lol/summoner/v4/summoners/by-name/'.$params[2];
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
-            ->retry(3, 1000)
+            ->retry(3, 1000, throw: false)
             ->get($url);
 
         $identity = null;
+        /** @var Response $summonerResponse */
         if ($summonerResponse->successful()) {
             $result = $summonerResponse->json();
             if (is_array($result)) {
@@ -380,6 +385,7 @@ class LeagueOfLegendsGateway implements GameGateway
         $result = null;
 
         $rankImagesResponse = Http::get($url);
+        /** @var Response $rankImagesResponse */
         if ($rankImagesResponse->successful()) {
             $savePath = getcwd().'/storage/'.$fileName.'.zip';
             if (File::put($savePath, $rankImagesResponse->body())) {
@@ -415,9 +421,10 @@ class LeagueOfLegendsGateway implements GameGateway
         $url = $this->getPlattformBaseUrl().'/lol/league/v4/entries/by-summoner/'.$gameUser->options['id'];
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
-            ->retry(3, 1000)
+            ->retry(3, 1000, throw: false)
             ->get($url);
 
+        /** @var Response $leagueResponse */
         if ($leagueResponse->successful()) {
             $result = $leagueResponse->json();
             if (is_array($result)) {
@@ -436,7 +443,7 @@ class LeagueOfLegendsGateway implements GameGateway
         $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/by-puuid/'.$gameUser->options['puuid'].'/ids';
         $matchIdsResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
-            ->retry(3, 1000)
+            ->retry(3, 1000, throw: false)
             ->get($url,
                 [
                     'start' => $offset,
@@ -446,6 +453,7 @@ class LeagueOfLegendsGateway implements GameGateway
             );
 
         $matchIds = [];
+        /** @var Response $matchIdsResponse */
         if ($matchIdsResponse->successful()) {
             $result = $matchIdsResponse->json();
             if (is_array($result)) {
@@ -461,8 +469,9 @@ class LeagueOfLegendsGateway implements GameGateway
             $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/'.$matchId;
             $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
                 ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore()))
-                ->retry(3, 1000)
+                ->retry(3, 1000, throw: false)
                 ->get($url);
+            /** @var Response $matchResponse */
             if ($matchResponse->successful()) {
                 $matches[] = $matchResponse->json();
             } else {
