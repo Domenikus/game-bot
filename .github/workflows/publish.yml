@@ -29,8 +29,9 @@ jobs:
           args: --ignore-platform-reqs
 
       - uses: php-actions/phpstan@v3
-        php_extensions: mysqli pdo pdo_mysql posix zip
         with:
+          php_version: 8.1
+          php_extensions: mysqli pdo pdo_mysql posix zip
           configuration: phpstan.neon
           memory_limit: 1G
 
