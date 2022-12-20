@@ -11,9 +11,9 @@ jobs:
   push_to_registry:
     strategy:
       matrix:
-        os: ubuntu-latest
-        php: '8.1'
-        dependency-version: prefer-stable
+        os: [ ubuntu-latest ]
+        php: [ '8.1' ]
+        dependency-version: [ prefer-stable ]
 
     name: Push Docker image to Docker Hub
     runs-on: ${{ matrix.os }}
