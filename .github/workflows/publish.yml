@@ -18,9 +18,10 @@ jobs:
       - name: Install dependencies
         uses: php-actions/composer@v6
         with:
-          php_version: 8.1
-          interaction: yes
-          quiet: yes
+          version: 2
+          php_version: "8.1"
+          interaction: "yes"
+          quiet: "yes"
 
       - name: PHPStan Static Analysis
         uses: php-actions/phpstan@v3
