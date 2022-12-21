@@ -125,8 +125,6 @@ class UserService implements UserServiceInterface
         } else {
             TeamspeakGateway::sendMessageToUser($user, 'Combination of game and type is not valid');
         }
-
-        // Todo update server groups
     }
 
     public function handleUnregister(User $user, array $params = []): void
