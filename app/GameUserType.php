@@ -6,12 +6,11 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * @property int $game_id
+ * @property int $game_user_id
  * @property int $type_id
- * @property string $label
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class GameType extends Pivot
+class GameUserType extends Pivot
 {
 }

@@ -7,6 +7,7 @@ use App\GameUser;
 use App\Stores\ApexRateLimiterStore;
 use App\Type;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Spatie\GuzzleRateLimiterMiddleware\RateLimiterMiddleware;
@@ -78,9 +79,10 @@ class ApexLegendsGateway implements GameGateway
 
         $response = Http::withHeaders(['TRN-Api-Key' => $this->getApiKey()])
             ->withMiddleware(RateLimiterMiddleware::perMinute($this->rateLimit, new ApexRateLimiterStore()))
-            ->retry(3, 1000)
+            ->retry(3, 1000, throw: false)
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/'.$gameUser->options['platform'].'/'.$gameUser->options['name']);
 
+        /** @var Response $response */
         if ($response->successful()) {
             $decodedBody = json_decode($response->body(), true);
             if (is_array($decodedBody)) {

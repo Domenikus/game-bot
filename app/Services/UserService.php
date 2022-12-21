@@ -30,8 +30,8 @@ class UserService implements UserServiceInterface
                         if ($managedUser->save()) {
                             if ($client = TeamspeakGateway::getClient($user->identity_id)) {
                                 TeamspeakGateway::sendMessageToClient($client,
-                                    'UserService '.$user->identity_id.' successfully blocked');
-                                Log::info('UserService successfully blocked', ['user' => $user->identity_id]);
+                                    'User '.$user->identity_id.' successfully blocked');
+                                Log::info('User successfully blocked', ['user' => $user->identity_id]);
                             }
                         }
                     }
@@ -42,8 +42,8 @@ class UserService implements UserServiceInterface
                         if ($managedUser->save()) {
                             if ($client = TeamspeakGateway::getClient($user->identity_id)) {
                                 TeamspeakGateway::sendMessageToClient($client,
-                                    'UserService '.$user->identity_id.' successfully unblocked');
-                                Log::info('UserService successfully unblocked', ['user' => $user->identity_id]);
+                                    'User '.$user->identity_id.' successfully unblocked');
+                                Log::info('User successfully unblocked', ['user' => $user->identity_id]);
                             }
                         }
                     }
@@ -65,8 +65,28 @@ class UserService implements UserServiceInterface
     public function handleHelp(string $identityId): void
     {
         if ($client = TeamspeakGateway::getClient($identityId)) {
-            $view = view('help', ['commandPrefix' => config('teamspeak.chat_command_prefix')]);
+            $activeGames = Game::active()->with('types')->get();
+            $view = view('help', ['commandPrefix' => config('teamspeak.chat_command_prefix'), 'activeGames' => $activeGames]);
             $client->message($view);
+        }
+    }
+
+    public function handleHide(User $user, array $params = []): void
+    {
+        if (! isset($params[1], $params[2])) {
+            return;
+        }
+
+        $game = Game::with('types')->active()->where('name', $params[1])->first();
+        $type = $game?->types()->where('name', $params[2])->first();
+
+        if ($game && $type) {
+            /** @var GameUser $gameUser */
+            $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
+            $gameUser->types()->detach([$type->getKey()]);
+            TeamspeakGateway::sendMessageToUser($user, $type->game_type->label.' successfully hidden. Run [b]update[/b] command to see the changes');
+        } else {
+            TeamspeakGateway::sendMessageToUser($user, 'Combination of game and type is not valid');
         }
     }
 
@@ -88,6 +108,25 @@ class UserService implements UserServiceInterface
         }
     }
 
+    public function handleShow(User $user, array $params = []): void
+    {
+        if (! isset($params[1], $params[2])) {
+            return;
+        }
+
+        $game = Game::with('types')->active()->where('name', $params[1])->first();
+        $type = $game?->types()->where('name', $params[2])->first();
+
+        if ($game && $type) {
+            /** @var GameUser $gameUser */
+            $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
+            $gameUser->types()->syncWithoutDetaching([$type->getKey()]);
+            TeamspeakGateway::sendMessageToUser($user, $type->game_type->label.' successfully enabled. Run [b]update[/b] command to see the changes');
+        } else {
+            TeamspeakGateway::sendMessageToUser($user, 'Combination of game and type is not valid');
+        }
+    }
+
     public function handleUnregister(User $user, array $params = []): void
     {
         $user->loadMissing('games');
@@ -100,7 +139,7 @@ class UserService implements UserServiceInterface
 
                         $this->removeServerGroups($game->game_user, $assignments);
                         $user->games()->detach($game->getKey());
-                        Log::info('UserService successfully unregistered',
+                        Log::info('User successfully unregistered',
                             ['user' => $user->identity_id, 'game' => $game->name]);
                     }
                 }
@@ -109,7 +148,7 @@ class UserService implements UserServiceInterface
                     $assignments = $game->assignments()->get();
 
                     $this->removeServerGroups($game->game_user, $assignments);
-                    Log::info('UserService successfully unregistered', ['user' => $user->identity_id, 'game' => $game->name]);
+                    Log::info('User successfully unregistered', ['user' => $user->identity_id, 'game' => $game->name]);
                 }
 
                 $user->delete();
@@ -138,6 +177,11 @@ class UserService implements UserServiceInterface
 
     protected function registerUser(Game $game, string $identityId, array $params): void
     {
+        $client = TeamspeakGateway::getClient($identityId);
+        if ($client) {
+            TeamspeakGateway::sendMessageToClient($client, 'Registration in progress, please wait...');
+        }
+
         $gameGatewayFactory = App::make(GameGatewayFactoryInterface::class);
         $gateway = $gameGatewayFactory->create($game->name);
         $options = $gateway->grabPlayerIdentity($params);
@@ -159,7 +203,7 @@ class UserService implements UserServiceInterface
         }
 
         if ($user->isBlocked()) {
-            if ($client = TeamspeakGateway::getClient($identityId)) {
+            if ($client) {
                 TeamspeakGateway::sendMessageToClient($client, 'Registration failed, you are blocked by an admin.');
                 Log::info('Blocked user tried to register', ['user' => $user->identity_id]);
             }
@@ -167,20 +211,12 @@ class UserService implements UserServiceInterface
             return;
         }
 
-        if (GameUser::where([['user_identity_id', $user->getKey()], ['game_id', $game->getKey()]])->first()) {
-            $user->games()->updateExistingPivot($game->getKey(), ['options' => $options]);
-        } else {
-            $user->games()->attach($game->getKey(), ['options' => $options]);
-        }
+        $user->games()->syncWithPivotValues([$game->getKey()], ['options' => $options], false);
 
-        Log::info('UserService successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
-
-        $user = $user->refresh();
+        /** @var GameUser $gameUser */
         $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
-
-        if (! $gameUser instanceof GameUser) {
-            return;
-        }
+        $gameUser->types()->sync($game->types()->pluck('id'));
+        Log::info('User successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
 
         $user->refresh();
         $assignments = $game->assignments()->with(['type'])->get();
@@ -226,11 +262,15 @@ class UserService implements UserServiceInterface
     protected function updateServerGroups(GameUser $gameUser, Collection $assignments, GameGateway $interface): void
     {
         $stats = $interface->grabPlayerData($gameUser);
+        $gameUser->loadMissing('types');
         if (! $stats) {
             return;
         }
 
         $newTeamspeakServerGroups = $interface->mapStats($gameUser, $stats, $assignments);
+        /** @var array<int,string> $allowedTypes */
+        $allowedTypes = $gameUser->types->pluck('name')->toArray();
+        $typesToShow = array_intersect_key($newTeamspeakServerGroups, array_flip($allowedTypes));
 
         if ($client = TeamspeakGateway::getClient($gameUser->user_identity_id)) {
             $actualServerGroups = TeamspeakGateway::getServerGroupsAssignedToClient($client);
@@ -238,14 +278,14 @@ class UserService implements UserServiceInterface
 
             foreach ($actualServerGroups as $actualServerGroup) {
                 if (in_array($actualServerGroup, $supportedTeamspeakServerGroupIds)
-                    && ! in_array($actualServerGroup, $newTeamspeakServerGroups)) {
+                    && ! in_array($actualServerGroup, $typesToShow)) {
                     if (is_numeric($actualServerGroup)) {
                         TeamspeakGateway::removeServerGroupFromClient($client, (int) $actualServerGroup);
                     }
                 }
             }
 
-            foreach ($newTeamspeakServerGroups as $newGroup) {
+            foreach ($typesToShow as $newGroup) {
                 if (! in_array($newGroup, $actualServerGroups)) {
                     TeamspeakGateway::assignServerGroupToClient($client, $newGroup);
                 }

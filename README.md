@@ -17,6 +17,12 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
     - Arena rank
     - Most played legend
 
+## Main features
+
+- Keep track of in-game stats via teamspeak 3 sever groups through multiple games.
+- Use the auto setup to create teamspeak server groups for you automatically, so you can get stated even faster.
+- Use admin features like blocking to prevent user from abusing the bot.
+
 ## Setup
 
 ### Development
@@ -96,7 +102,7 @@ services:
       MYSQL_ROOT_PASSWORD: "super-secret-password"
     volumes:
       - ./data/mariadb/db:/var/lib/mysql
-      - ./data/mariadb/sql:/docker-entrypoint-initdb.d    
+      - ./data/mariadb/sql:/docker-entrypoint-initdb.d
 ```
 
 ### Example .env file
@@ -160,15 +166,15 @@ TFT_RATE_LIMIT=1
 LOL_REGION=euw1
 
 #Auto update period in seconds 1800 = 30m
-AUTO_UPDATE_INTERVAL=1800 
+AUTO_UPDATE_INTERVAL=1800
 
 #Comma seperared list of teamsepak identity id's which should be able to use !admin commands
 ADMINS=
 
-#Specify how the application will log messages like erros. Default will be daily. 
+#Specify how the application will log messages like erros. Default will be daily.
 LOG_CHANNEL=daily
 
-# Default is 'info' if you want to debug the application may you want to change this to 'debug' 
+# Default is 'info' if you want to debug the application may you want to change this to 'debug'
 LOG_LEVEL=info
 
 ```
@@ -255,5 +261,5 @@ For IDE integration refer [here](https://gilbitron.me/blog/running-laravel-pint-
 
 ## Contribute
 
-Feel free to extend the functionality or add additional games. Pull request are welcome.
+Feel free to extend the functionality or add additional games. Pull requests are welcome.
 
