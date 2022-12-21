@@ -17,6 +17,12 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
     - Arena rank
     - Most played legend
 
+## Main features
+
+- Keep track of in-game stats via teamspeak 3 sever groups through multiple games.
+- Use the auto setup to create teamspeak server groups for you automatically, so you can get stated even faster.
+- Use admin features like blocking to prevent user from abusing the bot.
+
 ## Setup
 
 ### Development
