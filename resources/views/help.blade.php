@@ -38,3 +38,6 @@
 
 {{$commandPrefix}}register|tft|Faker
 {{$commandPrefix}}unregister|tft
+
+{{$commandPrefix}}show|lol|rank_group
+{{$commandPrefix}}hide|lol|rank_solo
