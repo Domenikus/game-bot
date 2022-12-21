@@ -1,9 +1,6 @@
 name: Code Style & Static analysis
 
-on:
-  pull_request:
-    branches-ignore:
-      - development
+on: pull_request
 
 jobs:
   analyse:
