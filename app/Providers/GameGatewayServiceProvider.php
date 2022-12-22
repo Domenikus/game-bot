@@ -10,8 +10,9 @@ use Illuminate\Support\ServiceProvider;
 
 class GameGatewayServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    public function boot(): void
+    public function provides(): array
     {
+        return [ApexLegendsGateway::class, LeagueOfLegendsGateway::class, TeamfightTacticsGateway::class];
     }
 
     public function register(): void
@@ -37,10 +38,11 @@ class GameGatewayServiceProvider extends ServiceProvider implements DeferrablePr
         $lolApiKey = config('league-of-legends.apiKey');
         $regionRouting = config('static-data.lol.regionRouting.'.config('league-of-legends.region'));
         $lolRateLimit = config('league-of-legends.rate_limit');
+        $matchCount = config('league-of-legends.match_count');
 
-        if (is_string($lolApiKey) && is_array($regionRouting) && is_numeric($lolRateLimit)) {
-            $this->app->singleton(LeagueOfLegendsGateway::class, function () use ($lolRateLimit, $regionRouting, $lolApiKey) {
-                return new LeagueOfLegendsGateway($lolApiKey, $regionRouting['plattformBaseUrl'], $regionRouting['regionBaseUrl'], $regionRouting['realmUrl'], (int) $lolRateLimit);
+        if (is_string($lolApiKey) && is_array($regionRouting) && is_numeric($lolRateLimit) && is_numeric($matchCount)) {
+            $this->app->singleton(LeagueOfLegendsGateway::class, function () use ($matchCount, $lolRateLimit, $regionRouting, $lolApiKey) {
+                return new LeagueOfLegendsGateway($lolApiKey, $regionRouting['plattformBaseUrl'], $regionRouting['regionBaseUrl'], $regionRouting['realmUrl'], (int) $matchCount, (int) $lolRateLimit);
             });
         }
 
@@ -52,10 +54,5 @@ class GameGatewayServiceProvider extends ServiceProvider implements DeferrablePr
                 return new TeamfightTacticsGateway($tftApiKey, $regionRouting['plattformBaseUrl'], $regionRouting['regionBaseUrl'], $regionRouting['realmUrl'], (int) $tftRateLimit);
             });
         }
-    }
-
-    public function provides(): array
-    {
-        return [ApexLegendsGateway::class, LeagueOfLegendsGateway::class, TeamfightTacticsGateway::class];
     }
 }

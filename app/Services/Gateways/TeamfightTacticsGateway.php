@@ -16,6 +16,11 @@ class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGate
 {
     const QUEUE_TYPE_RANKED = 'RANKED_TFT';
 
+    public function __construct(string $apiKey, string $plattformBaseUrl, string $regionBaseUrl, string $realmUrl, int $rateLimit)
+    {
+        parent::__construct($apiKey, $plattformBaseUrl, $regionBaseUrl, $realmUrl, 0, $rateLimit);
+    }
+
     public function grabCharacterImage(string $characterName): ?string
     {
         return null;

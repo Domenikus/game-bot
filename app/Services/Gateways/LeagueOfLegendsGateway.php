@@ -21,8 +21,6 @@ class LeagueOfLegendsGateway implements GameGateway
 {
     const MATCH_TYPE_RANKED = 'ranked';
 
-    const NUMBER_OF_MATCHES = 20;
-
     const QUEUE_TYPE_NAME_RANKED_GROUP = 'RANKED_FLEX_SR';
 
     // Riot put tft double up into lol league endpoint. This is a workaround until they fix this issue
@@ -38,6 +36,8 @@ class LeagueOfLegendsGateway implements GameGateway
 
     protected string $languageCode;
 
+    protected int $matchCount;
+
     protected string $plattformBaseUrl;
 
     protected string $positionImageFolderPath = '';
@@ -48,11 +48,12 @@ class LeagueOfLegendsGateway implements GameGateway
 
     protected string $regionBaseUrl;
 
-    public function __construct(string $apiKey, string $plattformBaseUrl, string $regionBaseUrl, string $realmUrl, int $rateLimit)
+    public function __construct(string $apiKey, string $plattformBaseUrl, string $regionBaseUrl, string $realmUrl, int $matchCount, int $rateLimit)
     {
         $this->setApiKey($apiKey)
             ->setPlattformBaseUrl($plattformBaseUrl)
             ->setRegionBaseUrl($regionBaseUrl)
+            ->setMatchCount($matchCount)
             ->setRateLimit($rateLimit);
 
         $realmResponse = Http::get($realmUrl);
@@ -119,6 +120,25 @@ class LeagueOfLegendsGateway implements GameGateway
     public function setLanguageCode(string $languageCode): LeagueOfLegendsGateway
     {
         $this->languageCode = $languageCode;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMatchCount(): int
+    {
+        return $this->matchCount;
+    }
+
+    /**
+     * @param  int  $matchCount
+     * @return LeagueOfLegendsGateway
+     */
+    public function setMatchCount(int $matchCount): LeagueOfLegendsGateway
+    {
+        $this->matchCount = $matchCount;
 
         return $this;
     }
@@ -228,7 +248,7 @@ class LeagueOfLegendsGateway implements GameGateway
     public function grabPlayerData(GameUser $gameUser): ?array
     {
         $stats = null;
-        if ($matches = $this->grabMatches($gameUser, 0, self::NUMBER_OF_MATCHES, self::MATCH_TYPE_RANKED)) {
+        if ($matches = $this->grabMatches($gameUser, 0, $this->getMatchCount(), self::MATCH_TYPE_RANKED)) {
             $stats['matches'] = $matches;
         }
 
