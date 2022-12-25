@@ -71,6 +71,6 @@ class Game extends Model
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)->using(GameUser::class)->as('game_user')->withPivot('options')->withTimestamps();
+        return $this->belongsToMany(User::class)->using(GameUser::class)->as('game_user')->withPivot('options', 'refreshed_at')->withTimestamps();
     }
 }

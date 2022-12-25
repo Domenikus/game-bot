@@ -153,6 +153,9 @@ APEX_RATE_LIMIT=30
 # League of Legends API key
 LOL_API_KEY=
 
+# Number of matches which will be fetched from lol api to calculate for example 'recent most played champion'. Higher number will decrease performance. Default is 20
+LOL_MATCH_COUNT=20
+
 # Allowed requests per second for League of Legends API, default is 1. Default value will fit for personal API key, for production you can enter 5
 LOL_RATE_LIMIT=1
 

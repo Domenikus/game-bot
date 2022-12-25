@@ -17,9 +17,19 @@ class TeamspeakListenerServiceProvider extends ServiceProvider implements Deferr
     {
     }
 
+    public function provides(): array
+    {
+        return [ChatListener::class, TimeoutListener::class, EnterViewListener::class];
+    }
+
     public function register(): void
     {
-        $service = $this->app->make(UserServiceInterface::class);
+        $autoUpdateInterval = config('teamspeak.auto_update_interval');
+        if (! is_numeric($autoUpdateInterval)) {
+            return;
+        }
+
+        $service = $this->app->make(UserServiceInterface::class, ['autoUpdateInterval' => $autoUpdateInterval]);
         if (! $service instanceof UserServiceInterface) {
             return;
         }
@@ -31,22 +41,14 @@ class TeamspeakListenerServiceProvider extends ServiceProvider implements Deferr
             });
         }
 
-        $autoUpdateInterval = config('teamspeak.auto_update_interval');
-        if (is_numeric($autoUpdateInterval)) {
-            $this->app->bind(TimeoutListener::class, function () use ($autoUpdateInterval, $service) {
-                return new TimeoutListener($service, (int) $autoUpdateInterval);
-            });
-        }
+        $this->app->bind(TimeoutListener::class, function () use ($autoUpdateInterval, $service) {
+            return new TimeoutListener($service, (int) $autoUpdateInterval);
+        });
 
         $this->app->bind(EnterViewListener::class, function () use ($service) {
             return new EnterViewListener($service);
         });
 
         $this->app->tag([ChatListener::class, TimeoutListener::class, EnterViewListener::class], self::TAG_NAME);
-    }
-
-    public function provides(): array
-    {
-        return [ChatListener::class, TimeoutListener::class, EnterViewListener::class];
     }
 }

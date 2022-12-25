@@ -39,7 +39,7 @@ class User extends Model
      */
     public function games(): BelongsToMany
     {
-        return $this->belongsToMany(Game::class)->using(GameUser::class)->as('game_user')->withPivot(['options', 'id'])->withTimestamps();
+        return $this->belongsToMany(Game::class)->using(GameUser::class)->as('game_user')->withPivot(['options', 'id', 'refreshed_at'])->withTimestamps();
     }
 
     public function isAdmin(): bool
