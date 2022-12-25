@@ -15,6 +15,25 @@ use Illuminate\Support\Facades\Log;
 
 class UserService implements UserServiceInterface
 {
+    protected int $autoUpdateInterval;
+
+    public function __construct(int $autoUpdateInterval)
+    {
+        $this->autoUpdateInterval = $autoUpdateInterval;
+    }
+
+    public function getAutoUpdateInterval(): int
+    {
+        return $this->autoUpdateInterval;
+    }
+
+    public function setAutoUpdateInterval(int $autoUpdateInterval): self
+    {
+        $this->autoUpdateInterval = $autoUpdateInterval;
+
+        return $this;
+    }
+
     public function handleAdmin(User $user, array $params = []): void
     {
         if ($user->isAdmin() && isset($params[1])) {
@@ -66,7 +85,8 @@ class UserService implements UserServiceInterface
     {
         if ($client = TeamspeakGateway::getClient($identityId)) {
             $activeGames = Game::active()->with('types')->get();
-            $view = view('help', ['commandPrefix' => config('teamspeak.chat_command_prefix'), 'activeGames' => $activeGames]);
+            $view = view('help',
+                ['commandPrefix' => config('teamspeak.chat_command_prefix'), 'activeGames' => $activeGames]);
             $client->message($view);
         }
     }
@@ -84,7 +104,8 @@ class UserService implements UserServiceInterface
             /** @var GameUser $gameUser */
             $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
             $gameUser->types()->detach([$type->getKey()]);
-            TeamspeakGateway::sendMessageToUser($user, $type->game_type->label.' successfully hidden. Run [b]update[/b] command to see the changes');
+            TeamspeakGateway::sendMessageToUser($user,
+                $type->game_type->label.' successfully hidden. Run [b]update[/b] command to see the changes');
         } else {
             TeamspeakGateway::sendMessageToUser($user, 'Combination of game and type is not valid');
         }
@@ -93,7 +114,8 @@ class UserService implements UserServiceInterface
     public function handleInvalid(string $identityId, array $params = []): void
     {
         if ($client = TeamspeakGateway::getClient($identityId)) {
-            TeamspeakGateway::sendMessageToClient($client, 'Invalid command, check out help to list all available commands');
+            TeamspeakGateway::sendMessageToClient($client,
+                'Invalid command, check out help to list all available commands');
         }
     }
 
@@ -121,7 +143,8 @@ class UserService implements UserServiceInterface
             /** @var GameUser $gameUser */
             $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
             $gameUser->types()->syncWithoutDetaching([$type->getKey()]);
-            TeamspeakGateway::sendMessageToUser($user, $type->game_type->label.' successfully enabled. Run [b]update[/b] command to see the changes');
+            TeamspeakGateway::sendMessageToUser($user,
+                $type->game_type->label.' successfully enabled. Run [b]update[/b] command to see the changes');
         } else {
             TeamspeakGateway::sendMessageToUser($user, 'Combination of game and type is not valid');
         }
@@ -172,7 +195,21 @@ class UserService implements UserServiceInterface
 
     public function handleUpdateAll(): void
     {
-        $this->updateActiveClients();
+        foreach (TeamspeakGateway::getActiveClients() as $client) {
+            $user = User::where('identity_id', $client['client_unique_identifier'])->with('games')->first();
+            if (! $user instanceof User || $user->isBlocked()) {
+                continue;
+            }
+
+            foreach ($user->games as $game) {
+                if ($game->game_user->refreshed_at < now()->subSeconds($this->getAutoUpdateInterval())) {
+                    $assignments = $game->assignments()->with(['type'])->get();
+                    $gameGatewayFactory = App::make(GameGatewayFactoryInterface::class);
+                    $gateway = $gameGatewayFactory->create($game->name);
+                    $this->updateServerGroups($game->game_user, $assignments, $gateway);
+                }
+            }
+        }
     }
 
     protected function registerUser(Game $game, string $identityId, array $params): void
@@ -216,13 +253,11 @@ class UserService implements UserServiceInterface
         /** @var GameUser $gameUser */
         $gameUser = $user->games()->where('game_id', $game->getKey())->first()?->game_user;
         $gameUser->types()->sync($game->types()->pluck('id'));
-        Log::info('User successfully registered', ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
+        Log::info('User successfully registered',
+            ['game' => $game->name, 'identityId' => $identityId, 'params' => $params]);
 
         $user->refresh();
-        $assignments = $game->assignments()->with(['type'])->get();
-        $gameGatewayFactory = App::make(GameGatewayFactoryInterface::class);
-        $gateway = $gameGatewayFactory->create($game->name);
-        $this->updateServerGroups($gameUser, $assignments, $gateway);
+        $this->handleUpdate($user);
     }
 
     /**
@@ -240,15 +275,6 @@ class UserService implements UserServiceInterface
                     $supportedTeamspeakServerGroupIds)) {
                     TeamspeakGateway::removeServerGroupFromClient($client, $actualServerGroup['sgid']);
                 }
-            }
-        }
-    }
-
-    protected function updateActiveClients(): void
-    {
-        foreach (TeamspeakGateway::getActiveClients() as $client) {
-            if ($user = User::where('identity_id', $client['client_unique_identifier'])->first()) {
-                $this->handleUpdate($user);
             }
         }
     }
@@ -291,6 +317,8 @@ class UserService implements UserServiceInterface
                 }
             }
 
+            $gameUser->refreshed_at = now();
+            $gameUser->save();
             Log::info('Server groups successfully updated',
                 ['identityId' => $gameUser->user_identity_id, 'gameId' => $gameUser->game_id]);
         }

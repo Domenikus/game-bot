@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property string $user_identity_id
  * @property int $game_id
  * @property array $options
+ * @property Carbon $refreshed_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
