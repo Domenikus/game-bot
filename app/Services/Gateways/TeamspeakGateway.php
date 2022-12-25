@@ -177,10 +177,11 @@ class TeamspeakGateway
         $highestServerGroupId = 10;
         foreach (self::getServerGroups() as $serverGroup) {
             $serverGroupId = $serverGroup->getId();
-            $sortId = self::getServerGroupSortId($serverGroupId);
-
-            if ($sortId && $sortId > $highestServerGroupId) {
-                $highestServerGroupId = $sortId;
+            if ($serverGroupId > 10) {
+                $sortId = self::getServerGroupSortId($serverGroupId);
+                if ($sortId && $sortId > $highestServerGroupId) {
+                    $highestServerGroupId = $sortId;
+                }
             }
         }
 
