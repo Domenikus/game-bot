@@ -148,6 +148,16 @@ class TeamspeakGateway
         return $result;
     }
 
+    public static function getOwnClientId(): int
+    {
+        $clientId = TeamSpeak3::whoamiGet('client_id');
+        if (! is_numeric($clientId)) {
+            throw new Exception('Could not get own client id');
+        }
+
+        return (int) $clientId;
+    }
+
     public static function getPermissionIdByName(string $name): ?int
     {
         $permissionId = null;
@@ -268,6 +278,21 @@ class TeamspeakGateway
             if ($serverIcon['name'] == 'icon_'.$id) {
                 $result = true;
             }
+        }
+
+        return $result;
+    }
+
+    public static function moveClient(int $clientId, int $channelId, string $channelPassword = null): bool
+    {
+        $result = false;
+
+        try {
+            TeamSpeak3::clientMove($clientId, $channelId, $channelPassword);
+            $result = true;
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['client_id' => $clientId, 'channel_id' => $channelId, 'channel_password' => $channelPassword]);
+            report($e);
         }
 
         return $result;
