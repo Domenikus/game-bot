@@ -197,6 +197,7 @@ docker exec -it game-bot php game-bot
 b_serverinstance_permission_list
 b_virtualserver_servergroup_permission_list
 b_virtualserver_client_list
+b_serverquery_login
 b_virtualserver_notify_register
 b_virtualserver_notify_unregister
 b_virtualserver_servergroup_list
