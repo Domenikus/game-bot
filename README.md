@@ -68,7 +68,7 @@ php game-bot menu
 ## Setup for production
 
 - Create a query user on the teamspeak server, see necessary permission down below
-- Whitelist the ipaddress of the bot or turn of anti-flood-protection
+- Whitelist the ipaddress of the bot or turn off anti-flood-protection
 - Get Api keys
     - Apex Legends: [Tracker.gg](https://tracker.gg/developers) (optional)
     - League of Legends: [Riot developers](https://developer.riotgames.com/apis) (optional)
