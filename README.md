@@ -68,7 +68,7 @@ php game-bot menu
 ## Setup for production
 
 - Create a query user on the teamspeak server, see necessary permission down below
-- Whitelist the ipaddress of the bot or turn off anti-flood-protection
+- Whitelist the ipaddress of the bot or turn of anti-flood-protection
 - Get Api keys
     - Apex Legends: [Tracker.gg](https://tracker.gg/developers) (optional)
     - League of Legends: [Riot developers](https://developer.riotgames.com/apis) (optional)
@@ -147,11 +147,20 @@ DB_PORT=3306
 # Apex Legends API key
 APEX_API_KEY=
 
+# Allowed requests per minute for Apex Legends API, default is 30. Adjust it as needed for a production API key
+APEX_RATE_LIMIT=30
+
 # League of Legends API key
 LOL_API_KEY=
 
+# Allowed requests per second for League of Legends API, default is 1. Default value will fit for personal API key, for production you can enter 5
+LOL_RATE_LIMIT=1
+
 # Teamfight Tactics API key
 TFT_API_KEY=
+
+# Allowed requests per second for Teamfight Tactics API, default is 1. Default value will fit for personal API key, for production you can enter 5
+TFT_RATE_LIMIT=1
 
 # Specifies the region in which you are playing.
 LOL_REGION=euw1
@@ -162,8 +171,8 @@ AUTO_UPDATE_INTERVAL=1800
 #Comma seperared list of teamsepak identity id's which should be able to use !admin commands
 ADMINS=
 
-#Specify how the application will log messages like erros. Default will be stack.
-LOG_CHANNEL=stack
+#Specify how the application will log messages like erros. Default will be daily.
+LOG_CHANNEL=daily
 
 # Default is 'info' if you want to debug the application may you want to change this to 'debug'
 LOG_LEVEL=info
@@ -252,5 +261,5 @@ For IDE integration refer [here](https://gilbitron.me/blog/running-laravel-pint-
 
 ## Contribute
 
-Feel free to extend the functionality or add additional games. Pull request are welcome.
+Feel free to extend the functionality or add additional games. Pull requests are welcome.
 
