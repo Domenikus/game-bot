@@ -27,7 +27,7 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
 
 ### Development
 
-Copy env.example file to .env file and fill necessary values
+Copy .env.example file to .env file and fill necessary values
 
 ```
 composer install
@@ -123,9 +123,6 @@ TEAMSPEAK_QUERY_PASSWORD=
 # Query user port, default is 10011
 TEAMSPEAK_QUERY_PORT=10011
 
-# Bot default channel, if not provided bot will stay in servers default channel
-TEAMSPEAK_DEFAULT_CHANNEL=
-
 # Chat command prefix, default is !
 TEAMSPEAK_CHAT_COMMAND_PREFIX=!
 
@@ -155,9 +152,6 @@ APEX_RATE_LIMIT=30
 
 # League of Legends API key
 LOL_API_KEY=
-
-# Number of matches which will be fetched from lol api to calculate for example 'recent most played champion'. Higher number will decrease performance. Default is 20
-LOL_MATCH_COUNT=20
 
 # Allowed requests per second for League of Legends API, default is 1. Default value will fit for personal API key, for production you can enter 5
 LOL_RATE_LIMIT=1
@@ -197,7 +191,6 @@ docker exec -it game-bot php game-bot
 b_serverinstance_permission_list
 b_virtualserver_servergroup_permission_list
 b_virtualserver_client_list
-b_serverquery_login
 b_virtualserver_notify_register
 b_virtualserver_notify_unregister
 b_virtualserver_servergroup_list
