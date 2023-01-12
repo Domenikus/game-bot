@@ -68,7 +68,7 @@ php game-bot menu
 ## Setup for production
 
 - Create a query user on the teamspeak server, see necessary permission down below
-- Whitelist the ipaddress of the bot or turn of anti-flood-protection
+- Whitelist the ipaddress of the bot or turn off anti-flood-protection
 - Get Api keys
     - Apex Legends: [Tracker.gg](https://tracker.gg/developers) (optional)
     - League of Legends: [Riot developers](https://developer.riotgames.com/apis) (optional)
@@ -102,7 +102,7 @@ services:
       MYSQL_ROOT_PASSWORD: "super-secret-password"
     volumes:
       - ./data/mariadb/db:/var/lib/mysql
-      - ./data/mariadb/sql:/docker-entrypoint-initdb.d    
+      - ./data/mariadb/sql:/docker-entrypoint-initdb.d
 ```
 
 ### Example .env file
@@ -157,15 +157,15 @@ TFT_API_KEY=
 LOL_REGION=euw1
 
 #Auto update period in seconds 1800 = 30m
-AUTO_UPDATE_INTERVAL=1800 
+AUTO_UPDATE_INTERVAL=1800
 
 #Comma seperared list of teamsepak identity id's which should be able to use !admin commands
 ADMINS=
 
-#Specify how the application will log messages like erros. Default will be stack. 
+#Specify how the application will log messages like erros. Default will be stack.
 LOG_CHANNEL=stack
 
-# Default is 'info' if you want to debug the application may you want to change this to 'debug' 
+# Default is 'info' if you want to debug the application may you want to change this to 'debug'
 LOG_LEVEL=info
 
 ```
