@@ -2,6 +2,7 @@
 
 namespace App\Services\Listeners;
 
+use App\Facades\TeamSpeak3;
 use App\Services\Gateways\TeamspeakGateway;
 use App\Services\UserServiceInterface;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +26,8 @@ class TimeoutListener implements TeamspeakListener
 
     public function init(): void
     {
+        TeamSpeak3::notifyRegister('server');
+
         TeamSpeak3_Helper_Signal::getInstance()->subscribe('serverqueryWaitTimeout',
             function ($seconds, TeamSpeak3_Adapter_ServerQuery $adapter) {
                 if ($adapter->getQueryLastTimestamp() < time() - 180) {

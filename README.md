@@ -123,6 +123,9 @@ TEAMSPEAK_QUERY_PASSWORD=
 # Query user port, default is 10011
 TEAMSPEAK_QUERY_PORT=10011
 
+# Bot default channel, if not provided bot will stay in servers default channel
+TEAMSPEAK_DEFAULT_CHANNEL=
+
 # Chat command prefix, default is !
 TEAMSPEAK_CHAT_COMMAND_PREFIX=!
 
@@ -194,6 +197,7 @@ docker exec -it game-bot php game-bot
 b_serverinstance_permission_list
 b_virtualserver_servergroup_permission_list
 b_virtualserver_client_list
+b_serverquery_login
 b_virtualserver_notify_register
 b_virtualserver_notify_unregister
 b_virtualserver_servergroup_list
