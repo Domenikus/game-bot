@@ -197,6 +197,7 @@ b_virtualserver_client_list
 b_serverquery_login
 b_virtualserver_notify_register
 b_virtualserver_notify_unregister
+i_channel_subscribe_power
 b_virtualserver_servergroup_list
 b_virtualserver_channelgroup_list
 b_virtualserver_servergroup_create
@@ -209,6 +210,7 @@ i_max_icon_filesize
 b_client_ignore_antiflood
 i_group_modify_power
 i_group_member_add_power
+i_client_max_channel_subscriptions
 ```
 
 ## Usage
