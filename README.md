@@ -27,7 +27,7 @@ Teamspeak bot which syncs stats from games with teamspeak server groups
 
 ### Development
 
-Copy env.example file to .env file and fill necessary values
+Copy .env.example file to .env file and fill necessary values
 
 ```
 composer install
@@ -102,7 +102,7 @@ services:
       MYSQL_ROOT_PASSWORD: "super-secret-password"
     volumes:
       - ./data/mariadb/db:/var/lib/mysql
-      - ./data/mariadb/sql:/docker-entrypoint-initdb.d
+      - ./data/mariadb/sql:/docker-entrypoint-initdb.d    
 ```
 
 ### Example .env file
@@ -122,9 +122,6 @@ TEAMSPEAK_QUERY_PASSWORD=
 
 # Query user port, default is 10011
 TEAMSPEAK_QUERY_PORT=10011
-
-# Bot default channel, if not provided bot will stay in servers default channel
-TEAMSPEAK_DEFAULT_CHANNEL=
 
 # Chat command prefix, default is !
 TEAMSPEAK_CHAT_COMMAND_PREFIX=!
@@ -150,37 +147,25 @@ DB_PORT=3306
 # Apex Legends API key
 APEX_API_KEY=
 
-# Allowed requests per minute for Apex Legends API, default is 30. Adjust it as needed for a production API key
-APEX_RATE_LIMIT=30
-
 # League of Legends API key
 LOL_API_KEY=
 
-# Number of matches which will be fetched from lol api to calculate for example 'recent most played champion'. Higher number will decrease performance. Default is 20
-LOL_MATCH_COUNT=20
-
-# Allowed requests per second for League of Legends API, default is 1. Default value will fit for personal API key, for production you can enter 5
-LOL_RATE_LIMIT=1
-
 # Teamfight Tactics API key
 TFT_API_KEY=
-
-# Allowed requests per second for Teamfight Tactics API, default is 1. Default value will fit for personal API key, for production you can enter 5
-TFT_RATE_LIMIT=1
 
 # Specifies the region in which you are playing.
 LOL_REGION=euw1
 
 #Auto update period in seconds 1800 = 30m
-AUTO_UPDATE_INTERVAL=1800
+AUTO_UPDATE_INTERVAL=1800 
 
 #Comma seperared list of teamsepak identity id's which should be able to use !admin commands
 ADMINS=
 
-#Specify how the application will log messages like erros. Default will be daily.
-LOG_CHANNEL=daily
+#Specify how the application will log messages like erros. Default will be stack. 
+LOG_CHANNEL=stack
 
-# Default is 'info' if you want to debug the application may you want to change this to 'debug'
+# Default is 'info' if you want to debug the application may you want to change this to 'debug' 
 LOG_LEVEL=info
 
 ```
@@ -197,7 +182,6 @@ docker exec -it game-bot php game-bot
 b_serverinstance_permission_list
 b_virtualserver_servergroup_permission_list
 b_virtualserver_client_list
-b_serverquery_login
 b_virtualserver_notify_register
 b_virtualserver_notify_unregister
 b_virtualserver_servergroup_list
@@ -268,5 +252,5 @@ For IDE integration refer [here](https://gilbitron.me/blog/running-laravel-pint-
 
 ## Contribute
 
-Feel free to extend the functionality or add additional games. Pull requests are welcome.
+Feel free to extend the functionality or add additional games. Pull request are welcome.
 
