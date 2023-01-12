@@ -126,6 +126,9 @@ TEAMSPEAK_QUERY_PORT=10011
 # Chat command prefix, default is !
 TEAMSPEAK_CHAT_COMMAND_PREFIX=!
 
+# Bot default channel, if not provided bot will stay in servers default channel
+TEAMSPEAK_DEFAULT_CHANNEL=
+
 # Database type, you can choose between mysql and pgsql
 DB_CONNECTION=mysql
 
