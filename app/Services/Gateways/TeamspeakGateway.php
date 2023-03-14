@@ -236,7 +236,6 @@ class TeamspeakGateway
     }
 
     /**
-     * @param  TeamSpeak3_Node_Client  $client
      * @return array<string>
      */
     public static function getServerGroupsAssignedToClient(TeamSpeak3_Node_Client $client): array

@@ -92,10 +92,7 @@ class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGate
     }
 
     /**
-     * @param  GameUser  $gameUser
-     * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @return array
      */
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
     {
@@ -114,10 +111,7 @@ class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGate
     }
 
     /**
-     * @param  array  $leagues
      * @param  Collection<int, Assignment>  $assignments
-     * @param  string  $queueType
-     * @return Assignment|null
      */
     protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
     {

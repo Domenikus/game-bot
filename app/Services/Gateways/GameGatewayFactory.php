@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Log;
 class GameGatewayFactory implements GameGatewayFactoryInterface
 {
     /**
-     * @param  string  $gameName
-     * @return GameGateway
-     *
      * @throws InvalidGatewayException
      */
     public function create(string $gameName): GameGateway

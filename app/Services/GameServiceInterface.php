@@ -9,18 +9,11 @@ interface GameServiceInterface
 {
     /**
      * Get images in specific type for the given value
-     *
-     * @param  Type  $type
-     * @param  string  $value
-     * @return string|null
      */
     public function grabImage(Type $type, string $value): ?string;
 
     /**
      * Get values for given type
-     *
-     * @param  Type  $type
-     * @return array|null
      */
     public function grabValues(Type $type): ?array;
 

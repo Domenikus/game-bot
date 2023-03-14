@@ -171,9 +171,7 @@ class ApexLegendsGateway implements GameGateway
     }
 
     /**
-     * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @return Assignment|null
      */
     protected function mapLegend(array $stats, Collection $assignments): ?Assignment
     {
@@ -197,10 +195,7 @@ class ApexLegendsGateway implements GameGateway
     }
 
     /**
-     * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @param  string  $queueType
-     * @return Assignment|null
      */
     protected function mapRank(array $stats, Collection $assignments, string $queueType): ?Assignment
     {
