@@ -9,3 +9,4 @@ parameters:
     scanDirectories:
         - vendor/planetteamspeak
     checkMissingIterableValueType: false
+    treatPhpDocTypesAsCertain: false
