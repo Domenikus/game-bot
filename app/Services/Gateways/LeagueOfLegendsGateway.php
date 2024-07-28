@@ -322,7 +322,7 @@ class LeagueOfLegendsGateway implements GameGateway
         $rankImage = null;
         if (! $this->getRankImageFolderPath()) {
             if ($archiveFilePath = $this->downloadArchive('https://static.developer.riotgames.com/docs/lol/ranked-emblems-latest.zip', 'rank-icons')) {
-                $rankImageFolderPath = getcwd().'/storage/ranked-emblems-latest';
+                $rankImageFolderPath = getcwd().'/storage/rank-icons';
                 if ($this->extractArchive($archiveFilePath, $rankImageFolderPath)) {
                     $this->setRankImageFolderPath($rankImageFolderPath);
                     File::delete($archiveFilePath);
