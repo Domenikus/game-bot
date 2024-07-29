@@ -332,8 +332,8 @@ class LeagueOfLegendsGateway implements GameGateway
 
         $fileName = 'Rank='.substr($rankName, 0, strpos($rankName, ' ') ?: strlen($rankName)).'.png';
 
-        if (File::exists($this->getRankImageFolderPath().'/'.$fileName)) {
-            $rankImage = File::get($this->getRankImageFolderPath().'/'.$fileName, true);
+        if (File::exists($this->getRankImageFolderPath().'/Ranked Emblems Latest/'.$fileName)) {
+            $rankImage = File::get($this->getRankImageFolderPath().'/Ranked Emblems Latest/'.$fileName, true);
         } else {
             Log::error('No rank image found', ['rankName' => $rankName, 'fileName' => $fileName]);
         }
