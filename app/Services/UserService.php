@@ -261,9 +261,7 @@ class UserService implements UserServiceInterface
     }
 
     /**
-     * @param  GameUser  $gameUser
      * @param  Collection<int, Assignment>  $assignments
-     * @return void
      */
     protected function removeServerGroups(GameUser $gameUser, Collection $assignments): void
     {
@@ -280,10 +278,7 @@ class UserService implements UserServiceInterface
     }
 
     /**
-     * @param  GameUser  $gameUser
      * @param  Collection<int, Assignment>  $assignments
-     * @param  GameGateway  $interface
-     * @return void
      */
     protected function updateServerGroups(GameUser $gameUser, Collection $assignments, GameGateway $interface): void
     {

@@ -25,10 +25,7 @@ interface GameGateway
     public function grabRanks(): ?array;
 
     /**
-     * @param  GameUser  $gameUser
-     * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @return array
      */
     public function mapStats(
         GameUser $gameUser,

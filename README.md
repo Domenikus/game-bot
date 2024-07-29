@@ -68,7 +68,7 @@ php game-bot menu
 ## Setup for production
 
 - Create a query user on the teamspeak server, see necessary permission down below
-- Whitelist the ipaddress of the bot or turn of anti-flood-protection
+- Whitelist the ipaddress of the bot or turn off anti-flood-protection
 - Get Api keys
     - Apex Legends: [Tracker.gg](https://tracker.gg/developers) (optional)
     - League of Legends: [Riot developers](https://developer.riotgames.com/apis) (optional)
@@ -194,20 +194,23 @@ docker exec -it game-bot php game-bot
 b_serverinstance_permission_list
 b_virtualserver_servergroup_permission_list
 b_virtualserver_client_list
+b_serverquery_login
 b_virtualserver_notify_register
 b_virtualserver_notify_unregister
+i_channel_subscribe_power
 b_virtualserver_servergroup_list
 b_virtualserver_channelgroup_list
 b_virtualserver_servergroup_create
 b_virtualserver_servergroup_delete
 i_permission_modify_power
 b_icon_manage
-i_icon_id (Grant)
-i_group_sort_id (Grant)
+i_icon_id (grant)
+i_group_sort_id (grant)
 i_max_icon_filesize
 b_client_ignore_antiflood
 i_group_modify_power
 i_group_member_add_power
+i_client_max_channel_subscriptions
 ```
 
 ## Usage

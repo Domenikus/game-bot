@@ -124,18 +124,11 @@ class LeagueOfLegendsGateway implements GameGateway
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function getMatchCount(): int
     {
         return $this->matchCount;
     }
 
-    /**
-     * @param  int  $matchCount
-     * @return LeagueOfLegendsGateway
-     */
     public function setMatchCount(int $matchCount): LeagueOfLegendsGateway
     {
         $this->matchCount = $matchCount;
@@ -328,7 +321,7 @@ class LeagueOfLegendsGateway implements GameGateway
     {
         $rankImage = null;
         if (! $this->getRankImageFolderPath()) {
-            if ($archiveFilePath = $this->downloadArchive('https://static.developer.riotgames.com/docs/lol/ranked-emblems.zip', 'rank-icons')) {
+            if ($archiveFilePath = $this->downloadArchive('https://static.developer.riotgames.com/docs/lol/ranked-emblems-latest.zip', 'rank-icons')) {
                 $rankImageFolderPath = getcwd().'/storage/rank-icons';
                 if ($this->extractArchive($archiveFilePath, $rankImageFolderPath)) {
                     $this->setRankImageFolderPath($rankImageFolderPath);
@@ -337,10 +330,10 @@ class LeagueOfLegendsGateway implements GameGateway
             }
         }
 
-        $fileName = 'Emblem_'.substr($rankName, 0, strpos($rankName, ' ') ?: strlen($rankName)).'.png';
+        $fileName = 'Rank='.substr($rankName, 0, strpos($rankName, ' ') ?: strlen($rankName)).'.png';
 
-        if (File::exists($this->getRankImageFolderPath().'/'.$fileName)) {
-            $rankImage = File::get($this->getRankImageFolderPath().'/'.$fileName, true);
+        if (File::exists($this->getRankImageFolderPath().'/Ranked Emblems Latest/'.$fileName)) {
+            $rankImage = File::get($this->getRankImageFolderPath().'/Ranked Emblems Latest/'.$fileName, true);
         } else {
             Log::error('No rank image found', ['rankName' => $rankName, 'fileName' => $fileName]);
         }
@@ -360,10 +353,7 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param  GameUser  $gameUser
-     * @param  array  $stats
      * @param  Collection<int, Assignment>  $assignments
-     * @return array
      */
     public function mapStats(GameUser $gameUser, array $stats, Collection $assignments): array
     {
@@ -504,10 +494,7 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param  GameUser  $gameUser
-     * @param  array  $match
      * @param  Collection<int, Assignment>  $assignments
-     * @return Assignment|null
      */
     protected function mapChampion(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
     {
@@ -523,10 +510,7 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param  GameUser  $gameUser
-     * @param  array  $match
      * @param  Collection<int, Assignment>  $assignments
-     * @return Assignment|null
      */
     protected function mapLane(GameUser $gameUser, array $match, Collection $assignments): ?Assignment
     {
@@ -542,10 +526,7 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param  GameUser  $gameUser
-     * @param  array  $matches
      * @param  Collection<int, Assignment>  $assignments
-     * @return array
      */
     protected function mapMatches(GameUser $gameUser, array $matches, Collection $assignments): array
     {
@@ -589,10 +570,7 @@ class LeagueOfLegendsGateway implements GameGateway
     }
 
     /**
-     * @param  array  $leagues
      * @param  Collection<int, Assignment>  $assignments
-     * @param  string  $queueType
-     * @return Assignment|null
      */
     protected function mapRank(array $leagues, Collection $assignments, string $queueType): ?Assignment
     {
