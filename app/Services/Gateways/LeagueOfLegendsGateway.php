@@ -258,25 +258,65 @@ class LeagueOfLegendsGateway implements GameGateway
             return null;
         }
 
-        $url = $this->getPlattformBaseUrl().'/lol/summoner/v4/summoners/by-name/'.$params[2];
+        $identity = null;
+        $accountResult = $this->grabAccount($params[2]);
+        if ($accountResult) {
+            $summonerResult = $this->grabSummoner($accountResult['puuid']);
+            $identity = $summonerResult;
+            $identity['name'] = $accountResult['gameName'].'#'.$accountResult['tagLine'];
+        }
+
+        return $identity;
+    }
+
+    /**
+     * @param  string  $riotId  Example: User#1234
+     */
+    public function grabAccount(string $riotId): ?array
+    {
+        if (! str_contains($riotId, '#')) {
+            return null;
+        }
+
+        $nameTag = explode('#', $riotId);
+        $url = $this->getRegionBaseUrl()."/riot/account/v1/accounts/by-riot-id/$nameTag[0]/$nameTag[1]";
+        /** @var Response $accountResponse */
+        $accountResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
+            ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
+            ->retry(3, 1000, throw: false)
+            ->get($url);
+
+        $result = null;
+        if ($accountResponse->successful()) {
+            /** @var array $result */
+            $result = $accountResponse->json();
+        } else {
+            Log::warning('Could not get account from Riot API',
+                ['apiKey' => $this->getApiKey(), 'riotId' => $riotId, 'responseStatus' => $accountResponse->status(), 'url' => $url]);
+        }
+
+        return $result;
+    }
+
+    public function grabSummoner(string $puuid): ?array
+    {
+        $url = $this->getPlattformBaseUrl().'/lol/summoner/v4/summoners/by-puuid/'.$puuid;
+        /** @var Response $summonerResponse */
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
             ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
             ->retry(3, 1000, throw: false)
             ->get($url);
 
-        $identity = null;
-        /** @var Response $summonerResponse */
+        $result = null;
         if ($summonerResponse->successful()) {
+            /** @var array $result */
             $result = $summonerResponse->json();
-            if (is_array($result)) {
-                $identity = $result;
-            }
         } else {
-            Log::warning('Could not get player identity from Riot API for League of Legends',
-                ['apiKey' => $this->getApiKey(), 'params' => $params, 'responseStatus' => $summonerResponse->status(), 'url' => $url]);
+            Log::warning('Could not get summoner from Riot API',
+                ['apiKey' => $this->getApiKey(), 'puuid' => $puuid, 'responseStatus' => $summonerResponse->status(), 'url' => $url]);
         }
 
-        return $identity;
+        return $result;
     }
 
     public function grabPositionImage(string $positionName): ?string
@@ -478,7 +518,7 @@ class LeagueOfLegendsGateway implements GameGateway
         foreach ($matchIds as $matchId) {
             $url = $this->getRegionBaseUrl().'/lol/match/v5/matches/'.$matchId;
             $matchResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-                ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore()))
+                ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new LolRateLimiterStore))
                 ->retry(3, 1000, throw: false)
                 ->get($url);
             /** @var Response $matchResponse */
