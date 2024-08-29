@@ -78,7 +78,7 @@ class ApexLegendsGateway implements GameGateway
         $stats = null;
 
         $response = Http::withHeaders(['TRN-Api-Key' => $this->getApiKey()])
-            ->withMiddleware(RateLimiterMiddleware::perMinute($this->rateLimit, new ApexRateLimiterStore()))
+            ->withMiddleware(RateLimiterMiddleware::perMinute($this->rateLimit, new ApexRateLimiterStore))
             ->retry(3, 1000, throw: false)
             ->get('https://public-api.tracker.gg/v2/apex/standard/profile/'.$gameUser->options['platform'].'/'.$gameUser->options['name']);
 
@@ -107,7 +107,7 @@ class ApexLegendsGateway implements GameGateway
             'platform' => $params[3],
         ];
 
-        $gameUser = new GameUser();
+        $gameUser = new GameUser;
         $gameUser->options = $options;
         if ($this->grabPlayerData($gameUser)) {
             return $options;

@@ -66,7 +66,7 @@ class GameService implements GameServiceInterface
         return $values;
     }
 
-    public function setup(Type $type, array $permissions, int $sortIndex, ProgressBar $progressBar = null, string $suffix = null): bool
+    public function setup(Type $type, array $permissions, int $sortIndex, ?ProgressBar $progressBar = null, ?string $suffix = null): bool
     {
         $values = $this->grabValues($type);
         if (! $values) {
@@ -113,7 +113,7 @@ class GameService implements GameServiceInterface
                 $serverGroupId = $serverGroup->getId();
             }
 
-            $assignment = new Assignment();
+            $assignment = new Assignment;
             $assignment->value = $value;
             $assignment->ts3_server_group_id = $serverGroupId;
             $assignment->type()->associate($type);

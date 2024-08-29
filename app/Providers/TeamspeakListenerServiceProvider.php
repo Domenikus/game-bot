@@ -13,9 +13,7 @@ class TeamspeakListenerServiceProvider extends ServiceProvider implements Deferr
 {
     const TAG_NAME = 'teamspeak-listener';
 
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 
     public function provides(): array
     {

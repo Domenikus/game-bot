@@ -12,6 +12,4 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class GameType extends Pivot
-{
-}
+class GameType extends Pivot {}

@@ -11,7 +11,7 @@ return new class extends Migration
             return;
         }
 
-        $game = new Game();
+        $game = new Game;
         $game->name = Game::GAME_NAME_LEAGUE_OF_LEGENDS;
         $game->label = 'League of Legends';
         $game->saveOrFail();

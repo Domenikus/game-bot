@@ -29,7 +29,7 @@ class GameGatewayFactory implements GameGatewayFactoryInterface
 
         if (! $gameGateway instanceof GameGateway) {
             Log::error('Could not create game gateway', ['game' => $gameName]);
-            throw new InvalidGatewayException();
+            throw new InvalidGatewayException;
         }
 
         return $gameGateway;

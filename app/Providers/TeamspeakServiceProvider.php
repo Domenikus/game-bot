@@ -9,9 +9,7 @@ use TeamSpeak3_Node_Abstract;
 
 class TeamspeakServiceProvider extends ServiceProvider implements DeferrableProvider
 {
-    public function boot(): void
-    {
-    }
+    public function boot(): void {}
 
     public function register(): void
     {

@@ -112,7 +112,7 @@ class Menu extends Command
             $gameModel = Game::where('name', $game->fetch())->firstOrFail();
             $typeModel = Type::where('name', $type->fetch())->firstOrFail();
 
-            $assignment = new Assignment();
+            $assignment = new Assignment;
             $assignment->value = $value->fetch();
             $assignment->type()->associate($typeModel);
             $assignment->game()->associate($gameModel);
