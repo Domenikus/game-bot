@@ -234,7 +234,7 @@ class UserService implements UserServiceInterface
 
         $user = User::with('games')->find($identityId);
         if (! $user) {
-            $user = new User();
+            $user = new User;
             $user->identity_id = $identityId;
             $user->save();
         }

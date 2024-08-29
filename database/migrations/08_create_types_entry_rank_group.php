@@ -11,7 +11,7 @@ return new class extends Migration
             return;
         }
 
-        $type = new Type();
+        $type = new Type;
         $type->name = 'rank_group';
         $type->label = 'Rank group';
         $type->saveOrFail();

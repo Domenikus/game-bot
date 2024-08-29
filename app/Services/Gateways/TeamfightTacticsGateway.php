@@ -36,7 +36,7 @@ class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGate
         $stats = null;
         $url = $this->getPlattformBaseUrl().'/tft/league/v1/entries/by-summoner/'.$gameUser->options['id'];
         $leagueResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->withMiddleware(RateLimiterMiddleware::perSecond($this->rateLimit, new TftRateLimiterStore()))
+            ->withMiddleware(RateLimiterMiddleware::perSecond($this->rateLimit, new TftRateLimiterStore))
             ->retry(3, 1000, throw: false)
             ->get($url);
 
@@ -54,31 +54,25 @@ class TeamfightTacticsGateway extends LeagueOfLegendsGateway implements GameGate
         return $stats;
     }
 
-    public function grabPlayerIdentity(array $params): ?array
+    public function grabSummoner(string $puuid): ?array
     {
-        if (! isset($params[2])) {
-            return null;
-        }
-
-        $url = $this->getPlattformBaseUrl().'/tft/summoner/v1/summoners/by-name/'.$params[2];
+        $url = $this->getPlattformBaseUrl().'/tft/summoner/v1/summoners/by-puuid/'.$puuid;
+        /** @var Response $summonerResponse */
         $summonerResponse = Http::withHeaders(['X-Riot-Token' => $this->getApiKey()])
-            ->withMiddleware(RateLimiterMiddleware::perSecond($this->rateLimit, new TftRateLimiterStore()))
+            ->withMiddleware(RateLimiterMiddleware::perSecond($this->getRateLimit(), new TftRateLimiterStore))
             ->retry(3, 1000, throw: false)
             ->get($url);
 
-        $summoner = null;
-        /** @var Response $summonerResponse */
+        $result = null;
         if ($summonerResponse->successful()) {
+            /** @var array $result */
             $result = $summonerResponse->json();
-            if (is_array($result)) {
-                $summoner = $result;
-            }
         } else {
-            Log::warning('Could not get player identity from Riot API for Teamfight Tactics',
-                ['apiKey' => $this->getApiKey(), 'params' => $params, 'responseStatus' => $summonerResponse->status(), 'url' => $url]);
+            Log::warning('Could not get summoner from Riot API',
+                ['apiKey' => $this->getApiKey(), 'puuid' => $puuid, 'responseStatus' => $summonerResponse->status(), 'url' => $url]);
         }
 
-        return $summoner;
+        return $result;
     }
 
     public function grabPositionImage(string $positionName): ?string

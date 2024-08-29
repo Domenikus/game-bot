@@ -282,7 +282,7 @@ class TeamspeakGateway
         return $result;
     }
 
-    public static function moveClient(int $clientId, int $channelId, string $channelPassword = null): bool
+    public static function moveClient(int $clientId, int $channelId, ?string $channelPassword = null): bool
     {
         $result = false;
 

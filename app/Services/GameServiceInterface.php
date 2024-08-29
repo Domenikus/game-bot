@@ -20,10 +20,10 @@ interface GameServiceInterface
     /**
      * Setup game
      *
-     * @param  Type  $type Specifies the type to which the assignments should be assigned
-     * @param  array  $permissions Permissions which should be assigned to newly created server groups
-     * @param  ProgressBar|null  $progressBar Optional progressbar which shows the current progress
+     * @param  Type  $type  Specifies the type to which the assignments should be assigned
+     * @param  array  $permissions  Permissions which should be assigned to newly created server groups
+     * @param  ProgressBar|null  $progressBar  Optional progressbar which shows the current progress
      * @return bool Return setup result
      */
-    public function setup(Type $type, array $permissions, int $sortIndex, ProgressBar $progressBar = null, string $suffix = null): bool;
+    public function setup(Type $type, array $permissions, int $sortIndex, ?ProgressBar $progressBar = null, ?string $suffix = null): bool;
 }
